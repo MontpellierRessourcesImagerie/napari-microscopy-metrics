@@ -6,7 +6,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 authors = [ 
     { name = "MRI-CIA", email = "mri-cia@mri.cnrs.fr" }, 
-    { name = "Voker Baecker", email = "volker.baecker@mri.cnrs.fr},
+    { name = "Voker Baecker", email = "volker.baecker@mri.cnrs.fr"},
     { name = "Clément Benedetti", email = "clement.benedetti@mri.cnrs.fr"},
     { name = "Bastian Langouet", email = "langouetbastian@gmail.com" } 
 ]
