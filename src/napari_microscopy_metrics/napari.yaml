@@ -1,0 +1,63 @@
+name: napari-microscopy-metrics
+display_name: Microscopy Metrics
+# use 'hidden' to remove plugin from napari hub search results
+visibility: public
+# see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
+# categories: []
+contributions:
+  commands:
+    - id: napari-microscopy-metrics.get_reader
+      python_name: napari_microscopy_metrics._reader:napari_get_reader
+      title: Open data with Microscopy Metrics
+    - id: napari-microscopy-metrics.write_multiple
+      python_name: napari_microscopy_metrics._writer:write_multiple
+      title: Save multi-layer data with Microscopy Metrics
+    - id: napari-microscopy-metrics.write_single_image
+      python_name: napari_microscopy_metrics._writer:write_single_image
+      title: Save image data with Microscopy Metrics
+    - id: napari-microscopy-metrics.make_sample_data
+      python_name: napari_microscopy_metrics._sample_data:make_sample_data
+      title: Load sample data from Microscopy Metrics
+    - id: napari-microscopy-metrics.make_container_widget
+      python_name: napari_microscopy_metrics:ImageThreshold
+      title: Make threshold Container widget
+    - id: napari-microscopy-metrics.make_magic_widget
+      python_name: napari_microscopy_metrics:threshold_magic_widget
+      title: Make threshold magic widget
+    - id: napari-microscopy-metrics.make_function_widget
+      python_name: napari_microscopy_metrics:threshold_autogenerate_widget
+      title: Make threshold function widget
+    - id: napari-microscopy-metrics.make_qwidget
+      python_name: napari_microscopy_metrics:ExampleQWidget
+      title: Make example QWidget
+  readers:
+    - command: napari-microscopy-metrics.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  writers:
+    - command: napari-microscopy-metrics.write_multiple
+      layer_types: ['image*','labels*']
+      filename_extensions: []
+    - command: napari-microscopy-metrics.write_single_image
+      layer_types: ['image']
+      filename_extensions: ['.npy']
+  sample_data:
+    - command: napari-microscopy-metrics.make_sample_data
+      display_name: Microscopy Metrics
+      key: unique_id.1
+  widgets:
+    - command: napari-microscopy-metrics.make_container_widget
+      display_name: Container Threshold
+    - command: napari-microscopy-metrics.make_magic_widget
+      display_name: Magic Threshold
+    - command: napari-microscopy-metrics.make_function_widget
+      autogenerate: true
+      display_name: Autogenerate Threshold
+    - command: napari-microscopy-metrics.make_qwidget
+      display_name: Example QWidget
+  menus:
+    napari/layers/segment:
+      - command: napari-microscopy-metrics.make_container_widget
+      - command: napari-microscopy-metrics.make_magic_widget
+      - command: napari-microscopy-metrics.make_function_widget
+      - command: napari-microscopy-metrics.make_qwidget

@@ -1,0 +1,19 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v2.0.1
+_src_path: https://github.com/napari/napari-plugin-template
+display_name: Microscopy Metrics
+email: mri-cia@mri.cnrs.fr langouetbastian@gmail.com
+full_name: MRI CIA
+github_repository_url: https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics
+github_username_or_organization: MontpellierRessourcesImagerie
+include_reader_plugin: true
+include_sample_data_plugin: true
+include_widget_plugin: true
+include_writer_plugin: true
+install_dependabot: true
+install_precommit: true
+license: BSD-3
+module_name: napari_microscopy_metrics
+plugin_name: napari-microscopy-metrics
+short_description: A plugin using the microscopy metrics module for proceedig quality
+    control with PSF in Napari
