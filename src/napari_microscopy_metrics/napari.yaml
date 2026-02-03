@@ -18,18 +18,9 @@ contributions:
     - id: napari-microscopy-metrics.make_sample_data
       python_name: napari_microscopy_metrics._sample_data:make_sample_data
       title: Load sample data from Microscopy Metrics
-    - id: napari-microscopy-metrics.make_container_widget
-      python_name: napari_microscopy_metrics:ImageThreshold
-      title: Make threshold Container widget
-    - id: napari-microscopy-metrics.make_magic_widget
-      python_name: napari_microscopy_metrics:threshold_magic_widget
-      title: Make threshold magic widget
-    - id: napari-microscopy-metrics.make_function_widget
-      python_name: napari_microscopy_metrics:threshold_autogenerate_widget
-      title: Make threshold function widget
-    - id: napari-microscopy-metrics.make_qwidget
-      python_name: napari_microscopy_metrics:ExampleQWidget
-      title: Make example QWidget
+    - id : napari-microscopy-metrics.make_microscopy_metrics_qwidget
+      python_name: napari_microscopy_metrics:Microscopy_Metrics_QWidget
+      title : Make my first QWidget
   readers:
     - command: napari-microscopy-metrics.get_reader
       accepts_directories: false
@@ -46,18 +37,8 @@ contributions:
       display_name: Microscopy Metrics
       key: unique_id.1
   widgets:
-    - command: napari-microscopy-metrics.make_container_widget
-      display_name: Container Threshold
-    - command: napari-microscopy-metrics.make_magic_widget
-      display_name: Magic Threshold
-    - command: napari-microscopy-metrics.make_function_widget
-      autogenerate: true
-      display_name: Autogenerate Threshold
-    - command: napari-microscopy-metrics.make_qwidget
-      display_name: Example QWidget
+    - command: napari-microscopy-metrics.make_microscopy_metrics_qwidget
+      display_name: Microscopy Metrics
   menus:
     napari/layers/segment:
-      - command: napari-microscopy-metrics.make_container_widget
-      - command: napari-microscopy-metrics.make_magic_widget
-      - command: napari-microscopy-metrics.make_function_widget
-      - command: napari-microscopy-metrics.make_qwidget
+      - command: napari-microscopy-metrics.make_microscopy_metrics_qwidget
