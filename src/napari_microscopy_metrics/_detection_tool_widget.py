@@ -1,20 +1,22 @@
 """
 This module contains a napari widgets for PSF detection
 """
-
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 import types
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject
 from qtpy.QtWidgets import *
-from qtpy.QtGui import QIntValidator
+from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
 from microscopy_metrics.detection import *
 from microscopy_metrics.metrics import * 
 import napari
 from napari.utils.notifications import *
 from .json_utils import *
+from autooptions import *
+
 
 class ParamsSignal(QObject):
     """ Class for the declaration of update parameters signal"""
@@ -93,6 +95,7 @@ class Detection_Parameters_Widget(QWidget):
         self.threshold_rel.setRange(0,100)
         self.threshold_rel.setValue(self.params["Rel_threshold"])
         self.threshold_rel_label = QLabel("Relative threshold : " + str(self.threshold_rel.value()/100))
+        
         self.btn = QPushButton("Confirm")
         self.btn.clicked.connect(self._on_confirm) 
 
@@ -106,6 +109,41 @@ class Detection_Parameters_Widget(QWidget):
         self.crop_factor.setValue(self.params["crop_factor"])
         self.crop_factor_label = QLabel("Crop factor : " + str(self.crop_factor.value()))
 
+        self.title_bead_size = QLabel("Theoretical bead size (um):")
+        self.title_bead_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        # Input for the theoretical size of bead
+        self.theo_size_bead = QLineEdit()
+        self.theo_size_bead.setFixedWidth(40)
+        self.theo_size_bead.setValidator(QIntValidator())
+        self.theo_size_bead.setText(str(self.params["theorical_bead_size"]))
+
+        self.title_rejection = QLabel("Rejection zone size (px):")
+        self.title_bead_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        # Input for the rejection zone
+        self.size_rejection = QLineEdit()
+        self.size_rejection.setFixedWidth(40)
+        self.size_rejection.setValidator(QIntValidator())
+        self.size_rejection.setText(str(self.params["rejection_zone"]))
+
+        self.title_distance_annulus = QLabel("Inner annulus distance to bead (um):")
+        self.title_distance_annulus.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        # Input for the annulus distance
+        self.distance_annulus = QLineEdit()
+        self.distance_annulus.setFixedWidth(40)
+        self.distance_annulus.setValidator(QIntValidator())
+        self.distance_annulus.setText(str(self.params["distance_annulus"]))
+
+        self.title_thickness_annulus = QLabel("Annulus thickness (um):")
+        self.title_thickness_annulus.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        # Input for the annulus thickness
+        self.thickness_annulus = QLineEdit()
+        self.thickness_annulus.setFixedWidth(40)
+        self.thickness_annulus.setValidator(QIntValidator())
+        self.thickness_annulus.setText(str(self.params["thickness_annulus"]))
 
         # Adding all the widgets to the layout
         layout.addWidget(self.detection_Label)
@@ -117,6 +155,14 @@ class Detection_Parameters_Widget(QWidget):
         layout.addWidget(self.threshold_auto_check)
         layout.addWidget(self.crop_factor_label)
         layout.addWidget(self.crop_factor)
+        layout.addWidget(self.title_bead_size)
+        layout.addWidget(self.theo_size_bead)
+        layout.addWidget(self.title_rejection)
+        layout.addWidget(self.size_rejection)
+        layout.addWidget(self.title_distance_annulus)
+        layout.addWidget(self.distance_annulus)
+        layout.addWidget(self.title_thickness_annulus)
+        layout.addWidget(self.thickness_annulus)
         layout.addWidget(self.btn)
 
         # Defining the layout of the widget
@@ -128,7 +174,10 @@ class Detection_Parameters_Widget(QWidget):
         self.threshold_rel.valueChanged.connect(self._update_threshold)
         self.crop_factor.valueChanged.connect(self._update_crop_factor)
         self.threshold_auto_check.stateChanged.connect(self._update_auto_threshold)
-
+        self.theo_size_bead.textChanged.connect(self._on_update_theo_size_bead)
+        self.size_rejection.textChanged.connect(self._on_update_rejection_zone)
+        self.distance_annulus.textChanged.connect(self._on_update_distance_annulus)
+        self.thickness_annulus.textChanged.connect(self._on_update_thickness_annulus)
         # Initial calls for updating states at launch
         self._selected_action(self.detection_tool_selection.currentIndex())
     
@@ -168,6 +217,22 @@ class Detection_Parameters_Widget(QWidget):
         """Assign the value in params"""
         self.params["auto_threshold"] = value == 2
 
+    def _on_update_theo_size_bead(self,value):
+        """Assign the value in params"""
+        self.params["theorical_bead_size"] = int(value)
+
+    def _on_update_rejection_zone(self,value):
+        """Assign the value in params"""
+        self.params["rejection_zone"] = int(value)
+
+    def _on_update_distance_annulus(self,value):
+        """Assign the value in params"""
+        self.params["distance_annulus"] = int(value)
+
+    def _on_update_thickness_annulus(self,value):
+        """Assign the value in params"""
+        self.params["thickness_annulus"] = int(value)
+
 class Detection_Tool_Tab(QWidget):
     """ The main widget of the detection tool
     
@@ -187,7 +252,10 @@ class Detection_Tool_Tab(QWidget):
             "theorical_bead_size":10,
             "crop_factor":5,
             "selected_tool":0,
-            "auto_threshold":False
+            "auto_threshold":False,
+            "rejection_zone":10,
+            "distance_annulus" : 10,
+            "thickness_annulus": 10
         }
         #Read and restore datas if exist
         loaded_params = read_file_data("parameters_data.json")
@@ -200,20 +268,15 @@ class Detection_Tool_Tab(QWidget):
         self.filtered_beads = None
         self.rois = None
         self.cropped_layers = []
-        
-        # Label of the title of the widget
-        self.detection_Label = QLabel()
-        self.detection_Label.setText("PSF detection tool")
 
-        # Input for the theoretical size of bead
-        self.theo_size_bead = QLineEdit()
-        self.theo_size_bead.setFixedWidth(40)
-        self.theo_size_bead.setValidator(QIntValidator())
-        self.theo_size_bead.setText(str(self.params["theorical_bead_size"]))
 
         # Button to access parameters
-        self.parameters_btn = QPushButton("Parameters")
+        self.parameters_btn = QPushButton()
         self.parameters_btn.clicked.connect(self._open_parameters_window)
+        icon_path = Path(__file__).parent / "res" / "drawable" / "parameters_icon.png"
+        self.parameters_btn.setIcon(QIcon(str(icon_path)))
+        self.parameters_btn.setIconSize(QSize(30,30))
+        self.parameters_btn.setFixedSize(30, 30)
         
         # Button to process beads detection
         self.detection_btn = QPushButton("Process")
@@ -228,20 +291,17 @@ class Detection_Tool_Tab(QWidget):
         self.sbr_btn.clicked.connect(self._on_SBR)
 
         # Adding all the widgets to the layout
-        self.setLayout(QVBoxLayout())
-        self.layout().setContentsMargins(0,0,0,0)
-        self.layout().setSpacing(5)
-        self.layout().addWidget(self.detection_Label)
-        self.layout().addWidget(QLabel("Theoretical bead size :"))
-        self.layout().addWidget(self.theo_size_bead)
-        self.layout().addWidget(self.parameters_btn)
-        self.layout().addWidget(self.detection_btn)
-        self.layout().addWidget(self.crop_btn)
-        self.layout().addWidget(self.sbr_btn)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
+        layout.addWidget(self.parameters_btn)
+        layout.addWidget(self.detection_btn)
+        layout.addWidget(self.crop_btn)
+        layout.addWidget(self.sbr_btn)
+        self.setLayout(layout)
 
         # Linking signals to slots
         self.viewer.layers.events.removed.connect(self._on_layer_removed)
-        self.theo_size_bead.textChanged.connect(self._on_update_theo_size_bead)
 
     # Defining slots
     def _on_layer_removed(self,event):
@@ -253,9 +313,6 @@ class Detection_Tool_Tab(QWidget):
         if hasattr(self, 'cropped_layers') and event.value in self.cropped_layers:
             self.cropped_layers.remove(event.value)
 
-    def _on_update_theo_size_bead(self,value):
-        """Assign the value in params"""
-        self.params["theorical_bead_size"] = int(value)
 
     def _on_detect_psf(self):
         """Detect and extract beads in image depending on choosen parameters"""
@@ -326,7 +383,7 @@ class Detection_Tool_Tab(QWidget):
         if self.count_windows == 0 :
             self.parameters_window = QDialog(self)
             self.parameters_window.setWindowTitle("Detection parameters")
-            self.parameters_window.setModal(False)
+            self.parameters_window.setModal(True)
             parameters_widget = Detection_Parameters_Widget(self.viewer, self.params)
             parameters_widget.signal.params_updated.connect(self.on_params_updated)
             self.parameters_window.finished.connect(self._on_parameters_window_closed)
