@@ -12,6 +12,7 @@ from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
 from microscopy_metrics.detection import *
 from microscopy_metrics.metrics import * 
+from microscopy_metrics.utils import *
 import napari
 from napari.utils.notifications import *
 from .json_utils import *

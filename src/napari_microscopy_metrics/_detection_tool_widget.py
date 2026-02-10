@@ -58,6 +58,7 @@ class Detection_Parameters_Widget(QWidget):
         self.peak_method_layout = QVBoxLayout()
         self.peak_method_layout.setContentsMargins(0,0,0,0)
         self.peak_method_layout.setSpacing(2)
+
         # Slider for the minimal distance between two PSF
         self.min_distance_detection = QSlider(Qt.Horizontal)
         self.min_distance_detection.setRange(0,20)
@@ -95,56 +96,34 @@ class Detection_Parameters_Widget(QWidget):
         self.threshold_rel.setRange(0,100)
         self.threshold_rel.setValue(self.params["Rel_threshold"])
         self.threshold_rel_label = QLabel("Relative threshold : " + str(self.threshold_rel.value()/100))
-        
-        self.btn = QPushButton("Confirm")
-        self.btn.clicked.connect(self._on_confirm) 
 
         # Button for the automatic threshold calculation
         self.threshold_auto_check = QCheckBox()
         self.threshold_auto_check.setChecked(self.params["auto_threshold"])
 
+        # Option for the choice of the threshold
+        self.options_threshold = Options("Threshold choice", "Median Filter")
+        self.options_threshold.addChoice(name="choose a threshold", value=str(self.params["threshold_choice"]), choices=["otsu", "isodata", "li", "minimum", "triangle"])
+        self.widget_threshold = OptionsWidget(self.viewer,self.options_threshold)
+
+        # Options for the ROI
+        self.options_ROI = Options("ROI specifications","Median Filter")
+        self.options_ROI.addFloat(name="Theoretical bead size (um)", value=self.params["theorical_bead_size"])
+        self.widget_ROI = OptionsWidget(self.viewer,self.options_ROI)
+        
         # Slider for the crop factor of ROI
         self.crop_factor = QSlider(Qt.Horizontal)
         self.crop_factor.setRange(1,10)
         self.crop_factor.setValue(self.params["crop_factor"])
         self.crop_factor_label = QLabel("Crop factor : " + str(self.crop_factor.value()))
 
-        self.title_bead_size = QLabel("Theoretical bead size (um):")
-        self.title_bead_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
-        # Input for the theoretical size of bead
-        self.theo_size_bead = QLineEdit()
-        self.theo_size_bead.setFixedWidth(40)
-        self.theo_size_bead.setValidator(QIntValidator())
-        self.theo_size_bead.setText(str(self.params["theorical_bead_size"]))
-
-        self.title_rejection = QLabel("Rejection zone size (px):")
-        self.title_bead_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
-        # Input for the rejection zone
-        self.size_rejection = QLineEdit()
-        self.size_rejection.setFixedWidth(40)
-        self.size_rejection.setValidator(QIntValidator())
-        self.size_rejection.setText(str(self.params["rejection_zone"]))
-
-        self.title_distance_annulus = QLabel("Inner annulus distance to bead (um):")
-        self.title_distance_annulus.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
-        # Input for the annulus distance
-        self.distance_annulus = QLineEdit()
-        self.distance_annulus.setFixedWidth(40)
-        self.distance_annulus.setValidator(QIntValidator())
-        self.distance_annulus.setText(str(self.params["distance_annulus"]))
-
-        self.title_thickness_annulus = QLabel("Annulus thickness (um):")
-        self.title_thickness_annulus.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-
-        # Input for the annulus thickness
-        self.thickness_annulus = QLineEdit()
-        self.thickness_annulus.setFixedWidth(40)
-        self.thickness_annulus.setValidator(QIntValidator())
-        self.thickness_annulus.setText(str(self.params["thickness_annulus"]))
-
+        # Options for rejection zone and annulus definition
+        self.options_rejection = Options("Rejection specifications","Median Filter")
+        self.options_rejection.addFloat(name="Rejection zone size (um)", value=self.params["rejection_zone"])
+        self.options_rejection.addFloat(name="Inner annulus distance to bead (um)", value=self.params["distance_annulus"])
+        self.options_rejection.addFloat(name="Annulus thickness (um)", value=self.params["thickness_annulus"])
+        self.widget_rejection = OptionsWidget(self.viewer,self.options_rejection)
+        self.widget_rejection.addApplyButton(self._on_confirm)
         # Adding all the widgets to the layout
         layout.addWidget(self.detection_Label)
         layout.addWidget(self.detection_tool_selection)
@@ -153,17 +132,11 @@ class Detection_Parameters_Widget(QWidget):
         layout.addWidget(self.threshold_rel)
         layout.addWidget(QLabel("Apply an automatic threshold ?"))
         layout.addWidget(self.threshold_auto_check)
+        layout.addWidget(self.widget_threshold)
+        layout.addWidget(self.widget_ROI)
         layout.addWidget(self.crop_factor_label)
         layout.addWidget(self.crop_factor)
-        layout.addWidget(self.title_bead_size)
-        layout.addWidget(self.theo_size_bead)
-        layout.addWidget(self.title_rejection)
-        layout.addWidget(self.size_rejection)
-        layout.addWidget(self.title_distance_annulus)
-        layout.addWidget(self.distance_annulus)
-        layout.addWidget(self.title_thickness_annulus)
-        layout.addWidget(self.thickness_annulus)
-        layout.addWidget(self.btn)
+        layout.addWidget(self.widget_rejection)
 
         # Defining the layout of the widget
         self.setLayout(layout)
@@ -174,16 +147,13 @@ class Detection_Parameters_Widget(QWidget):
         self.threshold_rel.valueChanged.connect(self._update_threshold)
         self.crop_factor.valueChanged.connect(self._update_crop_factor)
         self.threshold_auto_check.stateChanged.connect(self._update_auto_threshold)
-        self.theo_size_bead.textChanged.connect(self._on_update_theo_size_bead)
-        self.size_rejection.textChanged.connect(self._on_update_rejection_zone)
-        self.distance_annulus.textChanged.connect(self._on_update_distance_annulus)
-        self.thickness_annulus.textChanged.connect(self._on_update_thickness_annulus)
         # Initial calls for updating states at launch
         self._selected_action(self.detection_tool_selection.currentIndex())
     
     # Defining slots
     def _on_confirm(self):
         """Send parameters to main window and close this one"""
+        self.update_params()
         self.signal.params_updated.emit(self.params)
 
     def _update_min_distance(self,value):
@@ -216,23 +186,16 @@ class Detection_Parameters_Widget(QWidget):
     def _update_auto_threshold(self,value):
         """Assign the value in params"""
         self.params["auto_threshold"] = value == 2
-
-    def _on_update_theo_size_bead(self,value):
-        """Assign the value in params"""
-        self.params["theorical_bead_size"] = int(value)
-
-    def _on_update_rejection_zone(self,value):
-        """Assign the value in params"""
-        self.params["rejection_zone"] = int(value)
-
-    def _on_update_distance_annulus(self,value):
-        """Assign the value in params"""
-        self.params["distance_annulus"] = int(value)
-
-    def _on_update_thickness_annulus(self,value):
-        """Assign the value in params"""
-        self.params["thickness_annulus"] = int(value)
-
+    
+    def update_params(self):
+        self.widget_rejection.transferValues()
+        self.widget_ROI.transferValues()
+        self.widget_threshold.transferValues()
+        self.params["theorical_bead_size"] = self.options_ROI.value("Theoretical bead size (um)")
+        self.params["rejection_zone"] = self.options_rejection.value("Rejection zone size (um)")
+        self.params["distance_annulus"] = self.options_rejection.value("Inner annulus distance to bead (um)")
+        self.params["thickness_annulus"] = self.options_rejection.value("Annulus thickness (um)")
+        self.params["threshold_choice"] = self.options_threshold.value("choose a threshold")
 class Detection_Tool_Tab(QWidget):
     """ The main widget of the detection tool
     
@@ -255,7 +218,8 @@ class Detection_Tool_Tab(QWidget):
             "auto_threshold":False,
             "rejection_zone":10,
             "distance_annulus" : 10,
-            "thickness_annulus": 10
+            "thickness_annulus": 10,
+            "threshold_choice":"otsu"
         }
         #Read and restore datas if exist
         loaded_params = read_file_data("parameters_data.json")
@@ -269,7 +233,6 @@ class Detection_Tool_Tab(QWidget):
         self.rois = None
         self.cropped_layers = []
 
-
         # Button to access parameters
         self.parameters_btn = QPushButton()
         self.parameters_btn.clicked.connect(self._open_parameters_window)
@@ -279,16 +242,8 @@ class Detection_Tool_Tab(QWidget):
         self.parameters_btn.setFixedSize(30, 30)
         
         # Button to process beads detection
-        self.detection_btn = QPushButton("Process")
+        self.detection_btn = QPushButton("Visualize beads detection")
         self.detection_btn.clicked.connect(self._on_detect_psf)
-
-        # Button to crop image
-        self.crop_btn = QPushButton("Crop")
-        self.crop_btn.clicked.connect(self._on_crop_psf)
-
-        # Button to SBR
-        self.sbr_btn = QPushButton("SBR")
-        self.sbr_btn.clicked.connect(self._on_SBR)
 
         # Adding all the widgets to the layout
         layout = QVBoxLayout()
@@ -296,8 +251,7 @@ class Detection_Tool_Tab(QWidget):
         layout.setSpacing(5)
         layout.addWidget(self.parameters_btn)
         layout.addWidget(self.detection_btn)
-        layout.addWidget(self.crop_btn)
-        layout.addWidget(self.sbr_btn)
+        layout.addStretch()
         self.setLayout(layout)
 
         # Linking signals to slots
@@ -317,6 +271,10 @@ class Detection_Tool_Tab(QWidget):
     def _on_detect_psf(self):
         """Detect and extract beads in image depending on choosen parameters"""
         write_file_data("parameters_data.json", self.params) # Save parameters
+        loaded_params = read_file_data("acquisition_data.json")
+        physical_pixel = [1,1,1]
+        if loaded_params:
+            physical_pixel = [loaded_params["PhysicSizeZ"],loaded_params["PhysicSizeY"],loaded_params["PhysicSizeX"]]
         current_layer = self.viewer.layers.selection.active
         if current_layer is None or not isinstance(current_layer, napari.layers.Image) : # Catch if Image layer not selected
             show_error("Please, select a valid layer of type Image")
@@ -324,60 +282,39 @@ class Detection_Tool_Tab(QWidget):
         image = current_layer.data
         threshold = self.params["Rel_threshold"]/100
         auto_threshold = self.params["auto_threshold"]
+        threshold_choice = self.params["threshold_choice"]
         binary_image = None
+
         if self.params["selected_tool"] == 0 :
             show_info("Processing peak_local_max psf detection...")
             min_distance = self.params["Min_dist"]
-            self.filtered_beads = detect_psf_peak_local_max(image, min_distance, threshold,auto_threshold)
+            self.filtered_beads = detect_psf_peak_local_max(image, min_distance, threshold,auto_threshold,threshold_choice=threshold_choice)
         elif self.params["selected_tool"] == 1:
             show_info("Processing blob_log psf detection...")
             sigma = self.params["Sigma"]
-            self.filtered_beads = detect_psf_blob_log(image, sigma, threshold,auto_threshold)
+            self.filtered_beads = detect_psf_blob_log(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
         elif self.params["selected_tool"] == 2 : 
             show_info("Processing blob_dog psf detection...")
             sigma = self.params["Sigma"]
-            self.filtered_beads = detect_psf_blob_dog(image, sigma, threshold,auto_threshold)
+            self.filtered_beads = detect_psf_blob_dog(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
         else :
             show_info("Processing centroid psf detection...")
-            self.filtered_beads,binary_image = detect_psf_centroid(image,threshold, auto_threshold)
+            self.filtered_beads,binary_image = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
-            self.rois = extract_Region_Of_Interest(self.filtered_beads,bead_size=self.params["theorical_bead_size"],crop_factor=self.params["crop_factor"])
+            self.rois = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.params["theorical_bead_size"],crop_factor=self.params["crop_factor"], rejection_zone=self.params["rejection_zone"],physical_pixel=physical_pixel)
             if self.filter_layer is None :
                 self.filter_layer = self.viewer.add_shapes(self.rois,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
             else :
                 self.viewer.layers.remove(self.filter_layer)
                 self.filter_layer = self.viewer.add_shapes(self.rois,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
             if self.filtered_layer is None :
-                self.filtered_layer = self.viewer.add_points(self.filtered_beads,name="PSF detected", face_color='red', opacity=0.5, size=1)
+                self.filtered_layer = self.viewer.add_points(self.filtered_beads,name="PSF detected", face_color='red', opacity=0.5, size=2)
             else : 
                 self.filtered_layer.data = self.filtered_beads
         else :
             show_warning("No PSF found or incorrect format.")
 
-    def _on_crop_psf(self):
-        """Crop the image along ROIs and generate a new layer for each"""
-        active_layer = self.viewer.layers.selection.active
-        if active_layer is None or not isinstance(active_layer, napari.layers.Image) : # Catch if Image layer not selected
-            show_error("Please, select a valid layer of type Image")
-            return 
-        for layer in self.cropped_layers[:]:
-            if layer in self.viewer.layers:
-                self.viewer.layers.remove(layer)
-            if layer in self.cropped_layers:
-                self.cropped_layers.remove(layer)
-        for i,roi in enumerate(self.rois):
-            data = active_layer.data[...,roi[0][0]:roi[2][0],roi[0][1]:roi[1][1]]
-            self.cropped_layers.append(self.viewer.add_image(data,name=f"Cropped_{i}", scale=active_layer.scale,translate=roi[0]))
-            self.cropped_layers[i].bounding_box.visible = True
-
-    def _on_SBR(self):
-        """Measure de mean signal to background ratio of ROIs in the image"""
-        SBR = 0.0
-        if self.cropped_layers != [] :
-            for image in self.cropped_layers : 
-                SBR = signal_to_background_ratio(image.data,0,0)
-            print(SBR/len(self.cropped_layers))
-
+    
     def _open_parameters_window(self):
         """Open the parameters window"""
         if self.count_windows == 0 :
@@ -401,4 +338,12 @@ class Detection_Tool_Tab(QWidget):
         """Catch parameters modification and update params"""
         self.params = new_params
         print(f"Paramètres mis à jour : {self.params}")
+        write_file_data("parameters_data.json", self.params)
         self.parameters_window.close()
+
+    def erase_Layers(self):
+        """Delete all layers made by this wiget"""
+        if self.filter_layer : 
+            self.viewer.layers.remove(self.filter_layer)
+        if self.filtered_layer :
+            self.viewer.layers.remove(self.filtered_layer)

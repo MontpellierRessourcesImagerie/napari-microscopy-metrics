@@ -46,4 +46,5 @@ class Metrics_tool_page(QWidget):
         
         layout.addWidget(self.title)
         layout.addWidget(self.widget_fitting_choice)
+        layout.addStretch()
         self.setLayout(layout)
