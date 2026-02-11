@@ -35,6 +35,7 @@ dependencies = [
     "magicgui",
     "qtpy",
     "scikit-image",
+    "reportlab"
 ]
 
 [project.optional-dependencies]

@@ -188,6 +188,7 @@ class Detection_Parameters_Widget(QWidget):
         self.params["auto_threshold"] = value == 2
     
     def update_params(self):
+        """Function to update user preferencies"""
         self.widget_rejection.transferValues()
         self.widget_ROI.transferValues()
         self.widget_threshold.transferValues()
@@ -196,6 +197,8 @@ class Detection_Parameters_Widget(QWidget):
         self.params["distance_annulus"] = self.options_rejection.value("Inner annulus distance to bead (um)")
         self.params["thickness_annulus"] = self.options_rejection.value("Annulus thickness (um)")
         self.params["threshold_choice"] = self.options_threshold.value("choose a threshold")
+
+
 class Detection_Tool_Tab(QWidget):
     """ The main widget of the detection tool
     
@@ -238,12 +241,15 @@ class Detection_Tool_Tab(QWidget):
         self.parameters_btn.clicked.connect(self._open_parameters_window)
         icon_path = Path(__file__).parent / "res" / "drawable" / "parameters_icon.png"
         self.parameters_btn.setIcon(QIcon(str(icon_path)))
-        self.parameters_btn.setIconSize(QSize(30,30))
-        self.parameters_btn.setFixedSize(30, 30)
+        self.parameters_btn.setIconSize(QSize(35,35))
+        self.parameters_btn.setFixedSize(35, 35)
         
         # Button to process beads detection
         self.detection_btn = QPushButton("Visualize beads detection")
         self.detection_btn.clicked.connect(self._on_detect_psf)
+
+        # Affichage des résultats
+        self.results_label = QLabel()
 
         # Adding all the widgets to the layout
         layout = QVBoxLayout()
@@ -251,6 +257,7 @@ class Detection_Tool_Tab(QWidget):
         layout.setSpacing(5)
         layout.addWidget(self.parameters_btn)
         layout.addWidget(self.detection_btn)
+        layout.addWidget(self.results_label)
         layout.addStretch()
         self.setLayout(layout)
 
@@ -313,7 +320,7 @@ class Detection_Tool_Tab(QWidget):
                 self.filtered_layer.data = self.filtered_beads
         else :
             show_warning("No PSF found or incorrect format.")
-
+        self.results_label.setText(f"Here are the results of the detection :\n- {len(self.filtered_beads)} bead(s) detected\n- {len(self.rois)} ROI(s) extracted")
     
     def _open_parameters_window(self):
         """Open the parameters window"""

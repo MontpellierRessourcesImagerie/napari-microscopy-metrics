@@ -43,8 +43,16 @@ class Metrics_tool_page(QWidget):
         self.options_fitting = Options("Fitting options", "Median Filter")
         self.options_fitting.addChoice(name="fitting_type",choices=["1D","2D","3D"],value=self.params["Gaussian_type"])
         self.widget_fitting_choice = OptionsWidget(self.viewer,self.options_fitting)
-        
+                
+        self.results_label = QLabel()
+
         layout.addWidget(self.title)
         layout.addWidget(self.widget_fitting_choice)
+        layout.addWidget(self.results_label)
         layout.addStretch()
         self.setLayout(layout)
+
+    def print_results(self,SBR):
+        """Display metrics measures to widget"""
+        text = f"Mean metrics measured :\n- Signal to background ratio : {SBR:.2f}"
+        self.results_label.setText(text)

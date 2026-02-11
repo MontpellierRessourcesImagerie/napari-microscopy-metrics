@@ -87,6 +87,7 @@ class Acquisition_tool_page(QWidget):
         self.viewer.layers.selection.events.active.connect(self._on_layer_changed)
 
     def _on_apply(self):
+        """Save acquisition datas to json file"""
         self.update_params()
         write_file_data("acquisition_data.json", self.params) # Save parameters
     
@@ -97,6 +98,7 @@ class Acquisition_tool_page(QWidget):
         self.parameters_window.close()
 
     def _on_layer_changed(self):
+        """updating image shape values when changing layer"""
         current_layer = self.viewer.layers.selection.active
         if current_layer is None or not isinstance(current_layer, napari.layers.Image) : # Catch if Image layer not selected
             return 
@@ -108,6 +110,7 @@ class Acquisition_tool_page(QWidget):
         self.params["ShapeX"] = shape[2]
 
     def update_params(self):
+        """Function to update acquisition parameters"""
         self.widget_PxS.transferValues()
         self.widget_micro_choice.transferValues()
         self.params["PhysicSizeX"] = self.options_PxS.value("PhysicSizeX")
@@ -117,3 +120,4 @@ class Acquisition_tool_page(QWidget):
         self.params["Microscope_type"] = self.options_microscope.value("microscope_type")
         self.params["Numerical_aperture"] = self.options_microscope.value("Numerical_aperture")
         self.params["Refractive_index"] = self.options_microscope.value("Refraction_index")
+
