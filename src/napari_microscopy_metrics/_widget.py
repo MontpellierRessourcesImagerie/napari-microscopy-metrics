@@ -13,10 +13,13 @@ import napari
 from ._detection_tool_widget import *
 from._acquisition_widget import *
 from ._metrics_widget import *
+from microscopy_metrics.fitting import *
 from functools import partial
 
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+
+from matplotlib import pyplot as plt
 
 
 class Worker(QObject):
@@ -117,8 +120,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.cropped_layers = []
         self.working_layer = None
         self.mean_SBR = 0
+        self.SBR = []
+        self.centroids_ROI = []
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        
         #TabWidget for navigation between tools
         self.tab = QTabWidget()
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -151,18 +155,25 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def _on_run(self,progress_callback=None):
         """Function to process analysis steps and update progress bar and label"""
-        print("Analysing...")
+        i = 0
+        num_steps = 4
         if progress_callback :
-            progress_callback(0, "Dectecting beads...")
+            progress_callback(i, "Dectecting beads...")
         self._on_detect_psf()
+        i+=1
         if progress_callback :
-            progress_callback(int(1/3*100), "Extracting beads...")
+            progress_callback(int(i/num_steps*100), "Extracting beads...")
         self._on_crop_psf()
+        i+=1
         if progress_callback :
-            progress_callback(int(2/3*100), "Measuring SBR...")
+            progress_callback(int(i/num_steps*100), "Measuring SBR...")
         self._on_SBR()
+        i+=1
         if progress_callback :
-            progress_callback(int(3/3*100), "Finish.")
+            progress_callback(int(i/num_steps*100), "Compute FWHM...")
+        i+=1
+        if progress_callback :
+            progress_callback(int(i/num_steps*100), "Finish.")
 
 
     def _on_detect_psf(self):
@@ -197,7 +208,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         
         # Extracting region of interest from identified beads
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
-            self.rois = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.parameters_detection["theorical_bead_size"],crop_factor=self.parameters_detection["crop_factor"], rejection_zone=self.parameters_detection["rejection_zone"], physical_pixel=physical_pixel)
+            self.rois,self.centroids_ROI = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.parameters_detection["theorical_bead_size"],crop_factor=self.parameters_detection["crop_factor"], rejection_zone=self.parameters_detection["rejection_zone"], physical_pixel=physical_pixel)
         
     def _on_crop_psf(self):
         """Crop the image along ROIs and generate a new layer for each"""
@@ -209,7 +220,7 @@ class Microscopy_Metrics_QWidget(QWidget):
     def _on_SBR(self):
         """Measure de mean signal to background ratio of ROIs in the image"""
         physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
-        self.mean_SBR,SBR = signal_to_background_ratio_annulus(self.cropped_layers,self.parameters_detection["distance_annulus"],self.parameters_detection["thickness_annulus"],physical_pixel)
+        self.mean_SBR,self.SBR = signal_to_background_ratio_annulus(self.cropped_layers,self.parameters_detection["distance_annulus"],self.parameters_detection["thickness_annulus"],physical_pixel)
         self.metrics_tool_page.print_results(self.mean_SBR)
         mean_SBR,SBR = signal_to_background_ratio(self.cropped_layers)
         print(mean_SBR,SBR)
@@ -268,20 +279,42 @@ class Microscopy_Metrics_QWidget(QWidget):
         """Called when the analysis is over to update states of the application"""
         self.run_btn.setEnabled(True)
         self.display_layers()
+        self.compute_fwhm()
         self.generate_pdf_report()
         self.Progress_window.close()
+
+    def compute_fwhm(self):
+        image = self.cropped_layers[0]
+        image_float = image.astype(np.float32)
+        image_float = (image_float - np.min(image_float)) / (np.max(image_float) - np.min(image_float) + 1e-6)
+        image_float[image_float < 0] = 0
+        print("Dimensions de l'image :", image_float.shape)
+        spacing_x = self.parameters_acquisition["PhysicSizeX"]
+        centroid_idx = self.centroids_ROI[0]
+        z_physic = int(self.filtered_beads[centroid_idx][0])
+        y_physic = int(self.filtered_beads[centroid_idx][1] - self.rois[0][0][1])
+        print(z_physic,y_physic)
+        psf_x = image_float[z_physic, y_physic, :]
+        coords_x = np.arange(len(psf_x))
+        y_lim = [0,psf_x.max() * 1.1]
+        bg = np.median(psf_x[psf_x < np.percentile(psf_x,25)])
+        amp = psf_x.max() - bg
+        sigma = np.sqrt(get_cov_matrix(np.clip(psf_x - bg, 0, psf_x.max()), [spacing_x], (self.filtered_beads[self.centroids_ROI[0]] - self.rois[0][0])))
+        mu = self.filtered_beads[centroid_idx][2] * spacing_x
+        fit_curve_1D(amp,bg,mu,sigma,coords_x,psf_x,y_lim)
 
 
     def generate_pdf_report(self):
         """First version of a pdf generator to save analysis results on a pdf file"""
         active_layer = self.viewer.layers.selection.active
+        output_dir = os.path.expanduser("~/")
         default_path = os.path.expanduser("~/PSF_analysis_result.pdf")
         if active_layer is not None and hasattr(active_layer,'source') and active_layer.source.path :
             image_path = active_layer.source.path
             output_dir = os.path.dirname(image_path)
             output_path = os.path.join(output_dir,"PSF_analysis_result.pdf")
         else :
-            output_path = default_path
+            output_path = default_path            
         pdf = canvas.Canvas(output_path)
         pdf.setTitle("PSF analysis results")
         pdf.setFont("Helvetica-Bold", 36)
@@ -298,4 +331,24 @@ class Microscopy_Metrics_QWidget(QWidget):
             text.textLine(line)
         pdf.drawText(text)
         pdf.save()
+        for i,psf in enumerate(self.cropped_layers):
+            active_path = os.path.join(output_dir,f"bead_{i}")
+            if not os.path.exists(active_path):
+                os.makedirs(active_path)
+            active_path = os.path.join(active_path,"PSF_analysis_result.pdf")
+            pdf_bead = canvas.Canvas(active_path)
+            pdf_bead.setTitle(f"Bead {i} results")
+            pdf_bead.setFont("Helvetica-Bold", 36)
+            pdf_bead.drawCentredString(300,770, 'Results')
+            pdf_bead.line(30,710,550,710)
+            textLines = [
+                f"centroid : {self.filtered_beads[self.centroids_ROI[i]]}",
+                f"Signal to background ratio : {self.SBR[i]:.2f}"
+            ]
+            text = pdf_bead.beginText(40,680)
+            text.setFont("Courier", 18)
+            for line in textLines :
+                text.textLine(line)
+            pdf_bead.drawText(text)
+            pdf_bead.save()
 
