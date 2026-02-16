@@ -90,12 +90,6 @@ class Acquisition_tool_page(QWidget):
         """Save acquisition datas to json file"""
         self.update_params()
         write_file_data("acquisition_data.json", self.params) # Save parameters
-    
-    def on_params_updated(self, new_params):
-        """Catch parameters modification and update params"""
-        self.params = new_params
-        print(f"Paramètres mis à jour : {self.params}")
-        self.parameters_window.close()
 
     def _on_layer_changed(self):
         """updating image shape values when changing layer"""

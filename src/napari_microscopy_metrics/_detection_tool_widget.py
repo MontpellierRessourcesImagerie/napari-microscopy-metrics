@@ -13,6 +13,7 @@ from skimage.util import img_as_float
 from microscopy_metrics.detection import *
 from microscopy_metrics.metrics import * 
 import napari
+from napari.settings import get_settings
 from napari.utils.notifications import *
 from .json_utils import *
 from autooptions import *
@@ -239,7 +240,7 @@ class Detection_Tool_Tab(QWidget):
         # Button to access parameters
         self.parameters_btn = QPushButton()
         self.parameters_btn.clicked.connect(self._open_parameters_window)
-        icon_path = Path(__file__).parent / "res" / "drawable" / "parameters_icon.png"
+        icon_path = self.get_logo_path(get_settings().appearance.theme)
         self.parameters_btn.setIcon(QIcon(str(icon_path)))
         self.parameters_btn.setIconSize(QSize(35,35))
         self.parameters_btn.setFixedSize(35, 35)
@@ -263,7 +264,6 @@ class Detection_Tool_Tab(QWidget):
 
         # Linking signals to slots
         self.viewer.layers.events.removed.connect(self._on_layer_removed)
-
     # Defining slots
     def _on_layer_removed(self,event):
         """Manage the suppression of ROI and centroids layers"""
@@ -308,7 +308,7 @@ class Detection_Tool_Tab(QWidget):
             show_info("Processing centroid psf detection...")
             self.filtered_beads,binary_image = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
-            self.rois = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.params["theorical_bead_size"],crop_factor=self.params["crop_factor"], rejection_zone=self.params["rejection_zone"],physical_pixel=physical_pixel)
+            self.rois,_ = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.params["theorical_bead_size"],crop_factor=self.params["crop_factor"], rejection_zone=self.params["rejection_zone"],physical_pixel=physical_pixel)
             if self.filter_layer is None :
                 self.filter_layer = self.viewer.add_shapes(self.rois,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
             else :
@@ -354,3 +354,16 @@ class Detection_Tool_Tab(QWidget):
             self.viewer.layers.remove(self.filter_layer)
         if self.filtered_layer :
             self.viewer.layers.remove(self.filtered_layer)
+
+    def get_logo_path(self,theme):
+        logo_dir = Path(__file__).parent / "res" / "drawable"
+        if theme =="dark" :
+            return logo_dir / "logo_dark.png"
+        else:
+            return logo_dir / "logo_light.png"
+
+    def on_theme_change(self):
+        icon_path = self.get_logo_path(get_settings().appearance.theme)
+        self.parameters_btn.setIcon(QIcon(str(icon_path)))
+        self.parameters_btn.setIconSize(QSize(35,35))
+        self.parameters_btn.setFixedSize(35, 35)
