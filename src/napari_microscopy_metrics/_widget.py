@@ -171,6 +171,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         i+=1
         if progress_callback :
             progress_callback(int(i/num_steps*100), "Compute FWHM...")
+        self.compute_fwhm()
         i+=1
         if progress_callback :
             progress_callback(int(i/num_steps*100), "Finish.")
@@ -279,58 +280,76 @@ class Microscopy_Metrics_QWidget(QWidget):
         """Called when the analysis is over to update states of the application"""
         self.run_btn.setEnabled(True)
         self.display_layers()
-        self.compute_fwhm()
         self.generate_pdf_report()
         self.Progress_window.close()
 
     def compute_fwhm(self):
-        image = self.cropped_layers[0]
-        image_float = image.astype(np.float64)
-        image_float = (image_float - np.min(image_float)) / (np.max(image_float) - np.min(image_float) + 1e-6)
-        image_float[image_float < 0] = 0
-        print("Dimensions de l'image :", image_float.shape)
-        spacing_x = self.parameters_acquisition["PhysicSizeX"]
-        spacing_y = self.parameters_acquisition["PhysicSizeY"]
-        spacing_z = self.parameters_acquisition["PhysicSizeZ"]
-        centroid_idx = self.centroids_ROI[0]
-        z_physic = int(self.filtered_beads[centroid_idx][0])
-        y_physic = int(self.filtered_beads[centroid_idx][1] - self.rois[0][0][1])
-        x_physic = int(self.filtered_beads[centroid_idx][2] - self.rois[0][0][2])
-        print(z_physic,y_physic)
-        psf_x = image_float[z_physic,y_physic,:]
-        psf_y = image_float[z_physic,:,x_physic]
-        psf_z = image_float[:,y_physic,x_physic]
-        print(psf_z)
-        coords_x = np.arange(len(psf_x))
-        coords_y = np.arange(len(psf_y))
-        coords_z = np.arange(len(psf_z))
-        y_lim = [0,psf_x.max() * 1.1]
-        bg = np.median(psf_x)
-        amp = psf_x.max() - bg
-        sigma = np.sqrt(get_cov_matrix(np.clip(psf_x - bg, 0, psf_x.max()), [spacing_x], (self.filtered_beads[self.centroids_ROI[0]] - self.rois[0][0])))
-        mu = np.argmax(psf_x)
-        print([amp,bg,mu,sigma])
-        params = fit_curve_1D(amp,bg,mu,sigma,coords_x,psf_x,y_lim)
-        print(params)
-        print(f"FWHM_x = {fwhm(params[3])}")
-        y_lim = [0,psf_y.max() * 1.1]
-        bg = np.median(psf_y)
-        amp = psf_y.max() - bg
-        sigma = np.sqrt(get_cov_matrix(np.clip(psf_y - bg, 0, psf_y.max()), [spacing_y], (self.filtered_beads[self.centroids_ROI[0]] - self.rois[0][0])))
-        mu = np.argmax(psf_y)
-        print([amp,bg,mu,sigma])
-        params = fit_curve_1D(amp,bg,mu,sigma,coords_y,psf_y,y_lim)
-        print(params)
-        print(f"FWHM_y = {fwhm(params[3])}")
-        y_lim = [0,psf_z.max() * 1.1]
-        bg = np.median(psf_z)
-        amp = psf_z.max() - bg
-        sigma = np.sqrt(get_cov_matrix(np.clip(psf_z - bg, 0, psf_z.max()), [spacing_z], (self.filtered_beads[self.centroids_ROI[0]] - self.rois[0][0])))
-        mu = np.argmax(psf_z)
-        print([amp,bg,mu,sigma])
-        params = fit_curve_1D(amp,bg,mu,sigma,coords_z,psf_z,y_lim)
-        print(params)
-        print(f"FWHM_z = {fwhm(params[3])}")
+        # Searching for output directory
+        active_layer = self.viewer.layers.selection.active
+        output_dir = os.path.expanduser("~/")
+        if active_layer is not None and hasattr(active_layer,'source') and active_layer.source.path :
+            image_path = active_layer.source.path
+            output_dir = os.path.dirname(image_path)  
+        # For each picture 
+        for i in range(len(self.rois)):
+            image = self.cropped_layers[i]
+            image_float = image.astype(np.float64)
+            image_float = (image_float - np.min(image_float)) / (np.max(image_float) - np.min(image_float) + 1e-6)
+            image_float[image_float < 0] = 0
+            print("Dimensions de l'image :", image_float.shape)
+            active_path = os.path.join(output_dir,f"bead_{i}")
+            if not os.path.exists(active_path):
+                os.makedirs(active_path)
+            spacing_x = self.parameters_acquisition["PhysicSizeX"]
+            spacing_y = self.parameters_acquisition["PhysicSizeY"]
+            spacing_z = self.parameters_acquisition["PhysicSizeZ"]
+            centroid_idx = self.centroids_ROI[i]
+            z_physic = int(self.filtered_beads[centroid_idx][0])
+            y_physic = int(self.filtered_beads[centroid_idx][1] - self.rois[i][0][1])
+            x_physic = int(self.filtered_beads[centroid_idx][2] - self.rois[i][0][2])
+            print(z_physic,y_physic)
+            psf_x = image_float[z_physic,y_physic,:]
+            psf_y = image_float[z_physic,:,x_physic]
+            psf_z = image_float[:,y_physic,x_physic]
+            print(psf_z)
+            coords_x = np.arange(len(psf_x))
+            coords_y = np.arange(len(psf_y))
+            coords_z = np.arange(len(psf_z))
+            y_lim = [0,psf_x.max() * 1.1]
+            bg = np.median(psf_x)
+            amp = psf_x.max() - bg
+            sigma = np.sqrt(get_cov_matrix(np.clip(psf_x - bg, 0, psf_x.max()), [spacing_x], (self.filtered_beads[centroid_idx] - self.rois[i][0])))
+            mu = np.argmax(psf_x)
+            print([amp,bg,mu,sigma])
+            params,pcov,plt = fit_curve_1D(amp,bg,mu,sigma,coords_x,psf_x,y_lim,output_dir)
+            output_path = os.path.join(active_path, 'fit_curve_1D_X.png')
+            plt.savefig(output_path,dpi=300,bbox_inches='tight')
+            print(params)
+            print(f"FWHM_x = {fwhm(params[3])}")
+            y_lim = [0,psf_y.max() * 1.1]
+            bg = np.median(psf_y)
+            amp = psf_y.max() - bg
+            sigma = np.sqrt(get_cov_matrix(np.clip(psf_y - bg, 0, psf_y.max()), [spacing_y], (self.filtered_beads[centroid_idx] - self.rois[i][0])))
+            mu = np.argmax(psf_y)
+            print([amp,bg,mu,sigma])
+            params,pcov,plt = fit_curve_1D(amp,bg,mu,sigma,coords_y,psf_y,y_lim,output_dir)
+            output_path = os.path.join(active_path, 'fit_curve_1D_Y.png')
+            plt.savefig(output_path,dpi=300,bbox_inches='tight')
+            print(params)
+            print(f"FWHM_y = {fwhm(params[3])}")
+            y_lim = [0,psf_z.max() * 1.1]
+            bg = np.median(psf_z)
+            amp = psf_z.max() - bg
+            sigma = np.sqrt(get_cov_matrix(np.clip(psf_z - bg, 0, psf_z.max()), [spacing_z], (self.filtered_beads[centroid_idx] - self.rois[i][0])))
+            mu = np.argmax(psf_z)
+            print([amp,bg,mu,sigma])     
+            param,pcov,plt = fit_curve_1D(amp,bg,mu,sigma,coords_z,psf_z,y_lim,output_dir)
+            print(param)
+            output_path = os.path.join(active_path, 'fit_curve_1D_Z.png')
+            plt.savefig(output_path,dpi=300,bbox_inches='tight')
+            print(f"FWHM_z = {fwhm(params[3])}")
+            print(f"Uncertainty : {uncertainty(pcov)}")
+            print(f"Determination : {determination(param,coords_z,psf_z)}")
 
 
     def generate_pdf_report(self):
@@ -380,4 +399,19 @@ class Microscopy_Metrics_QWidget(QWidget):
                 text.textLine(line)
             pdf_bead.drawText(text)
             pdf_bead.save()
+
+    def _on_shape_clicked(self,event):
+        try :
+            if self.viewer.layers.selection.active == self.filter_layer:
+                if hasattr(self.filter_layer,'selected_data') and self.filter_layer.selected_data is not None:
+                    selected_index = self.filter_layer.selected_data.active
+                    if selected_index is not None and len(self.filter_layer.data) > selected_index:
+                        shape_data = self.filter_layer.data[selected_index]
+                        shape_type = shape_data[0]
+                        coordinates = shape_data[1]
+                        print(f"Shape cliqué : {selected_index}")
+                        print(f"Coordonnées : {coordinates}")
+                        print(shape_data)
+        except Exception as e :
+            print(f"Error will clicking shape : {e}")
 
