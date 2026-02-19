@@ -1,0 +1,51 @@
+<!-- report_template.html-->
+ <!DOCTYPE html>
+ <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Analysis results - {{ title }}</title>
+    </head>
+    <body style=" background-color: whitesmoke;" >
+        <div class="header" style="display: block; margin-left: auto; margin-right: auto;text-align: center;">
+            <h1>Analysis results - {{ title }}</h1>
+        </div>
+        <div class="corpus">
+            <h2>Fitting results</h2>
+            <p>Bead centroid's coordinates : {{ bead }} <br><br></p>
+            <h3>X profile fit</h3>
+            <img src="{{ path }}/fit_curve_1D_X.png" alt="fit_curve_1D_X.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>Y profile fit</h3>
+            <img src="{{ path }}/fit_curve_1D_Y.png" alt="fit_curve_1D_Y.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>Z profile fit</h3>
+            <img src="{{ path }}/fit_curve_1D_Z.png" alt="fit_curve_1D_Z.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>XY view</h3>
+            <img src="{{ path }}/XY_view.png" alt="XY_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>XZ view</h3>
+            <img src="{{ path }}/XZ_view.png" alt="XZ_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>YZ view</h3>
+            <img src="{{ path }}/YZ_view.png" alt="YZ_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h4>Full width at half maximum : </h4>
+            <ul>
+                <li> z : {{ "%.4f"|format(results["FWHM"][0]) }}px</li>
+                <li> y : {{ "%.4f"|format(results["FWHM"][1]) }}px</li>
+                <li> x : {{ "%.4f"|format(results["FWHM"][2]) }}px</li>
+            </ul> <br>
+            <h4>Uncertainty : </h4>
+            <ul>
+                <li> Sigma z : {{ "%.4f"|format(results["uncertainty"][0][3]) }}</li>
+                <li> Sigma y : {{ "%.4f"|format(results["uncertainty"][1][3]) }}</li>
+                <li> Sigma x : {{ "%.4f"|format(results["uncertainty"][2][3]) }}</li>
+            </ul><br>
+            <h4>Determination coefficient : </h4>
+            <ul>
+                <li> z : {{ "%.4f"|format(results["determination"][0]) }}</li>
+                <li> y : {{ "%.4f"|format(results["determination"][1]) }}</li>
+                <li> x : {{ "%.4f"|format(results["determination"][2]) }}</li>
+            </ul><br>
+            <h2>Metrics</h2>
+             <p>
+            Signal to background ratio (SBR) : {{ "%.4f"|format(results["SBR"]) }}
+            </p>
+        </div>
+    </body>
+ </html>
