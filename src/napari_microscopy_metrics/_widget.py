@@ -192,7 +192,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         image = self.working_layer.data
         threshold = self.parameters_detection["Rel_threshold"]/100
         auto_threshold = self.parameters_detection["auto_threshold"]
-        binary_image = None
         physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
         threshold_choice = self.parameters_detection["threshold_choice"]
         # Processing bead detection using selected method by user
@@ -211,7 +210,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.filtered_beads = detect_psf_blob_dog(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
             case _ :
                 show_info("Processing centroid psf detection...")
-                self.filtered_beads,binary_image = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
+                self.filtered_beads = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
         # Extracting region of interest from identified beads
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
             rois,centroids_ROI = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.parameters_detection["theorical_bead_size"],crop_factor=self.parameters_detection["crop_factor"], rejection_zone=self.parameters_detection["rejection_zone"], physical_pixel=physical_pixel)
