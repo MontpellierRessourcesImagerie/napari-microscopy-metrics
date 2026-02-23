@@ -12,18 +12,20 @@
         <div class="corpus">
             <h2>Fitting results</h2>
             <p>Bead centroid's coordinates : {{ bead }} <br><br></p>
+            <h3>Localisation</h3>
+            <img src="{{ path }}/Localisation.png" alt="Localisation.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
             <h3>X profile fit</h3>
             <img src="{{ path }}/fit_curve_1D_X.png" alt="fit_curve_1D_X.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
             <h3>Y profile fit</h3>
             <img src="{{ path }}/fit_curve_1D_Y.png" alt="fit_curve_1D_Y.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
             <h3>Z profile fit</h3>
             <img src="{{ path }}/fit_curve_1D_Z.png" alt="fit_curve_1D_Z.png" style="width:1000px;display: block; margin-left: auto; margin-right: auto;">
-            <h3>XY view</h3>
-            <img src="{{ path }}/XY_view.png" alt="XY_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
-            <h3>XZ view</h3>
-            <img src="{{ path }}/XZ_view.png" alt="XZ_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
-            <h3>YZ view</h3>
-            <img src="{{ path }}/YZ_view.png" alt="YZ_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>Z view</h3>
+            <img src="{{ path }}/XY_view.png" alt="Z_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>Y view</h3>
+            <img src="{{ path }}/XZ_view.png" alt="Y_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
+            <h3>X view</h3>
+            <img src="{{ path }}/YZ_view.png" alt="X_view.png" style="height:500px;display: block; margin-left: auto; margin-right: auto;">
             <h4>Full width at half maximum : </h4>
             <ul>
                 <li> z : {{ "%.4f"|format(results["FWHM"][0]) }}px</li>

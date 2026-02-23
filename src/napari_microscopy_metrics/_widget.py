@@ -6,6 +6,7 @@ This module contains a napari widgets for PSF analysis:
 from typing import TYPE_CHECKING, Optional
 import types
 import napari
+from napari.qt.threading import thread_worker
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject,QThread
@@ -17,55 +18,14 @@ from microscopy_metrics.fitting import *
 from functools import partial
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from jinja2 import Environment, FileSystemLoader
 import webbrowser
 from PIL import Image
-
-class Worker(QObject):
-    """Worker to execute analysis in a thread and send signals"""
-    progress = Signal(int)
-    step_progress = Signal(str)
-    finished = Signal(object)
-    add_layer = Signal(object,str,dict)
-
-    def __init__(self,method,*args,**kwargs):
-        super().__init__()
-        self.method = method
-        self.args = args
-        self.kwargs = kwargs
-
-    def run(self):
-        """ Function to link signals and start executing analysis"""
-        def progress_callback(value,text):
-            self.step_progress.emit(text)
-            self.progress.emit(value)
-        kwargs_with_callback = self.kwargs.copy()
-        kwargs_with_callback['progress_callback'] = progress_callback
-        result = self.method(*self.args,**kwargs_with_callback)
-        self.finished.emit(result)
-
-class Progress_widget(QWidget):
-    """ Widget for displaying analysis progression
-    
-    Parameters
-    ----------
-    viewer : napari.viewer.Viewer
-        The napari viewer were the widget will be displayed
-    """
-    def __init__(self, viewer: "napari.viewer.Viewer"):
-        super().__init__()
-        self.viewer = viewer
-        layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
-        self.step_label = QLabel()
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0,100)
-        self.progress_bar.setValue(0)
-        layout.addWidget(self.step_label)
-        layout.addWidget(self.progress_bar)
-        self.setLayout(layout)
+from concurrent.futures import ThreadPoolExecutor,as_completed
+from skimage.draw import polygon_perimeter
 
 
 class Microscopy_Metrics_QWidget(QWidget):
@@ -156,33 +116,33 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.browse_btn.pressed.connect(self._open_browser)
         self.viewer.mouse_double_click_callbacks.append(self._on_mouse_double_click)
 
-    def _on_run(self,progress_callback=None):
+
+    @thread_worker(progress={'total': 4, 'desc' : 'Process analysis'})
+    def _on_run(self):
         """Function to process analysis steps and update progress bar and label"""
-        # Parameters for the progress bar
-        i = 0
-        num_steps = 4
-        # Processing beads detection
-        if progress_callback :
-            progress_callback(i, "Detecting beads...")
-        self._on_detect_psf()
-        i+=1
-        # Processing beads extraction
-        if progress_callback :
-            progress_callback(int(i/num_steps*100), "Extracting beads...")
-        self._on_crop_psf()
-        i+=1
-        # Calculation of Signal to background ratio
-        if progress_callback :
-            progress_callback(int(i/num_steps*100), "Measuring SBR...")
-        self._on_SBR()
-        i+=1
-        # Computation of full-width at half maximum
-        if progress_callback :
-            progress_callback(int(i/num_steps*100), "Compute FWHM...")
-        self.compute_fwhm()
-        i+=1
-        if progress_callback :
-            progress_callback(int(i/num_steps*100), "Finish.")
+        try:
+            # Processing beads detection
+            self._on_detect_psf()
+            if self.filtered_beads is None:
+                self.filtered_beads = np.zeros((0, 3))
+            yield {'progress' : 0,'desc':'Detecting beads'}
+
+            # Processing beads extraction
+            self._on_crop_psf()
+            yield {'progress' : 1,'desc':'Extracting ROIs'}
+
+            # Calculation of Signal to Background Ratio
+            self._on_SBR()
+            yield {'progress' : 2,'desc':'Signal to background calculation'}
+
+            # Computation of Full Width at Half Maximum
+            self.compute_fwhm()
+            yield {'progress' : 3,'desc':'Computing full width at half maximum'}
+        except Exception as e:
+            print(f"Error during analysis: {e}")
+            self.filtered_beads = np.zeros((0, 3))
+            raise
+
 
     def _on_detect_psf(self):
         """Detect and extract beads in image depending on choosen parameters"""
@@ -225,6 +185,22 @@ class Microscopy_Metrics_QWidget(QWidget):
             os.makedirs(active_path)
         return active_path
 
+    def add_roi_on_image(self,roi):
+        image = self.working_layer.data
+        if image.ndim == 3 :
+            image = np.max(image,axis=0)
+        image = ((image-image.min()) / (image.max() - image.min()) * 255).astype(np.uint8)
+        image_rgb = np.stack([image,image,image], axis=-1)
+        rr, cc = polygon_perimeter(
+            [roi[0, 1], roi[1, 1], roi[2, 1], roi[3, 1]],
+            [roi[0, 2], roi[1, 2], roi[2, 2], roi[3, 2]],
+            image.shape
+        )
+        image_rgb[rr,cc,0] = 255
+        image_rgb[rr,cc,1] = 0
+        image_rgb[rr,cc,2] = 0
+        return image_rgb
+
     def _on_crop_psf(self):
         """Crop the image along ROIs and generate a new layer for each"""
         # Collecting Region of interest of each bead
@@ -250,10 +226,12 @@ class Microscopy_Metrics_QWidget(QWidget):
             # Save images
             XY_data = Image.fromarray(image_uint16[physic[0],:,:])
             YZ_data = Image.fromarray(image_uint16[:,:,physic[2]])
-            XZ_data = Image.fromarray(image_uint16[:,physic[1],:])
+            XZ_data = Image.fromarray(image_uint16[:,physic[1],:].T)
             XY_data.save(os.path.join(active_path,"XY_view.png"))
             YZ_data.save(os.path.join(active_path,"YZ_view.png"))
             XZ_data.save(os.path.join(active_path,"XZ_view.png"))
+            image_roi = Image.fromarray(self.add_roi_on_image(roi))
+            image_roi.save(os.path.join(active_path,"Localisation.png"))
 
     def _on_SBR(self):
         """Measure de mean signal to background ratio of ROIs in the image"""
@@ -304,46 +282,25 @@ class Microscopy_Metrics_QWidget(QWidget):
             return 
         self.detection_tool_page.erase_Layers()
         self.run_btn.setEnabled(False)
-        # Open the progress bar window and lock other controls
-        self.Progress_window = QDialog(self)
-        self.Progress_window.setWindowTitle("Processing analysis...")
-        self.Progress_window.setModal(True)
-        progress_widget = Progress_widget(self.viewer)
-        progress_layout = QVBoxLayout()
-        progress_layout.addWidget(progress_widget)
-        self.Progress_window.setLayout(progress_layout)
-        self.Progress_window.show()
-        # Starting a new thread to run analysis
-        self.thread = QThread()
-        worker_method = partial(self._on_run)
-        self.worker = Worker(worker_method)
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.worker.progress.connect(progress_widget.progress_bar.setValue)
-        self.worker.step_progress.connect(progress_widget.step_label.setText)
-        self.worker.finished.connect(self.on_finished)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
+        worker = self._on_run()
+        worker.finished.connect(self.on_finished)
+        worker.start()
 
-    def on_finished(self,result):
+    def on_finished(self):
         """Called when the analysis is over to update states of the application"""
         self.run_btn.setEnabled(True)
         self.display_layers()
         self.generate_pdf_report()
-        self.Progress_window.close()
 
     def compute_fwhm(self):
         """Process 1D Gaussian fitting on a profile of each dimension to compute Full width at half maximum for each axis"""
         # Extracting ROIs and cropped layers from analysis_data
         rois = [entry["ROI"] for entry in self.analysis_data]
         cropped_layers = [entry["cropped"] for entry in self.analysis_data]
-        # For each picture 
-        for i in range(len(rois)):
-            self.analysis_data[i]["FWHM"] = []
-            self.analysis_data[i]["uncertainty"] = []
-            self.analysis_data[i]["determination"] = []
+        def process_single_fit(i,rois,cropped_layers):
+            result = [i]
+            for _ in range(3) :
+                result.append([])
             # Cropped picture extraction
             image = cropped_layers[i]
             image_float = image.astype(np.float64)
@@ -364,13 +321,36 @@ class Microscopy_Metrics_QWidget(QWidget):
                 amp = psf[u].max() - bg
                 sigma = np.sqrt(get_cov_matrix(np.clip(psf[u] - bg, 0, psf[u].max()), [spacing[u]], (self.filtered_beads[centroid_idx] - rois[i][0])))
                 mu = np.argmax(psf[u])
-                params,pcov,plt = fit_curve_1D(amp,bg,mu,sigma,coords[u],psf[u],lim)
-                output_path = os.path.join(active_path, f'fit_curve_1D_{axe[u]}.png')
-                plt.savefig(output_path,dpi=300,bbox_inches='tight')
-                plt.close()
-                self.analysis_data[i]["FWHM"].append(fwhm(params[3]))
-                self.analysis_data[i]["uncertainty"].append(uncertainty(pcov))
-                self.analysis_data[i]["determination"].append(determination(params,coords[u],psf[u]))
+                params,pcov = fit_curve_1D(amp,bg,mu,sigma,coords[u],psf[u],lim)
+                with plt.ioff():
+                    fig = plt.figure(figsize=(15, 5))
+                    ax1 = fig.add_subplot(1, 2, 1)
+                    plot_fit_1d(psf[u], coords[u], params, "Est.", lim, ax=ax1)
+                    ax2 = fig.add_subplot(1, 2, 2)
+                    plot_fit_1d(psf[u], coords[u], params, "Fit", lim, ax=ax2)
+                    output_path = os.path.join(active_path, f'fit_curve_1D_{axe[u]}.png')
+                    fig.savefig(output_path, dpi=300, bbox_inches='tight')
+                    plt.close(fig)
+
+                result[1].append(fwhm(params[3]))
+                result[2].append(uncertainty(pcov))
+                result[3].append(determination(params,coords[u],psf[u]))
+            return result
+        
+        with ThreadPoolExecutor() as executor :
+            futures = {executor.submit(process_single_fit,i,rois,cropped_layers) : i for i, roi in enumerate(rois)}
+
+            for future in as_completed(futures):
+                try :
+                    result = future.result()
+                    self.analysis_data[result[0]]["FWHM"] = []
+                    self.analysis_data[result[0]]["uncertainty"] = []
+                    self.analysis_data[result[0]]["determination"] = []
+                    self.analysis_data[result[0]]["FWHM"] = result[1]
+                    self.analysis_data[result[0]]["uncertainty"] = result[2]
+                    self.analysis_data[result[0]]["determination"] = result[3]
+                except Exception as e :
+                    print(f"Fail : {e}")
       
     def compute_fwhm_2D(self):
         """Process 1D Gaussian fitting on a profile of each dimension to compute Full width at half maximum for each axis"""
