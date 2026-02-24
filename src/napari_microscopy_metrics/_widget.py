@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Optional
 import types
 import napari
 from napari.qt.threading import thread_worker
+from napari.utils import progress
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject,QThread
@@ -100,44 +101,40 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.run_btn = QPushButton("Run")
         self.run_btn.setStyleSheet("background-color : green")
         self.run_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        #Button to open Browser view
-        self.browse_btn = QPushButton("Open")
-        self.browse_btn.setStyleSheet("background-color : blue")
-        self.browse_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         #Creation of the layout
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0,0,0,0)
         self.layout().setSpacing(5)
         self.layout().addWidget(self.tab)
         self.layout().addWidget(self.run_btn)
-        self.layout().addWidget(self.browse_btn)
         # Connect signals and slots
         self.run_btn.pressed.connect(self.start_processing)
-        self.browse_btn.pressed.connect(self._open_browser)
         self.viewer.mouse_double_click_callbacks.append(self._on_mouse_double_click)
 
 
-    @thread_worker(progress={'total': 4, 'desc' : 'Process analysis'})
+    @thread_worker(progress={'total': 5, 'desc' : 'Process analysis'})
     def _on_run(self):
         """Function to process analysis steps and update progress bar and label"""
         try:
             # Processing beads detection
+            yield {'progress' : 0,'desc':'Detecting beads'}
             self._on_detect_psf()
             if self.filtered_beads is None:
                 self.filtered_beads = np.zeros((0, 3))
-            yield {'progress' : 0,'desc':'Detecting beads'}
 
             # Processing beads extraction
-            self._on_crop_psf()
             yield {'progress' : 1,'desc':'Extracting ROIs'}
+            self._on_crop_psf()
 
             # Calculation of Signal to Background Ratio
+            yield {'progress' : 2,'desc':'SBR calculation'}
             self._on_SBR()
-            yield {'progress' : 2,'desc':'Signal to background calculation'}
 
             # Computation of Full Width at Half Maximum
+            yield {'progress' : 3,'desc':'Computing FWHM'}
             self.compute_fwhm()
-            yield {'progress' : 3,'desc':'Computing full width at half maximum'}
+
+            yield {'progress' : 4, 'desc' : 'Finish.'}
         except Exception as e:
             print(f"Error during analysis: {e}")
             self.filtered_beads = np.zeros((0, 3))
@@ -226,7 +223,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             # Save images
             XY_data = Image.fromarray(image_uint16[physic[0],:,:])
             YZ_data = Image.fromarray(image_uint16[:,:,physic[2]])
-            XZ_data = Image.fromarray(image_uint16[:,physic[1],:].T)
+            XZ_data = Image.fromarray(image_uint16[:,physic[1],:])
             XY_data.save(os.path.join(active_path,"XY_view.png"))
             YZ_data.save(os.path.join(active_path,"YZ_view.png"))
             XZ_data.save(os.path.join(active_path,"XZ_view.png"))
@@ -282,9 +279,13 @@ class Microscopy_Metrics_QWidget(QWidget):
             return 
         self.detection_tool_page.erase_Layers()
         self.run_btn.setEnabled(False)
-        worker = self._on_run()
-        worker.finished.connect(self.on_finished)
-        worker.start()
+        self.worker = self._on_run()
+        self.worker.yielded.connect(self._update_progress)
+        self.worker.finished.connect(self.on_finished)
+        self.worker.start()
+
+    def _update_progress(self,result):
+        self.worker.pbar.set_description(result["desc"])
 
     def on_finished(self):
         """Called when the analysis is over to update states of the application"""
@@ -324,8 +325,6 @@ class Microscopy_Metrics_QWidget(QWidget):
                 params,pcov = fit_curve_1D(amp,bg,mu,sigma,coords[u],psf[u],lim)
                 with plt.ioff():
                     fig = plt.figure(figsize=(15, 5))
-                    ax1 = fig.add_subplot(1, 2, 1)
-                    plot_fit_1d(psf[u], coords[u], params, "Est.", lim, ax=ax1)
                     ax2 = fig.add_subplot(1, 2, 2)
                     plot_fit_1d(psf[u], coords[u], params, "Fit", lim, ax=ax2)
                     output_path = os.path.join(active_path, f'fit_curve_1D_{axe[u]}.png')

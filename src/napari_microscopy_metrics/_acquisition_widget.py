@@ -39,7 +39,7 @@ class Acquisition_tool_page(QWidget):
             "ShapeZ":0,
             "Microscope_type":"widefield",
             "Emission_Wavelength":450,
-            "Refractive_index":10,
+            "Refractive_index":1.45,
             "Numerical_aperture":1
         }
 
@@ -51,16 +51,16 @@ class Acquisition_tool_page(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
-        self.title = QLabel("Image parameters")
+        self.title = QLabel("Image parameters:")
         self.title.setStyleSheet("font-weight: bold")
         self.title.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.title_PxS = QLabel("Enter physical pixel size (um/pixel) :")
+        self.title_PxS = QLabel("Enter physical pixel size (µm/pixel) :")
         self.title_PxS.setStyleSheet("font-weight: bold")
         self.title_PxS.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.options_PxS = Options("Pixel size", "Median Filter")
-        self.options_PxS.addFloat(name="PhysicSizeX",value=self.params["PhysicSizeX"])
-        self.options_PxS.addFloat(name="PhysicSizeY",value=self.params["PhysicSizeY"])
-        self.options_PxS.addFloat(name="PhysicSizeZ",value=self.params["PhysicSizeZ"])
+        self.options_PxS.addFloat(name="Pixel size X",value=self.params["PhysicSizeX"])
+        self.options_PxS.addFloat(name="Pixel size Y",value=self.params["PhysicSizeY"])
+        self.options_PxS.addFloat(name="Pixel size Z",value=self.params["PhysicSizeZ"])
         self.widget_PxS = OptionsWidget(self.viewer,self.options_PxS)
 
         self.label_shape = QLabel()
@@ -69,10 +69,10 @@ class Acquisition_tool_page(QWidget):
         self.title_options_microscope.setStyleSheet("font-weight: bold")
         self.title_options_microscope.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.options_microscope = Options("Micoscope choice", "Median Filter")
-        self.options_microscope.addChoice(name="microscope_type",choices=["widefield","confocal"],value=self.params["Microscope_type"])
-        self.options_microscope.addInt(name="Emission_wavelength", value=self.params["Emission_Wavelength"])
-        self.options_microscope.addFloat(name="Refraction_index", value=self.params["Refractive_index"])
-        self.options_microscope.addFloat(name="Numerical_aperture", value = self.params["Numerical_aperture"])
+        self.options_microscope.addChoice(name="Microscope type",choices=["widefield","confocal"],value=self.params["Microscope_type"])
+        self.options_microscope.addInt(name="Emission wavelength", value=self.params["Emission_Wavelength"])
+        self.options_microscope.addFloat(name="Refraction index", value=self.params["Refractive_index"])
+        self.options_microscope.addFloat(name="Numerical aperture", value = self.params["Numerical_aperture"])
         self.widget_micro_choice = OptionsWidget(self.viewer,self.options_microscope)
         self.widget_micro_choice.addApplyButton(self._on_apply)
         
@@ -107,11 +107,11 @@ class Acquisition_tool_page(QWidget):
         """Function to update acquisition parameters"""
         self.widget_PxS.transferValues()
         self.widget_micro_choice.transferValues()
-        self.params["PhysicSizeX"] = self.options_PxS.value("PhysicSizeX")
-        self.params["PhysicSizeY"] = self.options_PxS.value("PhysicSizeY")
-        self.params["PhysicSizeZ"] = self.options_PxS.value("PhysicSizeZ")
-        self.params["Emission_Wavelength"] = self.options_microscope.value("Emission_wavelength")
-        self.params["Microscope_type"] = self.options_microscope.value("microscope_type")
-        self.params["Numerical_aperture"] = self.options_microscope.value("Numerical_aperture")
-        self.params["Refractive_index"] = self.options_microscope.value("Refraction_index")
+        self.params["PhysicSizeX"] = self.options_PxS.value("Pixel size X")
+        self.params["PhysicSizeY"] = self.options_PxS.value("Pixel size Y")
+        self.params["PhysicSizeZ"] = self.options_PxS.value("Pixel size Z")
+        self.params["Emission_Wavelength"] = self.options_microscope.value("Emission wavelength")
+        self.params["Microscope_type"] = self.options_microscope.value("Microscope type")
+        self.params["Numerical_aperture"] = self.options_microscope.value("Numerical aperture")
+        self.params["Refractive_index"] = self.options_microscope.value("Refraction index")
 

@@ -109,7 +109,7 @@ class Detection_Parameters_Widget(QWidget):
 
         # Options for the ROI
         self.options_ROI = Options("ROI specifications","Median Filter")
-        self.options_ROI.addFloat(name="Theoretical bead size (um)", value=self.params["theorical_bead_size"])
+        self.options_ROI.addFloat(name="Theoretical bead size (µm)", value=self.params["theorical_bead_size"])
         self.widget_ROI = OptionsWidget(self.viewer,self.options_ROI)
         
         # Slider for the crop factor of ROI
@@ -120,9 +120,9 @@ class Detection_Parameters_Widget(QWidget):
 
         # Options for rejection zone and annulus definition
         self.options_rejection = Options("Rejection specifications","Median Filter")
-        self.options_rejection.addFloat(name="Rejection zone size (um)", value=self.params["rejection_zone"])
-        self.options_rejection.addFloat(name="Inner annulus distance to bead (um)", value=self.params["distance_annulus"])
-        self.options_rejection.addFloat(name="Annulus thickness (um)", value=self.params["thickness_annulus"])
+        self.options_rejection.addFloat(name="Z axis rejection margin (µm)", value=self.params["rejection_zone"])
+        self.options_rejection.addFloat(name="Inner annulus distance to bead (µm)", value=self.params["distance_annulus"])
+        self.options_rejection.addFloat(name="Annulus thickness (µm)", value=self.params["thickness_annulus"])
         self.widget_rejection = OptionsWidget(self.viewer,self.options_rejection)
         self.widget_rejection.addApplyButton(self._on_confirm)
         # Adding all the widgets to the layout
@@ -193,10 +193,10 @@ class Detection_Parameters_Widget(QWidget):
         self.widget_rejection.transferValues()
         self.widget_ROI.transferValues()
         self.widget_threshold.transferValues()
-        self.params["theorical_bead_size"] = self.options_ROI.value("Theoretical bead size (um)")
-        self.params["rejection_zone"] = self.options_rejection.value("Rejection zone size (um)")
-        self.params["distance_annulus"] = self.options_rejection.value("Inner annulus distance to bead (um)")
-        self.params["thickness_annulus"] = self.options_rejection.value("Annulus thickness (um)")
+        self.params["theorical_bead_size"] = self.options_ROI.value("Theoretical bead size (µm)")
+        self.params["rejection_zone"] = self.options_rejection.value("Z axis rejection margin (µm)")
+        self.params["distance_annulus"] = self.options_rejection.value("Inner annulus distance to bead (µm)")
+        self.params["thickness_annulus"] = self.options_rejection.value("Annulus thickness (µm)")
         self.params["threshold_choice"] = self.options_threshold.value("choose a threshold")
 
 
