@@ -25,6 +25,8 @@ https://napari.org/stable/plugins/index.html
 
 ## Installation
 
+Python 3.12 is required to use the plugin in best conditions
+
 You can install `napari-microscopy-metrics` via [pip]:
 
 ```
@@ -42,6 +44,13 @@ To install latest development version :
 
 ```
 pip install git+https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics.git
+```
+
+You will also need to install `microscopy-metrics` and `auto-options` from MRI github :
+```
+pip install --upgrade git+https://github.com/MontpellierRessourcesImagerie/microscopy-metrics.git
+
+pip install --upgrade git+https://github.com/MontpellierRessourcesImagerie/auto-options-python.git
 ```
 
 

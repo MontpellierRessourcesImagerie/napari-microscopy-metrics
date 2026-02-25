@@ -17,6 +17,7 @@ from napari.settings import get_settings
 from napari.utils.notifications import *
 from .json_utils import *
 from autooptions import *
+from napari.qt.threading import create_worker
 
 
 class ParamsSignal(QObject):
@@ -212,6 +213,7 @@ class Detection_Tool_Tab(QWidget):
         super().__init__()
         self.viewer = viewer
         self.count_windows = 0
+        self.DetectionTool = Detection()
         self.params = {
             "Min_dist":10,
             "Rel_threshold":6,
@@ -233,9 +235,6 @@ class Detection_Tool_Tab(QWidget):
         #Layers for displaying centroids (point) and region of interest (shapes)
         self.filtered_layer = None
         self.filter_layer = None
-        self.filtered_beads = None
-        self.rois = None
-        self.cropped_layers = []
 
         # Button to access parameters
         self.parameters_btn = QPushButton()
@@ -247,7 +246,7 @@ class Detection_Tool_Tab(QWidget):
         
         # Button to process beads detection
         self.detection_btn = QPushButton("Visualize beads detection")
-        self.detection_btn.clicked.connect(self._on_detect_psf)
+        self.detection_btn.clicked.connect(self.apply)
 
         # Affichage des résultats
         self.results_label = QLabel()
@@ -271,57 +270,8 @@ class Detection_Tool_Tab(QWidget):
             self.filtered_layer = None
         if hasattr(self,'filter_layer') and self.filter_layer == event.value:
             self.filter_layer = None
-        if hasattr(self, 'cropped_layers') and event.value in self.cropped_layers:
-            self.cropped_layers.remove(event.value)
 
 
-    def _on_detect_psf(self):
-        """Detect and extract beads in image depending on choosen parameters"""
-        write_file_data("parameters_data.json", self.params) # Save parameters
-        loaded_params = read_file_data("acquisition_data.json")
-        physical_pixel = [1,1,1]
-        if loaded_params:
-            physical_pixel = [loaded_params["PhysicSizeZ"],loaded_params["PhysicSizeY"],loaded_params["PhysicSizeX"]]
-        current_layer = self.viewer.layers.selection.active
-        if current_layer is None or not isinstance(current_layer, napari.layers.Image) : # Catch if Image layer not selected
-            show_error("Please, select a valid layer of type Image")
-            return 
-        image = current_layer.data
-        threshold = self.params["Rel_threshold"]/100
-        auto_threshold = self.params["auto_threshold"]
-        threshold_choice = self.params["threshold_choice"]
-        binary_image = None
-
-        if self.params["selected_tool"] == 0 :
-            show_info("Processing peak_local_max psf detection...")
-            min_distance = self.params["Min_dist"]
-            self.filtered_beads = detect_psf_peak_local_max(image, min_distance, threshold,auto_threshold,threshold_choice=threshold_choice)
-        elif self.params["selected_tool"] == 1:
-            show_info("Processing blob_log psf detection...")
-            sigma = self.params["Sigma"]
-            self.filtered_beads = detect_psf_blob_log(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
-        elif self.params["selected_tool"] == 2 : 
-            show_info("Processing blob_dog psf detection...")
-            sigma = self.params["Sigma"]
-            self.filtered_beads = detect_psf_blob_dog(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
-        else :
-            show_info("Processing centroid psf detection...")
-            self.filtered_beads,binary_image = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
-        if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
-            self.rois,_ = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.params["theorical_bead_size"],crop_factor=self.params["crop_factor"], rejection_zone=self.params["rejection_zone"],physical_pixel=physical_pixel)
-            if self.filter_layer is None :
-                self.filter_layer = self.viewer.add_shapes(self.rois,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
-            else :
-                self.viewer.layers.remove(self.filter_layer)
-                self.filter_layer = self.viewer.add_shapes(self.rois,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
-            if self.filtered_layer is None :
-                self.filtered_layer = self.viewer.add_points(self.filtered_beads,name="PSF detected", face_color='red', opacity=0.5, size=2)
-            else : 
-                self.filtered_layer.data = self.filtered_beads
-        else :
-            show_warning("No PSF found or incorrect format.")
-        self.results_label.setText(f"Here are the results of the detection :\n- {len(self.filtered_beads)} bead(s) detected\n- {len(self.rois)} ROI(s) extracted")
-    
     def _open_parameters_window(self):
         """Open the parameters window"""
         if self.count_windows == 0 :
@@ -337,9 +287,11 @@ class Detection_Tool_Tab(QWidget):
             self.parameters_window.show()
             self.count_windows += 1
     
+
     def _on_parameters_window_closed(self, result):
         """Catch the close event of the window and update the counter"""
         self.count_windows -= 1
+
 
     def on_params_updated(self, new_params):
         """Catch parameters modification and update params"""
@@ -348,12 +300,14 @@ class Detection_Tool_Tab(QWidget):
         write_file_data("parameters_data.json", self.params)
         self.parameters_window.close()
 
+
     def erase_Layers(self):
         """Delete all layers made by this wiget"""
         if self.filter_layer : 
             self.viewer.layers.remove(self.filter_layer)
         if self.filtered_layer :
             self.viewer.layers.remove(self.filtered_layer)
+
 
     def get_logo_path(self,theme):
         logo_dir = Path(__file__).parent / "res" / "drawable"
@@ -362,8 +316,53 @@ class Detection_Tool_Tab(QWidget):
         else:
             return logo_dir / "logo_light.png"
 
+
     def on_theme_change(self):
         icon_path = self.get_logo_path(get_settings().appearance.theme)
         self.parameters_btn.setIcon(QIcon(str(icon_path)))
         self.parameters_btn.setIconSize(QSize(35,35))
         self.parameters_btn.setFixedSize(35, 35)
+
+
+    def apply(self):
+        write_file_data("parameters_data.json", self.params)
+        loaded_params = read_file_data("acquisition_data.json")
+        physical_pixel = [1,1,1]
+        if loaded_params:
+            physical_pixel = [loaded_params["PhysicSizeZ"],loaded_params["PhysicSizeY"],loaded_params["PhysicSizeX"]]
+        self.DetectionTool.set_image(self.viewer.layers.selection.active.data)
+        self.DetectionTool.threshold_rel = self.params["Rel_threshold"]/100
+        if self.params["auto_threshold"] : 
+            self.DetectionTool.threshold_choice = self.params["threshold_choice"]
+        self.DetectionTool.min_distance = self.params["Min_dist"]
+        self.DetectionTool.sigma = self.params["Sigma"]
+        self.DetectionTool.crop_factor = self.params["crop_factor"]
+        self.DetectionTool.bead_size = self.params["theorical_bead_size"]
+        self.DetectionTool.rejection_distance = self.params["rejection_zone"]
+        self.DetectionTool.pixel_size = np.array(physical_pixel)
+        args = [self.params["selected_tool"]]
+        worker = create_worker(self.DetectionTool.run,
+                                *args,
+                                _progress={'desc':'Detecting beads...'}
+                            )
+        worker.finished.connect(self.display_Result)
+        worker.errored.connect(self.display_Result)
+        self.detection_btn.setEnabled(False)
+        worker.start()
+
+
+    def display_Result(self):
+        if isinstance(self.DetectionTool.centroids, np.ndarray) and self.DetectionTool.centroids.size > 0 :
+            if self.filter_layer is None :
+                self.filter_layer = self.viewer.add_shapes(self.DetectionTool.rois_extracted,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
+            else :
+                self.viewer.layers.remove(self.filter_layer)
+                self.filter_layer = self.viewer.add_shapes(self.DetectionTool.rois_extracted,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
+            if self.filtered_layer is None :
+                self.filtered_layer = self.viewer.add_points(self.DetectionTool.centroids,name="PSF detected", face_color='red', opacity=0.5, size=2)
+            else : 
+                self.filtered_layer.data = self.DetectionTool.centroids
+            self.results_label.setText(f"Here are the results of the detection :\n- {len(self.DetectionTool.centroids)} bead(s) detected\n- {len(self.DetectionTool.rois_extracted)} ROI(s) extracted")
+        else :
+            show_warning("No PSF found or incorrect format.")
+        self.detection_btn.setEnabled(True)

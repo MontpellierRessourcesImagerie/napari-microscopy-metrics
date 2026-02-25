@@ -35,6 +35,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         super().__init__()
         self.viewer = viewer
         self.analysis_data = []
+        self.DetectionTool = Detection()
         self.parameters_detection = {
             "Min_dist":10,
             "Rel_threshold":6,
@@ -98,7 +99,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.metrics_tool_page.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.tab.addTab(self.metrics_tool_page,"Metrics parameters")
         #Button to run global analyze
-        self.run_btn = QPushButton("Run")
+        self.run_btn = QPushButton("Run analysis")
         self.run_btn.setStyleSheet("background-color : green")
         self.run_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         #Creation of the layout
@@ -112,29 +113,23 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.viewer.mouse_double_click_callbacks.append(self._on_mouse_double_click)
 
 
-    @thread_worker(progress={'total': 5, 'desc' : 'Process analysis'})
+    @thread_worker(progress={'total': 4, 'desc' : 'Process analysis'})
     def _on_run(self):
         """Function to process analysis steps and update progress bar and label"""
         try:
-            # Processing beads detection
-            yield {'progress' : 0,'desc':'Detecting beads'}
-            self._on_detect_psf()
-            if self.filtered_beads is None:
-                self.filtered_beads = np.zeros((0, 3))
-
             # Processing beads extraction
-            yield {'progress' : 1,'desc':'Extracting ROIs'}
+            yield {'progress' : 0,'desc':'Extracting ROIs'}
             self._on_crop_psf()
 
             # Calculation of Signal to Background Ratio
-            yield {'progress' : 2,'desc':'SBR calculation'}
+            yield {'progress' : 1,'desc':'SBR calculation'}
             self._on_SBR()
 
             # Computation of Full Width at Half Maximum
-            yield {'progress' : 3,'desc':'Computing FWHM'}
+            yield {'progress' : 2,'desc':'Computing FWHM'}
             self.compute_fwhm()
 
-            yield {'progress' : 4, 'desc' : 'Finish.'}
+            yield {'progress' : 3, 'desc' : 'Finish.'}
         except Exception as e:
             print(f"Error during analysis: {e}")
             self.filtered_beads = np.zeros((0, 3))
@@ -174,6 +169,48 @@ class Microscopy_Metrics_QWidget(QWidget):
             for x,id in enumerate(centroids_ROI) :
                 data = {"id":id,"ROI":rois[x]}
                 self.analysis_data.append(data)
+
+
+    def apply_detect_psf(self):
+        self.parameters_detection = self.detection_tool_page.params
+        self.parameters_acquisition = self.acquisition_tool_page.params
+        # Extracting datas from image and user preferencies
+        image = self.working_layer.data
+        threshold = self.parameters_detection["Rel_threshold"]/100
+        auto_threshold = self.parameters_detection["auto_threshold"]
+        physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
+        threshold_choice = self.parameters_detection["threshold_choice"]
+        self.DetectionTool.set_image(image)
+        self.DetectionTool.threshold_rel = threshold
+        if auto_threshold : 
+            self.DetectionTool.threshold_choice = threshold_choice
+        self.DetectionTool.min_distance = self.parameters_detection["Min_dist"]
+        self.DetectionTool.sigma = self.parameters_detection["Sigma"]
+        self.DetectionTool.crop_factor = self.parameters_detection["crop_factor"]
+        self.DetectionTool.bead_size = self.parameters_detection["theorical_bead_size"]
+        self.DetectionTool.rejection_distance = self.parameters_detection["rejection_zone"]
+        self.DetectionTool.pixel_size = np.array(physical_pixel)
+        args = [self.parameters_detection["selected_tool"]]
+        worker = create_worker(self.DetectionTool.run,
+                                *args,
+                                _progress={'desc':'Detecting beads...'}
+                            )
+        worker.finished.connect(self.display_Result)
+        worker.errored.connect(self.display_Result)
+        worker.start()
+
+    def display_Result(self):
+        self.filtered_beads = self.DetectionTool.centroids
+        if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
+            rois = self.DetectionTool.rois_extracted
+            centroids_ROI = self.DetectionTool.list_id_centroids_retained
+            for x,id in enumerate(centroids_ROI) :
+                data = {"id":id,"ROI":rois[x]}
+                self.analysis_data.append(data)
+        self.worker = self._on_run()
+        self.worker.yielded.connect(self._update_progress)
+        self.worker.finished.connect(self.on_finished)
+        self.worker.start()
 
     def get_active_path(self, index):
         """Utility function to return the current path of a given bead"""
@@ -279,10 +316,11 @@ class Microscopy_Metrics_QWidget(QWidget):
             return 
         self.detection_tool_page.erase_Layers()
         self.run_btn.setEnabled(False)
-        self.worker = self._on_run()
+        """self.worker = self._on_run()
         self.worker.yielded.connect(self._update_progress)
         self.worker.finished.connect(self.on_finished)
-        self.worker.start()
+        self.worker.start()"""
+        self.apply_detect_psf()
 
     def _update_progress(self,result):
         self.worker.pbar.set_description(result["desc"])
