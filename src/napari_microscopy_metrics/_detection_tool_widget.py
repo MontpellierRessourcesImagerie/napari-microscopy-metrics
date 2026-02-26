@@ -66,7 +66,7 @@ class Detection_Parameters_Widget(QWidget):
         self.min_distance_detection.setRange(0,20)
         self.min_distance_detection.setValue(self.params["Min_dist"])
         self.min_distance_detection.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.min_distance_label = QLabel("Minimal distance :" + str(self.min_distance_detection.value()))
+        self.min_distance_label = QLabel("Minimal distance: " + str(self.min_distance_detection.value()))
         self.min_distance_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.peak_method_layout.addWidget(self.min_distance_label)
         self.peak_method_layout.addWidget(self.min_distance_detection)
@@ -78,7 +78,7 @@ class Detection_Parameters_Widget(QWidget):
         self.blob_sigma_slider = QSlider(Qt.Horizontal)
         self.blob_sigma_slider.setRange(1,10)
         self.blob_sigma_slider.setValue(self.params["Sigma"])
-        self.blob_sigma_label = QLabel("Sigma : " + str(self.blob_sigma_slider.value()))
+        self.blob_sigma_label = QLabel("Sigma: " + str(self.blob_sigma_slider.value()))
         self.blob_method_layout.addWidget(self.blob_sigma_label)
         self.blob_method_layout.addWidget(self.blob_sigma_slider)
         self.blob_method_widget.setLayout(self.blob_method_layout)
@@ -97,7 +97,7 @@ class Detection_Parameters_Widget(QWidget):
         self.threshold_rel = QSlider(Qt.Horizontal)
         self.threshold_rel.setRange(0,100)
         self.threshold_rel.setValue(self.params["Rel_threshold"])
-        self.threshold_rel_label = QLabel("Relative threshold : " + str(self.threshold_rel.value()/100))
+        self.threshold_rel_label = QLabel("Relative threshold: " + str(self.threshold_rel.value()/100))
 
         # Button for the automatic threshold calculation
         self.threshold_auto_check = QCheckBox()
@@ -117,7 +117,7 @@ class Detection_Parameters_Widget(QWidget):
         self.crop_factor = QSlider(Qt.Horizontal)
         self.crop_factor.setRange(1,10)
         self.crop_factor.setValue(self.params["crop_factor"])
-        self.crop_factor_label = QLabel("Crop factor : " + str(self.crop_factor.value()))
+        self.crop_factor_label = QLabel("Crop factor: " + str(self.crop_factor.value()))
 
         # Options for rejection zone and annulus definition
         self.options_rejection = Options("Rejection specifications","Median Filter")
@@ -160,22 +160,22 @@ class Detection_Parameters_Widget(QWidget):
 
     def _update_min_distance(self,value):
         """Update the label for minimal distance and assign the value in params"""
-        self.min_distance_label.setText("Minimal distance :" + str(value))
+        self.min_distance_label.setText("Minimal distance: " + str(value))
         self.params["Min_dist"] = value
     
     def _update_sigma(self,value):
         """Update the label for sigma and assign the value in params """
-        self.blob_sigma_label.setText("Sigma : " + str(value))
+        self.blob_sigma_label.setText("Sigma: " + str(value))
         self.params["Sigma"] = value
     
     def _update_threshold(self, value):
         """Update the label for relative threshold and assign the value in params"""
-        self.threshold_rel_label.setText("Relative threshold : " + str(value/100))
+        self.threshold_rel_label.setText("Relative threshold: " + str(value/100))
         self.params["Rel_threshold"] = value
 
     def _update_crop_factor(self, value):
         """Updates the label for crop factor and assign the value in params"""
-        self.crop_factor_label.setText("Crop factor : " + str(value))
+        self.crop_factor_label.setText("Crop factor: " + str(value))
         self.params["crop_factor"] = value
 
     def _selected_action(self, index):
@@ -296,7 +296,6 @@ class Detection_Tool_Tab(QWidget):
     def on_params_updated(self, new_params):
         """Catch parameters modification and update params"""
         self.params = new_params
-        print(f"Paramètres mis à jour : {self.params}")
         write_file_data("parameters_data.json", self.params)
         self.parameters_window.close()
 
@@ -362,7 +361,7 @@ class Detection_Tool_Tab(QWidget):
                 self.filtered_layer = self.viewer.add_points(self.DetectionTool.centroids,name="PSF detected", face_color='red', opacity=0.5, size=2)
             else : 
                 self.filtered_layer.data = self.DetectionTool.centroids
-            self.results_label.setText(f"Here are the results of the detection :\n- {len(self.DetectionTool.centroids)} bead(s) detected\n- {len(self.DetectionTool.rois_extracted)} ROI(s) extracted")
+            self.results_label.setText(f"Here are the results of the detection:\n- {len(self.DetectionTool.centroids)} bead(s) detected\n- {len(self.DetectionTool.rois_extracted)} ROI(s) extracted")
         else :
             show_warning("No PSF found or incorrect format.")
         self.detection_btn.setEnabled(True)

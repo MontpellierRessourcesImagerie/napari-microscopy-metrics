@@ -36,23 +36,28 @@ class Metrics_tool_page(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
-        self.title = QLabel("Metrics parameters")
-        self.title.setStyleSheet("font-weight: bold")
-        self.title.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        
+        self.group_metrics = QGroupBox("Metrics parameters")
+        self.group_layout = QVBoxLayout()
+        self.group_metrics.setLayout(self.group_layout)
+        self.layout_parameters = QVBoxLayout()
         self.options_fitting = Options("Fitting options", "Median Filter")
         self.options_fitting.addChoice(name="fitting_type",choices=["1D","2D","3D"],value=self.params["Gaussian_type"])
         self.widget_fitting_choice = OptionsWidget(self.viewer,self.options_fitting)
-                
-        self.results_label = QLabel()
+        self.layout_parameters.addWidget(self.widget_fitting_choice)
+        self.group_layout.addLayout(self.layout_parameters)
+        
+        self.group_results = QGroupBox("Mean metrics measured")
+        self.layout_results = QVBoxLayout()
+        self.results_label = QLabel("No metric mesured yet.")
+        self.layout_results.addWidget(self.results_label)
+        self.group_results.setLayout(self.layout_results)
 
-        layout.addWidget(self.title)
-        layout.addWidget(self.widget_fitting_choice)
-        layout.addWidget(self.results_label)
+        layout.addWidget(self.group_metrics)
+        layout.addWidget(self.group_results)
         layout.addStretch()
         self.setLayout(layout)
 
     def print_results(self,SBR):
         """Display metrics measures to widget"""
-        text = f"Mean metrics measured :\n- Signal to background ratio : {SBR:.2f}"
+        text = f"- Signal to background ratio: {SBR:.2f}"
         self.results_label.setText(text)

@@ -19,6 +19,9 @@ from microscopy_metrics.fitting import *
 from functools import partial
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle,getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import Paragraph
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
@@ -29,6 +32,7 @@ from concurrent.futures import ThreadPoolExecutor,as_completed
 from skimage.draw import polygon_perimeter
 
 
+
 class Microscopy_Metrics_QWidget(QWidget):
     """Main Widget of the Microscopy_Metrics module"""
     def __init__(self,viewer: "napari.viewer.Viewer"):
@@ -36,6 +40,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.viewer = viewer
         self.analysis_data = []
         self.DetectionTool = Detection()
+        self.MetricTool = Metrics()
         self.parameters_detection = {
             "Min_dist":10,
             "Rel_threshold":6,
@@ -113,63 +118,19 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.viewer.mouse_double_click_callbacks.append(self._on_mouse_double_click)
 
 
-    @thread_worker(progress={'total': 4, 'desc' : 'Process analysis'})
+    @thread_worker(progress={'total': 2, 'desc' : 'Process analysis'})
     def _on_run(self):
         """Function to process analysis steps and update progress bar and label"""
         try:
-            # Processing beads extraction
-            yield {'progress' : 0,'desc':'Extracting ROIs'}
-            self._on_crop_psf()
-
-            # Calculation of Signal to Background Ratio
-            yield {'progress' : 1,'desc':'SBR calculation'}
-            self._on_SBR()
-
             # Computation of Full Width at Half Maximum
-            yield {'progress' : 2,'desc':'Computing FWHM'}
+            yield {'progress' : 0,'desc':'Computing FWHM'}
             self.compute_fwhm()
 
-            yield {'progress' : 3, 'desc' : 'Finish.'}
+            yield {'progress' : 1, 'desc' : 'Finish.'}
         except Exception as e:
             print(f"Error during analysis: {e}")
             self.filtered_beads = np.zeros((0, 3))
             raise
-
-
-    def _on_detect_psf(self):
-        """Detect and extract beads in image depending on choosen parameters"""
-        self.parameters_detection = self.detection_tool_page.params
-        self.parameters_acquisition = self.acquisition_tool_page.params
-        # Extracting datas from image and user preferencies
-        image = self.working_layer.data
-        threshold = self.parameters_detection["Rel_threshold"]/100
-        auto_threshold = self.parameters_detection["auto_threshold"]
-        physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
-        threshold_choice = self.parameters_detection["threshold_choice"]
-        # Processing bead detection using selected method by user
-        match self.parameters_detection["selected_tool"]:
-            case 0 : 
-                show_info("Processing peak_local_max psf detection...")
-                min_distance = self.parameters_detection["Min_dist"]
-                self.filtered_beads = detect_psf_peak_local_max(image, min_distance, threshold,auto_threshold,threshold_choice=threshold_choice)
-            case 1 :
-                show_info("Processing blob_log psf detection...")
-                sigma = self.parameters_detection["Sigma"]
-                self.filtered_beads = detect_psf_blob_log(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
-            case 2 :
-                show_info("Processing blob_dog psf detection...")
-                sigma = self.parameters_detection["Sigma"]
-                self.filtered_beads = detect_psf_blob_dog(image, sigma, threshold,auto_threshold,threshold_choice=threshold_choice)
-            case _ :
-                show_info("Processing centroid psf detection...")
-                self.filtered_beads = detect_psf_centroid(image,threshold, auto_threshold,threshold_choice=threshold_choice)
-        # Extracting region of interest from identified beads
-        if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
-            rois,centroids_ROI = extract_Region_Of_Interest(image,self.filtered_beads,bead_size=self.parameters_detection["theorical_bead_size"],crop_factor=self.parameters_detection["crop_factor"], rejection_zone=self.parameters_detection["rejection_zone"], physical_pixel=physical_pixel)
-            for x,id in enumerate(centroids_ROI) :
-                data = {"id":id,"ROI":rois[x]}
-                self.analysis_data.append(data)
-
 
     def apply_detect_psf(self):
         self.parameters_detection = self.detection_tool_page.params
@@ -190,16 +151,21 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.DetectionTool.bead_size = self.parameters_detection["theorical_bead_size"]
         self.DetectionTool.rejection_distance = self.parameters_detection["rejection_zone"]
         self.DetectionTool.pixel_size = np.array(physical_pixel)
-        args = [self.parameters_detection["selected_tool"]]
+        self.output_dir = os.path.expanduser("~/")
+        if self.working_layer is not None and hasattr(self.working_layer,'source') and self.working_layer.source.path :
+            image_path = self.working_layer.source.path
+            self.output_dir = os.path.dirname(image_path)
+        args = [self.parameters_detection["selected_tool"],self.output_dir]
         worker = create_worker(self.DetectionTool.run,
                                 *args,
                                 _progress={'desc':'Detecting beads...'}
                             )
-        worker.finished.connect(self.display_Result)
-        worker.errored.connect(self.display_Result)
+        worker.finished.connect(self.detect_finished)
+        worker.yielded.connect(lambda value: worker.pbar.set_description(value['desc']))
         worker.start()
 
-    def display_Result(self):
+
+    def detect_finished(self):
         self.filtered_beads = self.DetectionTool.centroids
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
             rois = self.DetectionTool.rois_extracted
@@ -207,10 +173,13 @@ class Microscopy_Metrics_QWidget(QWidget):
             for x,id in enumerate(centroids_ROI) :
                 data = {"id":id,"ROI":rois[x]}
                 self.analysis_data.append(data)
-        self.worker = self._on_run()
-        self.worker.yielded.connect(self._update_progress)
-        self.worker.finished.connect(self.on_finished)
-        self.worker.start()
+        if len(self.DetectionTool.cropped) == 0 :
+            raise ValueError("There are no cropped PSF !")
+        for i in range(len(self.DetectionTool.cropped)):
+            self.analysis_data[i]["cropped"] = self.DetectionTool.cropped[i]
+        self.display_layers()
+        self.apply_prefitting_metrics()
+
 
     def get_active_path(self, index):
         """Utility function to return the current path of a given bead"""
@@ -219,53 +188,34 @@ class Microscopy_Metrics_QWidget(QWidget):
             os.makedirs(active_path)
         return active_path
 
-    def add_roi_on_image(self,roi):
-        image = self.working_layer.data
-        if image.ndim == 3 :
-            image = np.max(image,axis=0)
-        image = ((image-image.min()) / (image.max() - image.min()) * 255).astype(np.uint8)
-        image_rgb = np.stack([image,image,image], axis=-1)
-        rr, cc = polygon_perimeter(
-            [roi[0, 1], roi[1, 1], roi[2, 1], roi[3, 1]],
-            [roi[0, 2], roi[1, 2], roi[2, 2], roi[3, 2]],
-            image.shape
-        )
-        image_rgb[rr,cc,0] = 255
-        image_rgb[rr,cc,1] = 0
-        image_rgb[rr,cc,2] = 0
-        return image_rgb
 
-    def _on_crop_psf(self):
-        """Crop the image along ROIs and generate a new layer for each"""
-        # Collecting Region of interest of each bead
-        rois = [entry["ROI"] for entry in self.analysis_data]
-        # Defining the output directory as the folder containing the current image
-        self.output_dir = os.path.expanduser("~/")
-        if self.working_layer is not None and hasattr(self.working_layer,'source') and self.working_layer.source.path :
-            image_path = self.working_layer.source.path
-            self.output_dir = os.path.dirname(image_path)
-        # for each ROI, extracting subimage
-        for i,roi in enumerate(rois):
-            data = self.working_layer.data[...,roi[0][1]:roi[2][1],roi[0][2]:roi[1][2]]
-            self.analysis_data[i]["cropped"] = data
-            # Save cropped image from each point of view
-            active_path = self.get_active_path(i)
-            centroid_idx = self.analysis_data[i]["id"]
-            physic = [int(self.filtered_beads[centroid_idx][0]), int(self.filtered_beads[centroid_idx][1] - rois[i][0][1]), int(self.filtered_beads[centroid_idx][2] - rois[i][0][2])]
-            # Converting datas for compatibility with PNG
-            image_float = data.astype(np.float32)
-            image_float = (image_float - np.min(image_float)) / (np.max(image_float) - np.min(image_float) + 1e-6)
-            image_float[image_float < 0] = 0
-            image_uint16 = (image_float * 65535).astype(np.uint16)
-            # Save images
-            XY_data = Image.fromarray(image_uint16[physic[0],:,:])
-            YZ_data = Image.fromarray(image_uint16[:,:,physic[2]])
-            XZ_data = Image.fromarray(image_uint16[:,physic[1],:])
-            XY_data.save(os.path.join(active_path,"XY_view.png"))
-            YZ_data.save(os.path.join(active_path,"YZ_view.png"))
-            XZ_data.save(os.path.join(active_path,"XZ_view.png"))
-            image_roi = Image.fromarray(self.add_roi_on_image(roi))
-            image_roi.save(os.path.join(active_path,"Localisation.png"))
+    def apply_prefitting_metrics(self):
+        physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
+        self.MetricTool.image = self.working_layer.data
+        self.MetricTool.images = [entry["cropped"] for entry in self.analysis_data]
+        self.MetricTool.ring_inner_distance = self.parameters_detection["distance_annulus"]
+        self.MetricTool.ring_thickness = self.parameters_detection["thickness_annulus"]
+        self.MetricTool.pixel_size = np.array(physical_pixel)
+        worker = create_worker(self.MetricTool.run_prefitting_metrics,
+                                _progress={'desc':'Detecting beads...'}
+                            )
+        worker.finished.connect(self.prefitting_finished)
+        worker.yielded.connect(lambda value: worker.pbar.set_description(value['desc']))
+        worker.errored.connect(self.detect_finished)
+        worker.start()
+
+
+    def prefitting_finished(self):
+        if len(self.MetricTool.SBR) != len(self.analysis_data) :
+            raise ValueError('Problem with SBR calculation')
+        for x,sbr in enumerate(self.MetricTool.SBR) :
+            self.analysis_data[x]["SBR"] = sbr
+        self.metrics_tool_page.print_results(self.MetricTool.mean_SBR)
+        self.worker = self._on_run()
+        self.worker.yielded.connect(self._update_progress)
+        self.worker.finished.connect(self.on_finished)
+        self.worker.start()
+
 
     def _on_SBR(self):
         """Measure de mean signal to background ratio of ROIs in the image"""
@@ -281,6 +231,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         # Display mean result in the application
         self.metrics_tool_page.print_results(self.mean_SBR)
 
+
     def display_layers(self):
         """Add layers for detected beads and extracted ROIs"""
         # Collecing every rois from analysis_data
@@ -291,7 +242,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.centroids_layer = self.viewer.add_points(self.filtered_beads,name="PSF detected", face_color='red', opacity=0.5, size=2)
             else : 
                 self.centroids_layer.data = self.filtered_beads
-            self.detection_tool_page.results_label.setText(f"Here are the results of the detection :\n- {len(self.filtered_beads)} bead(s) detected\n- {len(rois)} ROI(s) extracted")
+            self.detection_tool_page.results_label.setText(f"Here are the results of the detection:\n- {len(self.filtered_beads)} bead(s) detected\n- {len(rois)} ROI(s) extracted")
         else :
             show_warning("No PSF found or incorrect format.")
         # Creation of the rois layer to display every extracted ROIs
@@ -306,9 +257,9 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.rois_layer = self.viewer.add_shapes(rois,features=features,text=text,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
         self.viewer.layers.selection.active = self.working_layer
 
+
     def start_processing(self):
         """Initialize thread for analysis and create the progress bar window"""
-        # Defining working layer and cleaning other layers
         self.working_layer = self.viewer.layers.selection.active
         self.analysis_data = []
         if self.working_layer is None or not isinstance(self.working_layer, napari.layers.Image) : # Catch if Image layer not selected
@@ -316,20 +267,18 @@ class Microscopy_Metrics_QWidget(QWidget):
             return 
         self.detection_tool_page.erase_Layers()
         self.run_btn.setEnabled(False)
-        """self.worker = self._on_run()
-        self.worker.yielded.connect(self._update_progress)
-        self.worker.finished.connect(self.on_finished)
-        self.worker.start()"""
         self.apply_detect_psf()
+
 
     def _update_progress(self,result):
         self.worker.pbar.set_description(result["desc"])
 
+
     def on_finished(self):
         """Called when the analysis is over to update states of the application"""
         self.run_btn.setEnabled(True)
-        self.display_layers()
         self.generate_pdf_report()
+
 
     def compute_fwhm(self):
         """Process 1D Gaussian fitting on a profile of each dimension to compute Full width at half maximum for each axis"""
@@ -388,7 +337,8 @@ class Microscopy_Metrics_QWidget(QWidget):
                     self.analysis_data[result[0]]["determination"] = result[3]
                 except Exception as e :
                     print(f"Fail : {e}")
-      
+ 
+
     def compute_fwhm_2D(self):
         """Process 1D Gaussian fitting on a profile of each dimension to compute Full width at half maximum for each axis"""
         active_layer = self.viewer.layers.selection.active
@@ -449,29 +399,72 @@ class Microscopy_Metrics_QWidget(QWidget):
         cropped_layers = [entry["cropped"] for entry in self.analysis_data]
         output_dir = os.path.expanduser("~/")
         default_path = os.path.expanduser("~/PSF_analysis_result.pdf")
+        image_path = output_dir
         if self.working_layer is not None and hasattr(self.working_layer,'source') and self.working_layer.source.path :
             image_path = self.working_layer.source.path
             output_dir = os.path.dirname(image_path)
-            output_path = os.path.join(output_dir,"PSF_analysis_result.pdf")
+            output_path = os.path.join(output_dir,f"{self.working_layer.name}_analysis_result.pdf")
         else :
             output_path = default_path    
         # Creating a pdf canvas to save at output path        
-        pdf = canvas.Canvas(output_path)
+        pdf = canvas.Canvas(output_path,pagesize=A4)
         pdf.setTitle("PSF analysis results")
         pdf.setFont("Helvetica-Bold", 36)
         pdf.drawCentredString(300,770, 'Results')
+        stylesheet = getSampleStyleSheet()
+        normalStyle = stylesheet['Normal']
         # Text Lines for general informations
-        pdf.line(30,710,550,710)
         textLines = [
-            f"Identified beads : {len(self.filtered_beads)}",
-            f"Extracted ROIs : {len(rois)}",
-            f"Signal to background ratio : {self.mean_SBR:.2f}"
+            f"Image location: {image_path}",
+            f"Identified beads: {len(self.filtered_beads)}",
+            f"Extracted ROIs: {len(rois)}",
+            f"Signal to background ratio: {self.mean_SBR:.2f}"
         ]
-        text = pdf.beginText(40,680)
-        text.setFont("Courier", 18)
-        for line in textLines :
-            text.textLine(line)
-        pdf.drawText(text)
+        full_text = "<br/>".join(textLines)
+        p = Paragraph(full_text,normalStyle)
+        p.wrapOn(pdf,500,100)
+        p.drawOn(pdf,40,680)
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawCentredString(300,600, 'Acquisition parameters')
+        textLines = [
+            f"Pixel size: [{self.parameters_acquisition["PhysicSizeZ"]},{self.parameters_acquisition["PhysicSizeY"]},{self.parameters_acquisition["PhysicSizeX"]}]",
+            f"Image shape: [{self.parameters_acquisition["ShapeZ"]},{self.parameters_acquisition["ShapeY"]},{self.parameters_acquisition["ShapeX"]}]",
+            f"Microscope type: {self.parameters_acquisition["Microscope_type"]}",
+            f"Emission wavelength: {self.parameters_acquisition["Emission_Wavelength"]}nm",
+            f"Refractive index: {self.parameters_acquisition["Refractive_index"]}",
+            f"Numerical aperture: {self.parameters_acquisition["Numerical_aperture"]}"
+        ]
+        full_text = "<br/>".join(textLines)
+        p = Paragraph(full_text,normalStyle)
+        p.wrapOn(pdf,500,100)
+        p.drawOn(pdf,40,500)
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawCentredString(300,400, 'Detection parameters')
+        tools = ["peak_local_maxima", "blob_log", "blob_dog", "centroids"]
+        textLines = [
+            f"Detection method: {tools[self.parameters_detection['selected_tool']]}"
+        ]
+        if self.parameters_detection["selected_tool"] == 0:
+            textLines.append(f"Minimal distance: {self.parameters_detection['Min_dist']}")
+        else:
+            textLines.append(f"Sigma: {self.parameters_detection['Sigma']}")
+        textLines.extend([
+            f"Bead size: {self.parameters_detection['theorical_bead_size']}",
+            f"Crop factor: {self.parameters_detection['crop_factor']}"
+        ])
+        if self.parameters_detection["auto_threshold"]:
+            textLines.append(f"Threshold tool: {self.parameters_detection['threshold_choice']}")
+        else:
+            textLines.append(f"Threshold relative: {self.parameters_detection['Rel_threshold']}")
+        textLines.extend([
+            f"Distance ring-bead: {self.parameters_detection['distance_annulus']}",
+            f"Ring thickness: {self.parameters_detection['thickness_annulus']}"
+        ])
+        full_text = "<br/>".join(textLines)
+        p = Paragraph(full_text, normalStyle)
+        p.wrapOn(pdf, 500, 100)
+        p.drawOn(pdf, 40, 300)
+
         # Break page and start to write report for each bead
         pdf.showPage()
         for i,psf in enumerate(cropped_layers):
@@ -481,20 +474,20 @@ class Microscopy_Metrics_QWidget(QWidget):
             pdf.setFont("Helvetica-Bold", 36)
             pdf.drawCentredString(300,770, f'Bead_{i}')
             textLines = [
-                f"centroid : {self.filtered_beads[self.analysis_data[i]["id"]]}",
-                f"Full width at Half Maximum :",
-                f"  z : {self.analysis_data[i]["FWHM"][0]:.4f}",
-                f"  y : {self.analysis_data[i]["FWHM"][1]:.4f}",
-                f"  x : {self.analysis_data[i]["FWHM"][2]:.4f}",
-                f"Uncertainty : ",
-                f"  Sigma z : {self.analysis_data[i]["uncertainty"][0][3]:.4f}",
-                f"  Sigma y : {self.analysis_data[i]["uncertainty"][1][3]:.4f}",
-                f"  Sigma x : {self.analysis_data[i]["uncertainty"][2][3]:.4f}",
-                f"Determination : ",
-                f"  z : {self.analysis_data[i]["determination"][0]:.4f}",
-                f"  y : {self.analysis_data[i]["determination"][1]:.4f}",
-                f"  x : {self.analysis_data[i]["determination"][2]:.4f}",
-                f"Signal to background ratio : {self.analysis_data[i]["SBR"]:.2f}",
+                f"centroid: {self.filtered_beads[self.analysis_data[i]["id"]]}",
+                f"Full width at Half Maximum:",
+                f"  Z: {self.analysis_data[i]["FWHM"][0]:.4f}",
+                f"  Y: {self.analysis_data[i]["FWHM"][1]:.4f}",
+                f"  X: {self.analysis_data[i]["FWHM"][2]:.4f}",
+                f"Uncertainty: ",
+                f"  Z: {self.analysis_data[i]["uncertainty"][0][3]:.4f}",
+                f"  Y: {self.analysis_data[i]["uncertainty"][1][3]:.4f}",
+                f"  X: {self.analysis_data[i]["uncertainty"][2][3]:.4f}",
+                f"Determination: ",
+                f"  Z: {self.analysis_data[i]["determination"][0]:.4f}",
+                f"  Y: {self.analysis_data[i]["determination"][1]:.4f}",
+                f"  X: {self.analysis_data[i]["determination"][2]:.4f}",
+                f"Signal to background ratio: {self.analysis_data[i]["SBR"]:.2f}",
             ]
             text = pdf.beginText(40,680)
             text.setFont("Courier", 18)
@@ -504,6 +497,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             pdf.showPage()
         # Save the PDF file
         pdf.save()
+
 
     def generate_html_report(self,psf,path,id_ROI):
         """Function to automatically generate the report of a bead analysis in a html file based on a template"""
@@ -521,11 +515,13 @@ class Microscopy_Metrics_QWidget(QWidget):
         with open(active_path,'w') as f :
             f.write(html_content)
 
+
     def _open_browser(self):
         """Opens a webPage in a new window to display results of analysis"""
         active_path = self.get_active_path(index=self.selected_shape)
         active_path = os.path.join(active_path,"PSF_analysis_result.html")
         webbrowser.open(active_path)
+
 
     def _on_mouse_double_click(self,layer,event):
         """Called on mouse double click, detect if cursor is pointing a shape and open report for this one"""

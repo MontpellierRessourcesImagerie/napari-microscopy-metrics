@@ -51,21 +51,28 @@ class Acquisition_tool_page(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
-        self.title = QLabel("Image parameters:")
-        self.title.setStyleSheet("font-weight: bold")
-        self.title.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.title_PxS = QLabel("Enter physical pixel size (µm/pixel) :")
-        self.title_PxS.setStyleSheet("font-weight: bold")
-        self.title_PxS.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.acquisition_group = QGroupBox("Image parameters")
+        self.group_layout = QVBoxLayout()
+        self.acquisition_group.setLayout(self.group_layout)
+
+        self.pixel_size_layout = QVBoxLayout()
+        self.lbl_pixel_size = QLabel("Enter pixel size (µm/px)")
+        self.lbl_pixel_size.setStyleSheet("font-weight: bold")
+        self.lbl_pixel_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.options_PxS = Options("Pixel size", "Median Filter")
         self.options_PxS.addFloat(name="Pixel size X",value=self.params["PhysicSizeX"])
         self.options_PxS.addFloat(name="Pixel size Y",value=self.params["PhysicSizeY"])
         self.options_PxS.addFloat(name="Pixel size Z",value=self.params["PhysicSizeZ"])
         self.widget_PxS = OptionsWidget(self.viewer,self.options_PxS)
-
         self.label_shape = QLabel()
         self._on_layer_changed()
-        self.title_options_microscope = QLabel("Microscope parameters :")
+        self.pixel_size_layout.addWidget(self.lbl_pixel_size)
+        self.pixel_size_layout.addWidget(self.widget_PxS)
+        self.pixel_size_layout.addWidget(self.label_shape)
+        self.group_layout.addLayout(self.pixel_size_layout)
+
+        self.microscope_layout = QVBoxLayout()
+        self.title_options_microscope = QLabel("Microscope parameters:")
         self.title_options_microscope.setStyleSheet("font-weight: bold")
         self.title_options_microscope.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.options_microscope = Options("Micoscope choice", "Median Filter")
@@ -75,13 +82,11 @@ class Acquisition_tool_page(QWidget):
         self.options_microscope.addFloat(name="Numerical aperture", value = self.params["Numerical_aperture"])
         self.widget_micro_choice = OptionsWidget(self.viewer,self.options_microscope)
         self.widget_micro_choice.addApplyButton(self._on_apply)
+        self.microscope_layout.addWidget(self.title_options_microscope)
+        self.microscope_layout.addWidget(self.widget_micro_choice)
+        self.group_layout.addLayout(self.microscope_layout)
         
-        layout.addWidget(self.title)
-        layout.addWidget(self.title_PxS)
-        layout.addWidget(self.widget_PxS)
-        layout.addWidget(self.label_shape)
-        layout.addWidget(self.title_options_microscope)
-        layout.addWidget(self.widget_micro_choice)
+        layout.addWidget(self.acquisition_group)
         self.setLayout(layout)
 
         self.viewer.layers.selection.events.active.connect(self._on_layer_changed)
@@ -90,6 +95,8 @@ class Acquisition_tool_page(QWidget):
         """Save acquisition datas to json file"""
         self.update_params()
         write_file_data("acquisition_data.json", self.params) # Save parameters
+        self.viewer.layers.selection.active.units = "µm"
+        self.viewer.layers.selection.active.scale = [self.params["PhysicSizeZ"],self.params["PhysicSizeY"],self.params["PhysicSizeX"]]
 
     def _on_layer_changed(self):
         """updating image shape values when changing layer"""
