@@ -340,8 +340,10 @@ class Detection_Tool_Tab(QWidget):
         self.DetectionTool.rejection_distance = self.params["rejection_zone"]
         self.DetectionTool.pixel_size = np.array(physical_pixel)
         args = [self.params["selected_tool"]]
+        kwargs = {"crop_psf":False}
         worker = create_worker(self.DetectionTool.run,
                                 *args,
+                                **kwargs,
                                 _progress={'desc':'Detecting beads...'}
                             )
         worker.finished.connect(self.display_Result)
@@ -351,6 +353,7 @@ class Detection_Tool_Tab(QWidget):
 
 
     def display_Result(self):
+        working_layer = self.viewer.layers.selection.active
         if isinstance(self.DetectionTool.centroids, np.ndarray) and self.DetectionTool.centroids.size > 0 :
             if self.filter_layer is None :
                 self.filter_layer = self.viewer.add_shapes(self.DetectionTool.rois_extracted,shape_type="rectangle",name="ROI",edge_color="blue",face_color="transparent")
@@ -365,3 +368,7 @@ class Detection_Tool_Tab(QWidget):
         else :
             show_warning("No PSF found or incorrect format.")
         self.detection_btn.setEnabled(True)
+        for i in range(len(self.viewer.layers)):
+            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].scale = self.DetectionTool.pixel_size
+        self.viewer.layers.selection.active = working_layer

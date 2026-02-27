@@ -95,8 +95,9 @@ class Acquisition_tool_page(QWidget):
         """Save acquisition datas to json file"""
         self.update_params()
         write_file_data("acquisition_data.json", self.params) # Save parameters
-        self.viewer.layers.selection.active.units = "µm"
-        self.viewer.layers.selection.active.scale = [self.params["PhysicSizeZ"],self.params["PhysicSizeY"],self.params["PhysicSizeX"]]
+        for i in range(len(self.viewer.layers)):
+            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].scale = [self.params["PhysicSizeZ"],self.params["PhysicSizeY"],self.params["PhysicSizeX"]]
 
     def _on_layer_changed(self):
         """updating image shape values when changing layer"""
@@ -104,7 +105,7 @@ class Acquisition_tool_page(QWidget):
         if current_layer is None or not isinstance(current_layer, napari.layers.Image) : # Catch if Image layer not selected
             return 
         image = current_layer.data
-        shape = get_shape(image)
+        shape = image.shape
         self.label_shape.setText(f"{shape[2]} x {shape[1]} x {shape[0]} px")
         self.params["ShapeZ"] = shape[0]
         self.params["ShapeY"] = shape[1]
