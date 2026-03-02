@@ -16,18 +16,9 @@ from ._detection_tool_widget import *
 from._acquisition_widget import *
 from ._metrics_widget import *
 from microscopy_metrics.fitting import *
+from microscopy_metrics.report_generator import *
 from functools import partial
-from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.lib.styles import ParagraphStyle,getSampleStyleSheet
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import Paragraph
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
-from jinja2 import Environment, FileSystemLoader
 import webbrowser
-from PIL import Image
 from concurrent.futures import ThreadPoolExecutor,as_completed
 from skimage.draw import polygon_perimeter
 
@@ -41,6 +32,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.DetectionTool = Detection()
         self.MetricTool = Metrics()
         self.fitting = Fitting()
+        self.report_generator = Report_Generator()
         self.parameters_detection = {
             "Min_dist":10,
             "Rel_threshold":6,
@@ -219,6 +211,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
 
+
     def on_finished(self):
         """Called when the analysis is over to update states of the application"""
         for i,result in enumerate(self.fitting.results):
@@ -226,13 +219,16 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.analysis_data[result[0]]["uncertainty"] = []
             self.analysis_data[result[0]]["determination"] = []
             self.analysis_data[result[0]]["FWHM"] = result[1]
+            self.MetricTool.FWHM = result[1]
+            self.MetricTool.lateral_asymmetry_ratio()
+            self.analysis_data[result[0]]["LAR"] = self.MetricTool.LAR
             self.analysis_data[result[0]]["uncertainty"] = result[2]
             self.analysis_data[result[0]]["determination"] = result[3]
         self.run_btn.setEnabled(True)
-        self.generate_pdf_report()
+        self.generate_report()
  
 
-    def generate_pdf_report(self):
+    def generate_report(self):
         """First version of a pdf generator to save analysis results on a pdf file"""
         # Extracting ROIs and cropped layers from analysis_data
         rois = [entry["ROI"] for entry in self.analysis_data]
@@ -244,116 +240,19 @@ class Microscopy_Metrics_QWidget(QWidget):
             image_path = self.working_layer.source.path
             output_dir = os.path.dirname(image_path)
             output_path = os.path.join(output_dir,f"{self.working_layer.name}_analysis_result.pdf")
+            output_csv_path = os.path.join(output_dir,f"{self.working_layer.name}_analysis_result.csv")
         else :
             output_path = default_path    
-        # Creating a pdf canvas to save at output path        
-        pdf = canvas.Canvas(output_path,pagesize=A4)
-        pdf.setTitle("PSF analysis results")
-        pdf.setFont("Helvetica-Bold", 36)
-        pdf.drawCentredString(300,770, 'Results')
-        stylesheet = getSampleStyleSheet()
-        normalStyle = stylesheet['Normal']
-        # Text Lines for general informations
-        textLines = [
-            f"Image location: {image_path}",
-            f"Identified beads: {len(self.filtered_beads)}",
-            f"Extracted ROIs: {len(rois)}",
-            f"Signal to background ratio: {self.mean_SBR:.2f}"
-        ]
-        full_text = "<br/>".join(textLines)
-        p = Paragraph(full_text,normalStyle)
-        p.wrapOn(pdf,500,100)
-        p.drawOn(pdf,40,680)
-        pdf.setFont("Helvetica-Bold", 18)
-        pdf.drawCentredString(300,600, 'Acquisition parameters')
-        textLines = [
-            f"Pixel size: [{self.parameters_acquisition["PhysicSizeZ"]},{self.parameters_acquisition["PhysicSizeY"]},{self.parameters_acquisition["PhysicSizeX"]}]",
-            f"Image shape: [{self.parameters_acquisition["ShapeZ"]},{self.parameters_acquisition["ShapeY"]},{self.parameters_acquisition["ShapeX"]}]",
-            f"Microscope type: {self.parameters_acquisition["Microscope_type"]}",
-            f"Emission wavelength: {self.parameters_acquisition["Emission_Wavelength"]}nm",
-            f"Refractive index: {self.parameters_acquisition["Refractive_index"]}",
-            f"Numerical aperture: {self.parameters_acquisition["Numerical_aperture"]}"
-        ]
-        full_text = "<br/>".join(textLines)
-        p = Paragraph(full_text,normalStyle)
-        p.wrapOn(pdf,500,100)
-        p.drawOn(pdf,40,500)
-        pdf.setFont("Helvetica-Bold", 18)
-        pdf.drawCentredString(300,400, 'Detection parameters')
-        tools = ["peak_local_maxima", "blob_log", "blob_dog", "centroids"]
-        textLines = [
-            f"Detection method: {tools[self.parameters_detection['selected_tool']]}"
-        ]
-        if self.parameters_detection["selected_tool"] == 0:
-            textLines.append(f"Minimal distance: {self.parameters_detection['Min_dist']}")
-        else:
-            textLines.append(f"Sigma: {self.parameters_detection['Sigma']}")
-        textLines.extend([
-            f"Bead size: {self.parameters_detection['theorical_bead_size']}",
-            f"Crop factor: {self.parameters_detection['crop_factor']}"
-        ])
-        if self.parameters_detection["auto_threshold"]:
-            textLines.append(f"Threshold tool: {self.parameters_detection['threshold_choice']}")
-        else:
-            textLines.append(f"Threshold relative: {self.parameters_detection['Rel_threshold']}")
-        textLines.extend([
-            f"Distance ring-bead: {self.parameters_detection['distance_annulus']}",
-            f"Ring thickness: {self.parameters_detection['thickness_annulus']}"
-        ])
-        full_text = "<br/>".join(textLines)
-        p = Paragraph(full_text, normalStyle)
-        p.wrapOn(pdf, 500, 100)
-        p.drawOn(pdf, 40, 300)
-
-        # Break page and start to write report for each bead
-        pdf.showPage()
-        for i,psf in enumerate(cropped_layers):
-            active_path = self.get_active_path(index=i)
-            # Generating the HTML report
-            self.generate_html_report(self.analysis_data[i],active_path,i)
-            pdf.setFont("Helvetica-Bold", 36)
-            pdf.drawCentredString(300,770, f'Bead_{i}')
-            textLines = [
-                f"centroid: {self.filtered_beads[self.analysis_data[i]["id"]]}",
-                f"Full width at Half Maximum:",
-                f"  Z: {self.analysis_data[i]["FWHM"][0]:.4f}",
-                f"  Y: {self.analysis_data[i]["FWHM"][1]:.4f}",
-                f"  X: {self.analysis_data[i]["FWHM"][2]:.4f}",
-                f"Uncertainty: ",
-                f"  Z: {self.analysis_data[i]["uncertainty"][0][3]:.4f}",
-                f"  Y: {self.analysis_data[i]["uncertainty"][1][3]:.4f}",
-                f"  X: {self.analysis_data[i]["uncertainty"][2][3]:.4f}",
-                f"Determination: ",
-                f"  Z: {self.analysis_data[i]["determination"][0]:.4f}",
-                f"  Y: {self.analysis_data[i]["determination"][1]:.4f}",
-                f"  X: {self.analysis_data[i]["determination"][2]:.4f}",
-                f"Signal to background ratio: {self.analysis_data[i]["SBR"]:.2f}",
-            ]
-            text = pdf.beginText(40,680)
-            text.setFont("Courier", 18)
-            for line in textLines :
-                text.textLine(line)
-            pdf.drawText(text)
-            pdf.showPage()
-        # Save the PDF file
-        pdf.save()
-
-
-    def generate_html_report(self,psf,path,id_ROI):
-        """Function to automatically generate the report of a bead analysis in a html file based on a template"""
-        active_path = os.path.join(path,"PSF_analysis_result.html")
-        template_dir = os.path.join(os.path.dirname(__file__),'res','template')
-        env = Environment(loader=FileSystemLoader(template_dir))
-        template = env.get_template('report_template.html')
-        data = {
-            'title':id_ROI,
-            'bead':self.filtered_beads[psf["id"]],
-            'results':psf,
-            'path':path
-        }
-        html_content = template.render(data)
-        with open(active_path,'w') as f :
-            f.write(html_content)
+        self.report_generator.output_dir = output_dir
+        self.report_generator.output_path = output_path
+        self.report_generator.analysis_data = self.analysis_data
+        self.report_generator.parameters_acquisition = self.parameters_acquisition
+        self.report_generator.parameters_detection = self.parameters_detection
+        self.report_generator.filtered_beads = self.filtered_beads
+        self.report_generator.mean_SBR = self.mean_SBR
+        self.report_generator.generate_pdf_report(image_path)
+        self.report_generator.generate_html_report()
+        self.report_generator.generate_csv_report(output_csv_path)
 
 
     def _open_browser(self):
