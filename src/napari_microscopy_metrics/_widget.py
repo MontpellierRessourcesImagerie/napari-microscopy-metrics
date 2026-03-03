@@ -17,10 +17,7 @@ from._acquisition_widget import *
 from ._metrics_widget import *
 from microscopy_metrics.fitting import *
 from microscopy_metrics.report_generator import *
-from functools import partial
 import webbrowser
-from concurrent.futures import ThreadPoolExecutor,as_completed
-from skimage.draw import polygon_perimeter
 
 
 class Microscopy_Metrics_QWidget(QWidget):
@@ -211,7 +208,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
 
-
     def on_finished(self):
         """Called when the analysis is over to update states of the application"""
         for i,result in enumerate(self.fitting.results):
@@ -222,10 +218,20 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.MetricTool.FWHM = result[1]
             self.MetricTool.lateral_asymmetry_ratio()
             self.analysis_data[result[0]]["LAR"] = self.MetricTool.LAR
+            self.MetricTool.sphericity()
+            self.analysis_data[result[0]]["sphericity"] = self.MetricTool.spherict
             self.analysis_data[result[0]]["uncertainty"] = result[2]
             self.analysis_data[result[0]]["determination"] = result[3]
+        worker = create_worker(self.generate_report,
+                            _progress={'desc':"Generating report..."}
+                            )
+        worker.finished.connect(self.on_report_finished)
+        worker.errored.connect(self.on_report_finished)
+        worker.yielded.connect(lambda value: worker.pbar.set_description(value['desc']))
+        worker.start()
+
+    def on_report_finished(self):
         self.run_btn.setEnabled(True)
-        self.generate_report()
  
 
     def generate_report(self):
@@ -250,8 +256,11 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.report_generator.parameters_detection = self.parameters_detection
         self.report_generator.filtered_beads = self.filtered_beads
         self.report_generator.mean_SBR = self.mean_SBR
+        yield {'desc' : "Generating pdf..."}
         self.report_generator.generate_pdf_report(image_path)
+        yield {'desc' : "Generating html..."}
         self.report_generator.generate_html_report()
+        yield {'desc' : "Generating csv..."}
         self.report_generator.generate_csv_report(output_csv_path)
 
 
@@ -293,9 +302,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def display_layers(self):
         """Add layers for detected beads and extracted ROIs"""
-        # Collecing every rois from analysis_data
         rois = [entry["ROI"] for entry in self.analysis_data]
-        # Creation of the filtered_beads layer to display every detected centroid by a little red point
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
             if self.centroids_layer is None :
                 self.centroids_layer = self.viewer.add_points(self.filtered_beads,name="PSF detected", face_color='red', opacity=0.5, size=2)
@@ -304,9 +311,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.detection_tool_page.results_label.setText(f"Here are the results of the detection:\n- {len(self.filtered_beads)} bead(s) detected\n- {len(rois)} ROI(s) extracted")
         else :
             show_warning("No PSF found or incorrect format.")
-        # Creation of the rois layer to display every extracted ROIs
         if len(rois) > 0:
-            # Defining a text for each ROI to name them
             features ={'label' : [f"bead_{i}" for i in range(len(rois))]} 
             text = {'string': '{label}','anchor': 'upper_left','translation': [5, -5,5],'size': 8,'color': 'green'}
             if self.rois_layer is None :
@@ -319,7 +324,3 @@ class Microscopy_Metrics_QWidget(QWidget):
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = self.DetectionTool.pixel_size
-
-
-    def _update_progress(self,result):
-        self.worker.pbar.set_description(result["desc"])
