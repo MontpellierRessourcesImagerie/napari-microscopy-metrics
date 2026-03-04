@@ -21,14 +21,18 @@ import webbrowser
 
 
 class Microscopy_Metrics_QWidget(QWidget):
-    """Main Widget of the Microscopy_Metrics module"""
+    """Main Widget of the Microscopy_Metrics module
+
+    Args:
+        QWidget: Parent widget of the plugin
+    """
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
         self.analysis_data = []
         self.DetectionTool = Detection()
         self.MetricTool = Metrics()
-        self.fitting = Fitting()
+        self.FittingTool = Fitting()
         self.report_generator = Report_Generator()
         self.parameters_detection = {
             "Min_dist":10,
@@ -108,7 +112,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
 
     def start_processing(self):
-        """Initialize thread for analysis and create the progress bar window"""
+        """Initialize layers and start thread for analysis"""
         self.working_layer = self.viewer.layers.selection.active
         self.analysis_data = []
         if self.working_layer is None or not isinstance(self.working_layer, napari.layers.Image) : # Catch if Image layer not selected
@@ -120,14 +124,14 @@ class Microscopy_Metrics_QWidget(QWidget):
 
 
     def apply_detect_psf(self):
+        """Update DetectionTool with new values and start a new worker for detection"""
         self.parameters_detection = self.detection_tool_page.params
         self.parameters_acquisition = self.acquisition_tool_page.params
         image = self.working_layer.data
         threshold = self.parameters_detection["Rel_threshold"]/100
         auto_threshold = self.parameters_detection["auto_threshold"]
-        physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
         threshold_choice = self.parameters_detection["threshold_choice"]
-        self.DetectionTool.set_image(image)
+        self.DetectionTool.image = image
         self.DetectionTool.threshold_rel = threshold
         if auto_threshold : 
             self.DetectionTool.threshold_choice = threshold_choice
@@ -136,7 +140,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.DetectionTool.crop_factor = self.parameters_detection["crop_factor"]
         self.DetectionTool.bead_size = self.parameters_detection["theorical_bead_size"]
         self.DetectionTool.rejection_distance = self.parameters_detection["rejection_zone"]
-        self.DetectionTool.pixel_size = np.array(physical_pixel)
+        self.DetectionTool.pixel_size = np.array([self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]])
         self.output_dir = os.path.expanduser("~/")
         if self.working_layer is not None and hasattr(self.working_layer,'source') and self.working_layer.source.path :
             image_path = self.working_layer.source.path
@@ -147,11 +151,17 @@ class Microscopy_Metrics_QWidget(QWidget):
                                 _progress={'desc':'Detecting beads...'}
                             )
         worker.finished.connect(self.detect_finished)
+        worker.errored.connect(self.on_report_finished)
         worker.yielded.connect(lambda value: worker.pbar.set_description(value['desc']))
         worker.start()
 
 
     def detect_finished(self):
+        """Function to update napari with new layers displaying bead detection
+
+        Raises:
+            ValueError: Error raised when the bead detection did not worked or if there are no beads in the image
+        """
         self.filtered_beads = self.DetectionTool.centroids
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
             rois = self.DetectionTool.rois_extracted
@@ -168,6 +178,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
 
     def apply_prefitting_metrics(self):
+        """Function to update MetricTool and start a worker for prefitting metrics calculation"""
         physical_pixel = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
         self.MetricTool.image = self.working_layer.data
         self.MetricTool.images = [entry["cropped"] for entry in self.analysis_data]
@@ -178,11 +189,16 @@ class Microscopy_Metrics_QWidget(QWidget):
                                 _progress={'desc':'Metrics calculation...'}
                             )
         worker.finished.connect(self.prefitting_finished)
-        worker.errored.connect(self.on_finished)
+        worker.errored.connect(self.on_report_finished)
         worker.start()
 
 
     def prefitting_finished(self):
+        """Function to update napari display with prefitting metrics results
+
+        Raises:
+            ValueError: Raised when an error occured in the signal to bakground ratio computation
+        """
         if len(self.MetricTool.SBR) != len(self.analysis_data) :
             raise ValueError('Problem with SBR calculation')
         for x,sbr in enumerate(self.MetricTool.SBR) :
@@ -193,24 +209,25 @@ class Microscopy_Metrics_QWidget(QWidget):
 
 
     def apply_fitting(self):
-        self.fitting.images = [entry["cropped"] for entry in self.analysis_data]
+        """Function to update FittingTool and start a worker for Gaussian fitting"""
+        self.FittingTool.images = [entry["cropped"] for entry in self.analysis_data]
         centroids_idx = [entry["id"] for entry in self.analysis_data]
-        self.fitting.centroids = [self.filtered_beads[i] for i in centroids_idx]
-        self.fitting.spacing = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
-        self.fitting.rois = [entry["ROI"] for entry in self.analysis_data]
-        self.fitting.output_dir = self.output_dir
+        self.FittingTool.centroids = [self.filtered_beads[i] for i in centroids_idx]
+        self.FittingTool.spacing = [self.parameters_acquisition["PhysicSizeZ"],self.parameters_acquisition["PhysicSizeY"],self.parameters_acquisition["PhysicSizeX"]]
+        self.FittingTool.rois = [entry["ROI"] for entry in self.analysis_data]
+        self.FittingTool.output_dir = self.output_dir
 
-        worker = create_worker(self.fitting.compute_fitting_1D,
+        worker = create_worker(self.FittingTool.compute_fitting_1D,
                                 _progress={'desc':'Gaussian fitting...'}
                             )
         worker.finished.connect(self.on_finished)
-        worker.errored.connect(self.on_finished)
+        worker.errored.connect(self.on_report_finished)
         worker.start()
 
 
     def on_finished(self):
-        """Called when the analysis is over to update states of the application"""
-        for i,result in enumerate(self.fitting.results):
+        """Function to update result collection and start a worker for report generation"""
+        for i,result in enumerate(self.FittingTool.results):
             self.analysis_data[result[0]]["FWHM"] = []
             self.analysis_data[result[0]]["uncertainty"] = []
             self.analysis_data[result[0]]["determination"] = []
@@ -229,13 +246,14 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.errored.connect(self.on_report_finished)
         worker.yielded.connect(lambda value: worker.pbar.set_description(value['desc']))
         worker.start()
-
-    def on_report_finished(self):
-        self.run_btn.setEnabled(True)
  
 
     def generate_report(self):
-        """First version of a pdf generator to save analysis results on a pdf file"""
+        """Function for generating pdf,csv and html reports
+
+        Yields:
+            string : used to change the description of the napari progress bar
+        """
         # Extracting ROIs and cropped layers from analysis_data
         rois = [entry["ROI"] for entry in self.analysis_data]
         cropped_layers = [entry["cropped"] for entry in self.analysis_data]
@@ -262,17 +280,24 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.report_generator.generate_html_report()
         yield {'desc' : "Generating csv..."}
         self.report_generator.generate_csv_report(output_csv_path)
-
+    
+    
+    def on_report_finished(self):
+        self.run_btn.setEnabled(True)
 
     def _open_browser(self):
-        """Opens a webPage in a new window to display results of analysis"""
         active_path = self.get_active_path(index=self.selected_shape)
         active_path = os.path.join(active_path,"PSF_analysis_result.html")
         webbrowser.open(active_path)
 
 
     def _on_mouse_double_click(self,layer,event):
-        """Called on mouse double click, detect if cursor is pointing an ROI and open related report"""
+        """Function to display html report corresponding to the bead selected by user.
+
+        Args:
+            layer : Information about the layer clicked sent with the signal
+            event : Informations relative to the event sent with the signal
+        """
         
         click_pos = self.viewer.cursor.position / self.working_layer.scale
 
@@ -293,7 +318,13 @@ class Microscopy_Metrics_QWidget(QWidget):
         
 
     def get_active_path(self, index):
-        """Utility function to return the current path of a given bead"""
+        """
+        Args:
+            index (int): Bead ID corresping to it's position in the list
+
+        Returns:
+            Path: Folder's path found (or created) for the selected bead 
+        """
         active_path = os.path.join(self.output_dir,f"bead_{index}")
         if not os.path.exists(active_path):
             os.makedirs(active_path)
@@ -301,7 +332,8 @@ class Microscopy_Metrics_QWidget(QWidget):
 
 
     def display_layers(self):
-        """Add layers for detected beads and extracted ROIs"""
+        """Add layers for detected beads and extracted ROIs
+        Update scale and units of the napari viewer"""
         rois = [entry["ROI"] for entry in self.analysis_data]
         if isinstance(self.filtered_beads, np.ndarray) and self.filtered_beads.size > 0 :
             if self.centroids_layer is None :

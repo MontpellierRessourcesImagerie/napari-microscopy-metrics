@@ -329,7 +329,7 @@ class Detection_Tool_Tab(QWidget):
         physical_pixel = [1,1,1]
         if loaded_params:
             physical_pixel = [loaded_params["PhysicSizeZ"],loaded_params["PhysicSizeY"],loaded_params["PhysicSizeX"]]
-        self.DetectionTool.set_image(self.viewer.layers.selection.active.data)
+        self.DetectionTool.image = self.viewer.layers.selection.active.data
         self.DetectionTool.threshold_rel = self.params["Rel_threshold"]/100
         if self.params["auto_threshold"] : 
             self.DetectionTool.threshold_choice = self.params["threshold_choice"]
@@ -347,7 +347,7 @@ class Detection_Tool_Tab(QWidget):
                                 _progress={'desc':'Detecting beads...'}
                             )
         worker.finished.connect(self.display_Result)
-        worker.errored.connect(self.display_Result)
+        worker.errored.connect(lambda _ : self.detection_btn.setEnabled(True))
         self.detection_btn.setEnabled(False)
         worker.start()
 

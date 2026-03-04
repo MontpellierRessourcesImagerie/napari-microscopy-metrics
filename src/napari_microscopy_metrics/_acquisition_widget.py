@@ -91,18 +91,21 @@ class Acquisition_tool_page(QWidget):
 
         self.viewer.layers.selection.events.active.connect(self._on_layer_changed)
 
+    
+    # TODO : change save system to use auto option
     def _on_apply(self):
         """Save acquisition datas to json file"""
         self.update_params()
-        write_file_data("acquisition_data.json", self.params) # Save parameters
+        write_file_data("acquisition_data.json", self.params)
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = [self.params["PhysicSizeZ"],self.params["PhysicSizeY"],self.params["PhysicSizeX"]]
 
+    
     def _on_layer_changed(self):
         """updating image shape values when changing layer"""
         current_layer = self.viewer.layers.selection.active
-        if current_layer is None or not isinstance(current_layer, napari.layers.Image) : # Catch if Image layer not selected
+        if current_layer is None or not isinstance(current_layer, napari.layers.Image) :
             return 
         image = current_layer.data
         shape = image.shape
@@ -111,6 +114,8 @@ class Acquisition_tool_page(QWidget):
         self.params["ShapeY"] = shape[1]
         self.params["ShapeX"] = shape[2]
 
+    
+    # TODO : change save system to use auto option
     def update_params(self):
         """Function to update acquisition parameters"""
         self.widget_PxS.transferValues()

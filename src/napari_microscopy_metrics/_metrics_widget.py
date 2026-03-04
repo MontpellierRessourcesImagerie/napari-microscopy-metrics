@@ -58,6 +58,5 @@ class Metrics_tool_page(QWidget):
         self.setLayout(layout)
 
     def print_results(self,SBR):
-        """Display metrics measures to widget"""
         text = f"- Signal to background ratio: {SBR:.2f}"
         self.results_label.setText(text)
