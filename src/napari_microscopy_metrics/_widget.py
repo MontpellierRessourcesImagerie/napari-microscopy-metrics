@@ -16,6 +16,7 @@ from qtpy.QtWidgets import *
 from ._detection_tool_widget import *
 from ._acquisition_widget import *
 from ._metrics_widget import *
+from microscopy_metrics.threshold_tool import Threshold
 from microscopy_metrics.fitting import *
 from microscopy_metrics.report_generator import *
 import webbrowser
@@ -138,13 +139,13 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.parameters_detection = self.detection_tool_page.params
         self.parameters_acquisition = self.acquisition_tool_page.params
         image = self.working_layer.data
-        threshold = self.parameters_detection["Rel_threshold"] / 100
-        auto_threshold = self.parameters_detection["auto_threshold"]
-        threshold_choice = self.parameters_detection["threshold_choice"]
+        self.DetectionTool.threshold_tool = Threshold.get_instance(
+            self.parameters_detection["threshold_choice"]
+        )
+        if self.parameters_detection["threshold_choice"] == "manual":
+            self.DetectionTool.threshold_tool.rel_threshold = self.parameters_detection["Rel_threshold"]/100
+
         self.DetectionTool.image = image
-        self.DetectionTool.threshold_rel = threshold
-        if auto_threshold:
-            self.DetectionTool.threshold_choice = threshold_choice
         self.DetectionTool.min_distance = self.parameters_detection["Min_dist"]
         self.DetectionTool.sigma = self.parameters_detection["Sigma"]
         self.DetectionTool.crop_factor = self.parameters_detection[
@@ -224,18 +225,10 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.MetricTool.ring_thickness = self.parameters_detection[
             "thickness_annulus"
         ]
-        self.MetricTool.theoretical_resolution_tool = (
-            self.parameters_acquisition["Microscope_type"]
-        )
-        self.MetricTool.theoretical_resolution_tool.numerical_aperture = (
-            self.parameters_acquisition["Numerical_aperture"]
-        )
-        self.MetricTool.theoretical_resolution_tool.emission_wavelength = (
-            self.parameters_acquisition["Emission_Wavelength"]
-        )
-        self.MetricTool.theoretical_resolution_tool.refractive_index = (
-            self.parameters_acquisition["Refractive_index"]
-        )
+        self.MetricTool.theoretical_resolution_tool = Theoretical_Resolution.get_instance(self.parameters_acquisition["Microscope_type"])
+        self.MetricTool.theoretical_resolution_tool.numerical_aperture = self.parameters_acquisition["Numerical_aperture"]
+        self.MetricTool.theoretical_resolution_tool.emission_wavelength = self.parameters_acquisition["Emission_Wavelength"]
+        self.MetricTool.theoretical_resolution_tool.refractive_index = self.parameters_acquisition["Refractive_index"]
         self.MetricTool.pixel_size = np.array(physical_pixel)
         worker = create_worker(
             self.MetricTool.run_prefitting_metrics,

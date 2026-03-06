@@ -91,7 +91,7 @@ class Acquisition_tool_page(QWidget):
         self.options_microscope = Options("Micoscope choice", "Median Filter")
         self.options_microscope.addChoice(
             name="Microscope type",
-            choices=["widefield", "confocal", "Spinning_disk", "Multiphoton"],
+            choices=[x for x in Theoretical_Resolution._microscopes_classes.keys()],
             value=self.params["Microscope_type"],
         )
         self.options_microscope.addInt(

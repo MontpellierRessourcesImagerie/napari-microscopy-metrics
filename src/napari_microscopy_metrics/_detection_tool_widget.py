@@ -60,6 +60,9 @@ class Detection_Parameters_Widget(QWidget):
             self._selected_action
         )
 
+        self.layer = None
+        self.old_contrast_limits = None
+
         # ToolBox for selecting the detection method
         self.params_stack = QStackedWidget()
 
@@ -117,16 +120,12 @@ class Detection_Parameters_Widget(QWidget):
             "Relative threshold: " + str(self.threshold_rel.value() / 100)
         )
 
-        # Button for the automatic threshold calculation
-        self.threshold_auto_check = QCheckBox()
-        self.threshold_auto_check.setChecked(self.params["auto_threshold"])
-
         # Option for the choice of the threshold
         self.options_threshold = Options("Threshold choice", "Median Filter")
         self.options_threshold.addChoice(
             name="choose a threshold",
             value=str(self.params["threshold_choice"]),
-            choices=["otsu", "isodata", "li", "minimum", "triangle"],
+            choices=[x for x in Threshold._threshold_classes.keys()],
         )
         self.widget_threshold = OptionsWidget(
             self.viewer, self.options_threshold
@@ -174,34 +173,24 @@ class Detection_Parameters_Widget(QWidget):
         layout.addWidget(self.params_stack)
         layout.addWidget(self.threshold_rel_label)
         layout.addWidget(self.threshold_rel)
-        layout.addWidget(QLabel("Apply an automatic threshold ?"))
-        layout.addWidget(self.threshold_auto_check)
         layout.addWidget(self.widget_threshold)
         layout.addWidget(self.widget_ROI)
         layout.addWidget(self.crop_factor_label)
         layout.addWidget(self.crop_factor)
         layout.addWidget(self.widget_rejection)
-
-        # Defining the layout of the widget
         self.setLayout(layout)
-
-        # Linking signals to slots
-        self.min_distance_detection.valueChanged.connect(
-            self._update_min_distance
-        )
+        self.min_distance_detection.valueChanged.connect(self._update_min_distance)
         self.blob_sigma_slider.valueChanged.connect(self._update_sigma)
         self.threshold_rel.valueChanged.connect(self._update_threshold)
         self.crop_factor.valueChanged.connect(self._update_crop_factor)
-        self.threshold_auto_check.stateChanged.connect(
-            self._update_auto_threshold
-        )
-        # Initial calls for updating states at launch
         self._selected_action(self.detection_tool_selection.currentIndex())
 
     # Defining slots
     def _on_confirm(self):
         """Send parameters to main window and close this one"""
         self.update_params()
+        if self.params["threshold_choice"] != "manual":
+            self.display_threshold(self.params["threshold_choice"])
         self.signal.params_updated.emit(self.params)
 
     def _update_min_distance(self, value):
@@ -220,6 +209,27 @@ class Detection_Parameters_Widget(QWidget):
             "Relative threshold: " + str(value / 100)
         )
         self.params["Rel_threshold"] = value
+        self.display_threshold("manual",value=value/100)
+
+
+    def display_threshold(self,threshold_str,value=0.5):
+        if isinstance(self.viewer.layers.selection.active, napari.layers.Image):
+            if self.layer != self.viewer.layers.selection.active and self.layer is not None:
+                self.layer.contrast_limits = self.old_contrast_limits
+                self.layer.colormap = "gray"
+                self.layer.blending = "additive"
+                self.layer = None
+            if self.layer is None or self.old_contrast_limits is None:
+                self.layer = self.viewer.layers.selection.active
+                self.old_contrast_limits = self.layer.contrast_limits
+
+            threshold = Threshold.get_instance(threshold_str)
+            if threshold_str == "manual":
+                threshold.rel_threshold = value
+            value_threshold = threshold.get_threshold(self.layer.data)
+            self.layer.contrast_limits = [max(min(value_threshold + np.min(self.layer.data),self.old_contrast_limits[1]-1),self.old_contrast_limits[0]),self.old_contrast_limits[1]]
+            self.layer.colormap = 'HiLo'
+            self.layer.blending = "additive"
 
     def _update_crop_factor(self, value):
         """Updates the label for crop factor and assign the value in params"""
@@ -232,10 +242,6 @@ class Detection_Parameters_Widget(QWidget):
         if index >= 2:
             index = index - 1
         self.params_stack.setCurrentIndex(index)
-
-    def _update_auto_threshold(self, value):
-        """Assign the value in params"""
-        self.params["auto_threshold"] = value == 2
 
     def update_params(self):
         """Function to update user preferencies"""
@@ -339,18 +345,18 @@ class Detection_Tool_Tab(QWidget):
         if self.count_windows == 0:
             self.parameters_window = QDialog(self)
             self.parameters_window.setWindowTitle("Detection parameters")
-            self.parameters_window.setModal(True)
-            parameters_widget = Detection_Parameters_Widget(
+            self.parameters_window.setModal(False)
+            self.parameters_widget = Detection_Parameters_Widget(
                 self.viewer, self.params
             )
-            parameters_widget.signal.params_updated.connect(
+            self.parameters_widget.signal.params_updated.connect(
                 self.on_params_updated
             )
             self.parameters_window.finished.connect(
                 self._on_parameters_window_closed
             )
             parameters_layout = QVBoxLayout()
-            parameters_layout.addWidget(parameters_widget)
+            parameters_layout.addWidget(self.parameters_widget)
             self.parameters_window.setLayout(parameters_layout)
             self.parameters_window.show()
             self.count_windows += 1
@@ -358,12 +364,14 @@ class Detection_Tool_Tab(QWidget):
     def _on_parameters_window_closed(self, result):
         """Catch the close event of the window and update the counter"""
         self.count_windows -= 1
+        self.parameters_widget.layer.contrast_limits = self.parameters_widget.old_contrast_limits
+        self.parameters_widget.layer.colormap = "gray"
+        self.parameters_widget.layer.blending = "additive"
 
     def on_params_updated(self, new_params):
         """Catch parameters modification and update params"""
         self.params = new_params
         write_file_data("parameters_data.json", self.params)
-        self.parameters_window.close()
 
     def erase_Layers(self):
         """Delete all layers made by this wiget"""
@@ -396,11 +404,12 @@ class Detection_Tool_Tab(QWidget):
                 loaded_params["PhysicSizeX"],
             ]
         self.DetectionTool.image = self.viewer.layers.selection.active.data
-        self.DetectionTool.threshold_rel = self.params["Rel_threshold"] / 100
-        if self.params["auto_threshold"]:
-            self.DetectionTool.threshold_choice = self.params[
-                "threshold_choice"
-            ]
+        self.DetectionTool.threshold_tool = Threshold.get_instance(
+            self.params["threshold_choice"]
+        )
+        if self.params["threshold_choice"] == "manual":
+            self.DetectionTool.threshold_tool.rel_threshold = self.params["Rel_threshold"]/100
+
         self.DetectionTool.min_distance = self.params["Min_dist"]
         self.DetectionTool.sigma = self.params["Sigma"]
         self.DetectionTool.crop_factor = self.params["crop_factor"]
