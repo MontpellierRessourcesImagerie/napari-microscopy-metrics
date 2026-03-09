@@ -37,38 +37,8 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.MetricTool = Metrics()
         self.FittingTool = Fitting()
         self.report_generator = Report_Generator()
-        self.parameters_detection = {
-            "Min_dist": 10,
-            "Rel_threshold": 6,
-            "Sigma": 3,
-            "theorical_bead_size": 10,
-            "crop_factor": 5,
-            "selected_tool": 0,
-            "auto_threshold": False,
-            "rejection_zone": 10,
-            "distance_annulus": 10,
-            "thickness_annulus": 10,
-        }
-        # Read and restore datas if exist
-        loaded_params = read_file_data("parameters_data.json")
-        if loaded_params:
-            self.parameters_detection.update(loaded_params)
-        self.parameters_acquisition = {
-            "PhysicSizeX": 10,
-            "PhysicSizeY": 6,
-            "PhysicSizeZ": 3,
-            "ShapeX": 10,
-            "ShapeY": 5,
-            "ShapeZ": 0,
-            "Microscope_type": "widefield",
-            "Emission_Wavelength": 450,
-            "Refractive_index": 0.9,
-            "Numerical_aperture": 1,
-        }
-        # Read and restore datas if exist
-        loaded_params = read_file_data("acquisition_data.json")
-        if loaded_params:
-            self.parameters_acquisition.update(loaded_params)
+        self.parameters_detection = {}
+        self.parameters_acquisition = {}
         # Declaration of the layers
         self.centroids_layer = None
         self.rois_layer = None
@@ -89,6 +59,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.tab.setDocumentMode(True)
         # Initialisation of Acquisition tool page
         self.acquisition_tool_page = Acquisition_tool_page(self.viewer)
+        self.acquisition_tool_page.widget_PxS.signal.scale_update.connect(self.update_scale_detection)
         self.acquisition_tool_page.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
@@ -136,32 +107,25 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def apply_detect_psf(self):
         """Update DetectionTool with new values and start a new worker for detection"""
-        self.parameters_detection = self.detection_tool_page.params
-        self.parameters_acquisition = self.acquisition_tool_page.params
         image = self.working_layer.data
-        self.DetectionTool.threshold_tool = Threshold.get_instance(
-            self.parameters_detection["threshold_choice"]
-        )
-        if self.parameters_detection["threshold_choice"] == "manual":
-            self.DetectionTool.threshold_tool.rel_threshold = self.parameters_detection["Rel_threshold"]/100
-
+        self.DetectionTool._detection_tool = Detection_Tool.get_instance(self.detection_tool_page.DetectionParameters.detection_tool_widget.options.value("Detection tool"))
+        self.DetectionTool._detection_tool._threshold_tool = Threshold.get_instance(self.detection_tool_page.DetectionParameters.widget_threshold.options.value("Threshold"))
+        if self.detection_tool_page.DetectionParameters.widget_threshold.options.value("Threshold") == "manual":
+            self.DetectionTool._detection_tool._threshold_tool.rel_threshold = self.detection_tool_page.DetectionParameters.widget_threshold.options_sliders.value("threshold")/100
+        self.DetectionTool._detection_tool._image = image
+        self.DetectionTool._detection_tool.sigma = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Sigma")
+        if isinstance(self.DetectionTool._detection_tool,Peak_Local_Max_Detector):
+            self.DetectionTool._detection_tool.min_distance = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Min dist")
         self.DetectionTool.image = image
-        self.DetectionTool.min_distance = self.parameters_detection["Min_dist"]
-        self.DetectionTool.sigma = self.parameters_detection["Sigma"]
-        self.DetectionTool.crop_factor = self.parameters_detection[
-            "crop_factor"
-        ]
-        self.DetectionTool.bead_size = self.parameters_detection[
-            "theorical_bead_size"
-        ]
-        self.DetectionTool.rejection_distance = self.parameters_detection[
-            "rejection_zone"
-        ]
+        self.DetectionTool.sigma = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Sigma")
+        self.DetectionTool.crop_factor = self.detection_tool_page.DetectionParameters.widget_rejection.options_sliders.value("crop factor")
+        self.DetectionTool.bead_size = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Theoretical bead size (µm)")
+        self.DetectionTool.rejection_distance = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Z axis rejection margin (µm)")
         self.DetectionTool.pixel_size = np.array(
             [
-                self.parameters_acquisition["PhysicSizeZ"],
-                self.parameters_acquisition["PhysicSizeY"],
-                self.parameters_acquisition["PhysicSizeX"],
+                self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
+                self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
+                self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
             ]
         )
         self.output_dir = os.path.expanduser("~/")
@@ -172,7 +136,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         ):
             image_path = self.working_layer.source.path
             self.output_dir = os.path.dirname(image_path)
-        args = [self.parameters_detection["selected_tool"], self.output_dir]
+        args = [self.output_dir]
         worker = create_worker(
             self.DetectionTool.run,
             *args,
@@ -211,24 +175,20 @@ class Microscopy_Metrics_QWidget(QWidget):
     def apply_prefitting_metrics(self):
         """Function to update MetricTool and start a worker for prefitting metrics calculation"""
         physical_pixel = [
-            self.parameters_acquisition["PhysicSizeZ"],
-            self.parameters_acquisition["PhysicSizeY"],
-            self.parameters_acquisition["PhysicSizeX"],
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
         ]
         self.MetricTool.image = self.working_layer.data
         self.MetricTool.images = [
             entry["cropped"] for entry in self.analysis_data
         ]
-        self.MetricTool.ring_inner_distance = self.parameters_detection[
-            "distance_annulus"
-        ]
-        self.MetricTool.ring_thickness = self.parameters_detection[
-            "thickness_annulus"
-        ]
-        self.MetricTool.theoretical_resolution_tool = Theoretical_Resolution.get_instance(self.parameters_acquisition["Microscope_type"])
-        self.MetricTool.theoretical_resolution_tool.numerical_aperture = self.parameters_acquisition["Numerical_aperture"]
-        self.MetricTool.theoretical_resolution_tool.emission_wavelength = self.parameters_acquisition["Emission_Wavelength"]
-        self.MetricTool.theoretical_resolution_tool.refractive_index = self.parameters_acquisition["Refractive_index"]
+        self.MetricTool.ring_inner_distance = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Inner annulus distance to bead (µm)")
+        self.MetricTool.ring_thickness = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Annulus thickness (µm)")
+        self.MetricTool.theoretical_resolution_tool = Theoretical_Resolution.get_instance(self.acquisition_tool_page.widget_micro_choice.options.value("Microscope type"))
+        self.MetricTool.theoretical_resolution_tool.numerical_aperture = self.acquisition_tool_page.widget_micro_choice.options.value("Numerical aperture")
+        self.MetricTool.theoretical_resolution_tool.emission_wavelength = self.acquisition_tool_page.widget_micro_choice.options.value("Emission wavelength")
+        self.MetricTool.theoretical_resolution_tool.refractive_index = self.acquisition_tool_page.widget_micro_choice.options.value("Refraction index")
         self.MetricTool.pixel_size = np.array(physical_pixel)
         worker = create_worker(
             self.MetricTool.run_prefitting_metrics,
@@ -262,9 +222,9 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.filtered_beads[i] for i in centroids_idx
         ]
         self.FittingTool.spacing = [
-            self.parameters_acquisition["PhysicSizeZ"],
-            self.parameters_acquisition["PhysicSizeY"],
-            self.parameters_acquisition["PhysicSizeX"],
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
+            self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
         ]
         self.FittingTool.rois = [entry["ROI"] for entry in self.analysis_data]
         self.FittingTool.output_dir = self.output_dir
@@ -333,10 +293,13 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.report_generator.output_dir = output_dir
         self.report_generator.output_path = output_path
         self.report_generator.analysis_data = self.analysis_data
-        self.report_generator.parameters_acquisition = (
-            self.parameters_acquisition
-        )
-        self.report_generator.parameters_detection = self.parameters_detection
+        original_dict = self.acquisition_tool_page.widget_PxS.options.items | self.acquisition_tool_page.widget_micro_choice.options.items
+        simplified_dict = {key: sub_dict['value'] for key, sub_dict in original_dict.items()}
+        self.report_generator.image_shape = self.working_layer.data.shape
+        self.report_generator.parameters_acquisition = simplified_dict
+        original_dict = self.detection_tool_page.DetectionParameters.detection_tool_widget.options.items | self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.items | self.detection_tool_page.DetectionParameters.widget_threshold.options.items | self.detection_tool_page.DetectionParameters.widget_threshold.options_sliders.items | self.detection_tool_page.DetectionParameters.widget_rejection.options.items | self.detection_tool_page.DetectionParameters.widget_rejection.options_sliders.items
+        simplified_dict = {key: sub_dict['value'] for key, sub_dict in original_dict.items()}
+        self.report_generator.parameters_detection = simplified_dict
         self.report_generator.filtered_beads = self.filtered_beads
         self.report_generator.mean_SBR = self.mean_SBR
         self.report_generator.theoretical_resolution = (
@@ -458,3 +421,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = self.DetectionTool.pixel_size
+
+    def update_scale_detection(self,scale):
+        self.detection_tool_page.DetectionTool._pixel_size = scale
+        print(self.detection_tool_page.DetectionTool._pixel_size)
