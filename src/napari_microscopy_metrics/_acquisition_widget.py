@@ -11,17 +11,15 @@ from qtpy.QtCore import Qt, QSize, Signal, QObject
 from qtpy.QtWidgets import *
 from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
-from microscopy_metrics.detection import *
-from microscopy_metrics.metrics import *
-from microscopy_metrics.utils import *
 import napari
 from napari.utils.notifications import *
 from .json_utils import *
 from autooptions import *
+from microscopy_metrics.theoretical_resolution import TheoreticalResolution
 
 
 class UpdateScaleSignal(QObject):
-    scale_update = Signal(list)
+    scaleUpdate = Signal(list)
 
 
 class ImageSizeWidget(QWidget):
@@ -32,11 +30,6 @@ class ImageSizeWidget(QWidget):
         self.widget = None
         self.createLayout()
         self.signal = UpdateScaleSignal()
-        self.signal.scale_update.emit([
-                self.options.value("Pixel size Z"),
-                self.options.value("Pixel size Y"),
-                self.options.value("Pixel size X"),
-            ])
 
     def createLayout(self):
         self.widget = OptionsWidget(self.viewer,self.options)
@@ -63,7 +56,8 @@ class ImageSizeWidget(QWidget):
                 self.options.value("Pixel size Y"),
                 self.options.value("Pixel size X"),
             ]
-        self.signal.scale_update.emit([
+        self.viewer.reset_view()
+        self.signal.scaleUpdate.emit([
                 self.options.value("Pixel size Z"),
                 self.options.value("Pixel size Y"),
                 self.options.value("Pixel size X"),
@@ -89,7 +83,7 @@ class MicroscopeParametersWidget(QWidget):
     @classmethod
     def getOptions(cls):
         options = Options("Microscope parameters","register microscope parameters")
-        options.addChoice(name="Microscope type",choices=[x for x in Theoretical_Resolution._microscopes_classes.keys()],value="widefield")
+        options.addChoice(name="Microscope type", choices=[x for x in TheoreticalResolution._microscopesClasses.keys()], value="widefield")
         options.addInt(name="Emission wavelength",value=450)
         options.addFloat(name="Refraction index", value=1.45)
         options.addFloat(name="Numerical aperture", value=1.0)
@@ -97,7 +91,7 @@ class MicroscopeParametersWidget(QWidget):
         return options
 
 
-class Acquisition_tool_page(QWidget):
+class AcquisitionToolPage(QWidget):
     """The main widget for microscope acquisition parameters
 
     Parameter
@@ -109,52 +103,52 @@ class Acquisition_tool_page(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
-        self.count_windows = 0
-        self.label_shape = QLabel()
-        self.init_ui()
-        self.viewer.layers.selection.events.active.connect(self._on_layer_changed)
+        self.countWindows = 0
+        self.labelShape = QLabel()
+        self.initUi()
+        self.viewer.layers.selection.events.active.connect(self.onLayerChanged)
 
-    def init_ui(self):
+    def initUi(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
-        self.acquisition_group = QGroupBox("Image parameters")
-        self.group_layout = QVBoxLayout()
-        self.acquisition_group.setLayout(self.group_layout)
-        self.pixel_size_layout = QVBoxLayout()
-        self.lbl_pixel_size = QLabel("Enter pixel size (µm/px)")
-        self.lbl_pixel_size.setStyleSheet("font-weight: bold")
-        self.lbl_pixel_size.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.acquisitionGroup = QGroupBox("Image parameters")
+        self.groupLayout = QVBoxLayout()
+        self.acquisitionGroup.setLayout(self.groupLayout)
+        self.pixelSizeLayout = QVBoxLayout()
+        self.lblPixelSize = QLabel("Enter pixel size (µm/px)")
+        self.lblPixelSize.setStyleSheet("font-weight: bold")
+        self.lblPixelSize.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
-        self.widget_PxS = ImageSizeWidget(self.viewer)
-        self._on_layer_changed()
-        self.pixel_size_layout.addWidget(self.lbl_pixel_size)
-        self.pixel_size_layout.addWidget(self.widget_PxS)
-        self.group_layout.addLayout(self.pixel_size_layout)
+        self.widgetPxS = ImageSizeWidget(self.viewer)
+        self.onLayerChanged()
+        self.pixelSizeLayout.addWidget(self.lblPixelSize)
+        self.pixelSizeLayout.addWidget(self.widgetPxS)
+        self.groupLayout.addLayout(self.pixelSizeLayout)
 
-        self.group_layout.addSpacerItem(QSpacerItem(20,40,QSizePolicy.Expanding,QSizePolicy.Minimum))
+        self.groupLayout.addSpacerItem(QSpacerItem(20,40,QSizePolicy.Expanding,QSizePolicy.Minimum))
 
-        self.microscope_layout = QVBoxLayout()
-        self.title_options_microscope = QLabel("Microscope parameters:")
-        self.title_options_microscope.setStyleSheet("font-weight: bold")
-        self.title_options_microscope.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.microscopeLayout = QVBoxLayout()
+        self.titleOptionsMicroscope = QLabel("Microscope parameters:")
+        self.titleOptionsMicroscope.setStyleSheet("font-weight: bold")
+        self.titleOptionsMicroscope.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
-        self.widget_micro_choice = MicroscopeParametersWidget(self.viewer)
-        self.microscope_layout.addWidget(self.title_options_microscope)
-        self.microscope_layout.addWidget(self.widget_micro_choice)
-        self.group_layout.addLayout(self.microscope_layout)
+        self.widgetMicroChoice = MicroscopeParametersWidget(self.viewer)
+        self.microscopeLayout.addWidget(self.titleOptionsMicroscope)
+        self.microscopeLayout.addWidget(self.widgetMicroChoice)
+        self.groupLayout.addLayout(self.microscopeLayout)
         
-        self.group_layout.addWidget(self.label_shape)
+        self.groupLayout.addWidget(self.labelShape)
 
-        layout.addWidget(self.acquisition_group)
+        layout.addWidget(self.acquisitionGroup)
         self.setLayout(layout)
 
-    def _on_layer_changed(self):
+    def onLayerChanged(self):
         """updating image shape values when changing layer"""
-        current_layer = self.viewer.layers.selection.active
-        if current_layer is None or not isinstance(current_layer, napari.layers.Image):
+        currentLayer = self.viewer.layers.selection.active
+        if currentLayer is None or not isinstance(currentLayer, napari.layers.Image):
             return
-        image = current_layer.data
+        image = currentLayer.data
         shape = image.shape
-        self.label_shape.setText(f"Selected image shape : {shape[2]} x {shape[1]} x {shape[0]} px")
+        self.labelShape.setText(f"Selected image shape : {shape[2]} x {shape[1]} x {shape[0]} px")

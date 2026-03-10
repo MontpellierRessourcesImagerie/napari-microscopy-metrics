@@ -15,7 +15,7 @@ def test_acquisition_page_initialize(qapp):
     mock_viewer.layers.selection.active = None
     widget = Acquisition_tool_page(mock_viewer)
     assert widget.viewer == mock_viewer
-    assert widget.count_windows == 0
+    assert widget.countWindows == 0
     assert widget.params["PhysicSizeX"] == 0.06
     assert widget.title.text() == "Image parameters"
 

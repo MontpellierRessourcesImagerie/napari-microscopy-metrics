@@ -1,26 +1,29 @@
 """
 This module contains a napari widgets for PSF analysis:
-- A QWidget class for performing PSF detection using two methods (centroids and peak_local_max)
+- A QWidget class for performing PSF detection using two methods (_centroids and peak_local_max)
 
 """
 
 from typing import TYPE_CHECKING, Optional
 import types
 import napari
-from napari.qt.threading import thread_worker
+from napari.qt.threading import thread_worker,create_worker
 from napari.utils import progress
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject, QThread
 from qtpy.QtWidgets import *
-from ._detection_tool_widget import *
+from ._detection_tool_widget import DetectionToolTab
 from ._acquisition_widget import *
 from ._metrics_widget import *
+from microscopy_metrics.detection import Detection
+from microscopy_metrics.detection_tool import DetectionTool,PeakLocalMaxDetector
+from microscopy_metrics.metrics import Metrics
 from microscopy_metrics.threshold_tool import Threshold
-from microscopy_metrics.fitting import *
-from microscopy_metrics.report_generator import *
+from microscopy_metrics.fitting import Fitting
+from microscopy_metrics.report_generator import ReportGenerator
 import webbrowser
-
+import numpy as np
 
 class Microscopy_Metrics_QWidget(QWidget):
     """Main Widget of the Microscopy_Metrics module
@@ -32,357 +35,361 @@ class Microscopy_Metrics_QWidget(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
-        self.analysis_data = []
+        self.analysisData = []
         self.DetectionTool = Detection()
         self.MetricTool = Metrics()
         self.FittingTool = Fitting()
-        self.report_generator = Report_Generator()
-        self.parameters_detection = {}
-        self.parameters_acquisition = {}
+        self.reportGenerator = ReportGenerator()
+        self.parametersDetection = {}
+        self.parametersAcquisition = {}
         # Declaration of the layers
-        self.centroids_layer = None
-        self.rois_layer = None
+        self.centroidsLayer = None
+        self.roisLayer = None
         # List of all detected bead centroid
-        self.filtered_beads = None
+        self.filteredBeads = None
         # Layer containing the Image to analyse
-        self.working_layer = None
+        self.workingLayer = None
         # Output directory based on current Image
-        self.output_dir = None
+        self.outputDir = None
         # Metrics of the picture
-        self.mean_SBR = 0
+        self.meanSBR = 0
         # Actual shape selected
-        self.selected_shape = 0
+        self.selectedShape = 0
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         # TabWidget for navigation between tools
         self.tab = QTabWidget()
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.tab.setDocumentMode(True)
         # Initialisation of Acquisition tool page
-        self.acquisition_tool_page = Acquisition_tool_page(self.viewer)
-        self.acquisition_tool_page.widget_PxS.signal.scale_update.connect(self.update_scale_detection)
-        self.acquisition_tool_page.setSizePolicy(
+        self.acquisitionToolPage = AcquisitionToolPage(self.viewer)
+        self.acquisitionToolPage.widgetPxS.signal.scaleUpdate.connect(self.updateScaleDetection)
+        self.acquisitionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
-        self.tab.addTab(self.acquisition_tool_page, "Acquisition parameters")
+        self.tab.addTab(self.acquisitionToolPage, "Acquisition parameters")
         # Initialisation of Detection tool page
-        self.detection_tool_page = Detection_Tool_Tab(self.viewer)
-        self.detection_tool_page.setSizePolicy(
+        self.detectionToolPage = DetectionToolTab(self.viewer)
+        self.detectionToolPage.detectionTool._pixelSize = [
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+            ]
+        self.detectionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
-        self.tab.addTab(self.detection_tool_page, "Detection parameters")
+        self.tab.addTab(self.detectionToolPage, "Detection parameters")
         # Initialisation of Metrics tool page
-        self.metrics_tool_page = Metrics_tool_page(self.viewer)
-        self.metrics_tool_page.setSizePolicy(
+        self.metricsToolPage = Metricstoolpage(self.viewer)
+        self.metricsToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
-        self.tab.addTab(self.metrics_tool_page, "Metrics parameters")
+        self.tab.addTab(self.metricsToolPage, "Metrics parameters")
         # Button to run global analyze
-        self.run_btn = QPushButton("Run analysis")
-        self.run_btn.setStyleSheet("background-color : green")
-        self.run_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.runButton = QPushButton("Run analysis")
+        self.runButton.setStyleSheet("background-color : green")
+        self.runButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         # Creation of the layout
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
         self.layout().addWidget(self.tab)
-        self.layout().addWidget(self.run_btn)
+        self.layout().addWidget(self.runButton)
         # Connect signals and slots
-        self.run_btn.pressed.connect(self.start_processing)
+        self.runButton.pressed.connect(self.startProcessing)
         self.viewer.mouse_double_click_callbacks.append(
-            self._on_mouse_double_click
+            self.onMouseDoubleClick
         )
 
-    def start_processing(self):
+    def startProcessing(self):
         """Initialize layers and start thread for analysis"""
-        self.working_layer = self.viewer.layers.selection.active
-        self.analysis_data = []
-        if self.working_layer is None or not isinstance(
-            self.working_layer, napari.layers.Image
+        self.workingLayer = self.viewer.layers.selection.active
+        self.analysisData = []
+        if self.workingLayer is None or not isinstance(
+            self.workingLayer, napari.layers.Image
         ):  # Catch if Image layer not selected
             show_error("Please, select a valid layer of type Image")
             return
-        self.detection_tool_page.erase_Layers()
-        self.run_btn.setEnabled(False)
+        self.detectionToolPage.erase_Layers()
+        self.runButton.setEnabled(False)
         self.apply_detect_psf()
 
     def apply_detect_psf(self):
         """Update DetectionTool with new values and start a new worker for detection"""
-        image = self.working_layer.data
-        self.DetectionTool._detection_tool = Detection_Tool.get_instance(self.detection_tool_page.DetectionParameters.detection_tool_widget.options.value("Detection tool"))
-        self.DetectionTool._detection_tool._threshold_tool = Threshold.get_instance(self.detection_tool_page.DetectionParameters.widget_threshold.options.value("Threshold"))
-        if self.detection_tool_page.DetectionParameters.widget_threshold.options.value("Threshold") == "manual":
-            self.DetectionTool._detection_tool._threshold_tool.rel_threshold = self.detection_tool_page.DetectionParameters.widget_threshold.options_sliders.value("threshold")/100
-        self.DetectionTool._detection_tool._image = image
-        self.DetectionTool._detection_tool.sigma = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Sigma")
-        if isinstance(self.DetectionTool._detection_tool,Peak_Local_Max_Detector):
-            self.DetectionTool._detection_tool.min_distance = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Min dist")
-        self.DetectionTool.image = image
-        self.DetectionTool.sigma = self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.value("Sigma")
-        self.DetectionTool.crop_factor = self.detection_tool_page.DetectionParameters.widget_rejection.options_sliders.value("crop factor")
-        self.DetectionTool.bead_size = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Theoretical bead size (µm)")
-        self.DetectionTool.rejection_distance = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Z axis rejection margin (µm)")
-        self.DetectionTool.pixel_size = np.array(
+        image = self.workingLayer.data
+        self.DetectionTool._detectionTool = DetectionTool.getInstance(self.detectionToolPage.detectionParameters.detectionToolWidget.options.value("Detection tool"))
+        self.DetectionTool._detectionTool._thresholdTool = Threshold.getInstance(self.detectionToolPage.detectionParameters.widgetThreshold.options.value("Threshold"))
+        if self.detectionToolPage.detectionParameters.widgetThreshold.options.value("Threshold") == "manual":
+            self.DetectionTool._detectionTool._thresholdTool._relThreshold = self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
+        self.DetectionTool._detectionTool._image = image
+        self.DetectionTool._detectionTool.sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        if isinstance(self.DetectionTool._detectionTool, PeakLocalMaxDetector):
+            self.DetectionTool._detectionTool.minDistance = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
+        self.DetectionTool._image = image
+        self.DetectionTool._sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        self.DetectionTool._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
+        self.DetectionTool._beadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
+        self.DetectionTool._rejectionDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
+        self.DetectionTool._pixelSize = np.array(
             [
-                self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
-                self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
-                self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
             ]
         )
-        self.output_dir = os.path.expanduser("~/")
+        self.outputDir = os.path.expanduser("~/")
         if (
-            self.working_layer is not None
-            and hasattr(self.working_layer, "source")
-            and self.working_layer.source.path
+            self.workingLayer is not None
+            and hasattr(self.workingLayer, "source")
+            and self.workingLayer.source.path
         ):
-            image_path = self.working_layer.source.path
-            self.output_dir = os.path.dirname(image_path)
-        args = [self.output_dir]
+            imagePath = self.workingLayer.source.path
+            self.outputDir = os.path.dirname(imagePath)
+        args = [self.outputDir]
         worker = create_worker(
             self.DetectionTool.run,
             *args,
             _progress={"desc": "Detecting beads..."},
         )
-        worker.finished.connect(self.detect_finished)
-        worker.errored.connect(self.on_report_finished)
+        worker.finished.connect(self.detectFinished)
+        worker.errored.connect(self.onReportFinished)
         worker.yielded.connect(
             lambda value: worker.pbar.set_description(value["desc"])
         )
         worker.start()
 
-    def detect_finished(self):
+    def detectFinished(self):
         """Function to update napari with new layers displaying bead detection
 
         Raises:
             ValueError: Error raised when the bead detection did not worked or if there are no beads in the image
         """
-        self.filtered_beads = self.DetectionTool.centroids
+        self.filteredBeads = self.DetectionTool._centroids
         if (
-            isinstance(self.filtered_beads, np.ndarray)
-            and self.filtered_beads.size > 0
+            isinstance(self.filteredBeads, np.ndarray)
+            and self.filteredBeads.size > 0
         ):
-            rois = self.DetectionTool.rois_extracted
-            centroids_ROI = self.DetectionTool.list_id_centroids_retained
-            for x, id in enumerate(centroids_ROI):
+            rois = self.DetectionTool._roisExtracted
+            centroidsROI = self.DetectionTool._listIdCentroidsRetained
+            for x, id in enumerate(centroidsROI):
                 data = {"id": id, "ROI": rois[x]}
-                self.analysis_data.append(data)
-        if len(self.DetectionTool.cropped) == 0:
-            raise ValueError("There are no cropped PSF !")
-        for i in range(len(self.DetectionTool.cropped)):
-            self.analysis_data[i]["cropped"] = self.DetectionTool.cropped[i]
-        self.display_layers()
-        self.apply_prefitting_metrics()
+                self.analysisData.append(data)
+        if len(self.DetectionTool._cropped) == 0:
+            raise ValueError("There are no _cropped PSF !")
+        for i in range(len(self.DetectionTool._cropped)):
+            self.analysisData[i]["_cropped"] = self.DetectionTool._cropped[i]
+        self.displayLayers()
+        self.applyPrefittingMetrics()
 
-    def apply_prefitting_metrics(self):
+    def applyPrefittingMetrics(self):
         """Function to update MetricTool and start a worker for prefitting metrics calculation"""
-        physical_pixel = [
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
+        physicalPixel = [
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
         ]
-        self.MetricTool.image = self.working_layer.data
+        self.MetricTool.image = self.workingLayer.data
         self.MetricTool.images = [
-            entry["cropped"] for entry in self.analysis_data
+            entry["_cropped"] for entry in self.analysisData
         ]
-        self.MetricTool.ring_inner_distance = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Inner annulus distance to bead (µm)")
-        self.MetricTool.ring_thickness = self.detection_tool_page.DetectionParameters.widget_rejection.options.value("Annulus thickness (µm)")
-        self.MetricTool.theoretical_resolution_tool = Theoretical_Resolution.get_instance(self.acquisition_tool_page.widget_micro_choice.options.value("Microscope type"))
-        self.MetricTool.theoretical_resolution_tool.numerical_aperture = self.acquisition_tool_page.widget_micro_choice.options.value("Numerical aperture")
-        self.MetricTool.theoretical_resolution_tool.emission_wavelength = self.acquisition_tool_page.widget_micro_choice.options.value("Emission wavelength")
-        self.MetricTool.theoretical_resolution_tool.refractive_index = self.acquisition_tool_page.widget_micro_choice.options.value("Refraction index")
-        self.MetricTool.pixel_size = np.array(physical_pixel)
+        self.MetricTool.ringInnerDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Inner annulus distance to bead (µm)")
+        self.MetricTool.ringThickness = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Annulus thickness (µm)")
+        self.MetricTool.theoreticalResolutionTool = TheoreticalResolution.getInstance(self.acquisitionToolPage.widgetMicroChoice.options.value("Microscope type"))
+        self.MetricTool.theoreticalResolutionTool.numericalAperture = self.acquisitionToolPage.widgetMicroChoice.options.value("Numerical aperture")
+        self.MetricTool.theoreticalResolutionTool.emissionWavelength = self.acquisitionToolPage.widgetMicroChoice.options.value("Emission wavelength")
+        self.MetricTool.theoreticalResolutionTool.refractiveIndex = self.acquisitionToolPage.widgetMicroChoice.options.value("Refraction index")
+        self.MetricTool.pixelSize = np.array(physicalPixel)
         worker = create_worker(
-            self.MetricTool.run_prefitting_metrics,
+            self.MetricTool.runPrefittingMetrics,
             _progress={"desc": "Metrics calculation..."},
         )
-        worker.finished.connect(self.prefitting_finished)
-        worker.errored.connect(self.on_report_finished)
+        worker.finished.connect(self.prefittingFinished)
+        worker.errored.connect(self.onReportFinished)
         worker.start()
 
-    def prefitting_finished(self):
+    def prefittingFinished(self):
         """Function to update napari display with prefitting metrics results
 
         Raises:
-            ValueError: Raised when an error occured in the signal to bakground ratio computation
+            ValueError: Raised when an error occurred in the signal to background ratio computation
         """
-        if len(self.MetricTool.SBR) != len(self.analysis_data):
+        if len(self.MetricTool.SBR) != len(self.analysisData):
             raise ValueError("Problem with SBR calculation")
         for x, sbr in enumerate(self.MetricTool.SBR):
-            self.analysis_data[x]["SBR"] = sbr
-        self.metrics_tool_page.print_results(self.MetricTool.mean_SBR)
-        self.mean_SBR = self.MetricTool.mean_SBR
-        self.apply_fitting()
+            self.analysisData[x]["SBR"] = sbr
+        self.metricsToolPage.printResults(self.MetricTool.meanSBR)
+        self.meanSBR = self.MetricTool.meanSBR
+        self.applyFitting()
 
-    def apply_fitting(self):
+    def applyFitting(self):
         """Function to update FittingTool and start a worker for Gaussian fitting"""
         self.FittingTool.images = [
-            entry["cropped"] for entry in self.analysis_data
+            entry["_cropped"] for entry in self.analysisData
         ]
-        centroids_idx = [entry["id"] for entry in self.analysis_data]
-        self.FittingTool.centroids = [
-            self.filtered_beads[i] for i in centroids_idx
+        centroidsIdx = [entry["id"] for entry in self.analysisData]
+        self.FittingTool._centroids = [
+            self.filteredBeads[i] for i in centroidsIdx
         ]
         self.FittingTool.spacing = [
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Z"),
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size Y"),
-            self.acquisition_tool_page.widget_PxS.options.value("Pixel size X"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
         ]
-        self.FittingTool.rois = [entry["ROI"] for entry in self.analysis_data]
-        self.FittingTool.output_dir = self.output_dir
+        self.FittingTool.rois = [entry["ROI"] for entry in self.analysisData]
+        self.FittingTool.outputDir = self.outputDir
+        self.FittingTool.fitType = self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
 
         worker = create_worker(
-            self.FittingTool.compute_fitting_1D,
+            self.FittingTool.computeFitting,
             _progress={"desc": "Gaussian fitting..."},
         )
-        worker.finished.connect(self.on_finished)
-        worker.errored.connect(self.on_report_finished)
+        worker.finished.connect(self.onFinished)
+        worker.errored.connect(self.onReportFinished)
         worker.start()
 
-    def on_finished(self):
+    def onFinished(self):
         """Function to update result collection and start a worker for report generation"""
         for i, result in enumerate(self.FittingTool.results):
-            self.analysis_data[result[0]]["FWHM"] = []
-            self.analysis_data[result[0]]["uncertainty"] = []
-            self.analysis_data[result[0]]["determination"] = []
-            self.analysis_data[result[0]]["FWHM"] = result[1]
+            self.analysisData[result[0]]["FWHM"] = []
+            self.analysisData[result[0]]["uncertainty"] = []
+            self.analysisData[result[0]]["determination"] = []
+            self.analysisData[result[0]]["FWHM"] = result[1]
             self.MetricTool.FWHM = result[1]
-            self.MetricTool.lateral_asymmetry_ratio()
-            self.analysis_data[result[0]]["LAR"] = self.MetricTool.LAR
-            self.MetricTool.sphericity_ratio()
-            self.analysis_data[result[0]][
+            self.MetricTool.lateralAsymmetryRatio()
+            self.analysisData[result[0]]["LAR"] = self.MetricTool.LAR
+            self.MetricTool.sphericityRatio()
+            self.analysisData[result[0]][
                 "sphericity"
             ] = self.MetricTool.sphericity
-            self.analysis_data[result[0]]["uncertainty"] = result[2]
-            self.analysis_data[result[0]]["determination"] = result[3]
+            self.analysisData[result[0]]["uncertainty"] = result[2]
+            self.analysisData[result[0]]["determination"] = result[3]
         worker = create_worker(
-            self.generate_report, _progress={"desc": "Generating report..."}
+            self.generateReport, _progress={"desc": "Generating report..."}
         )
-        worker.finished.connect(self.on_report_finished)
-        worker.errored.connect(self.on_report_finished)
+        worker.finished.connect(self.onReportFinished)
+        worker.errored.connect(self.onReportFinished)
         worker.yielded.connect(
             lambda value: worker.pbar.set_description(value["desc"])
         )
         worker.start()
 
-    def generate_report(self):
-        """Function for generating pdf,csv and html reports
+    def generateReport(self):
+        """Function for generating PDF,csv and HTML reports
 
         Yields:
             string : used to change the description of the napari progress bar
         """
-        # Extracting ROIs and cropped layers from analysis_data
-        rois = [entry["ROI"] for entry in self.analysis_data]
-        cropped_layers = [entry["cropped"] for entry in self.analysis_data]
-        output_dir = os.path.expanduser("~/")
-        default_path = os.path.expanduser("~/PSF_analysis_result.pdf")
-        image_path = output_dir
+        # Extracting ROIs and _cropped layers from analysisData
+        rois = [entry["ROI"] for entry in self.analysisData]
+        croppedLayers = [entry["_cropped"] for entry in self.analysisData]
+        outputDir = os.path.expanduser("~/")
+        defaultPath = os.path.expanduser("~/PSF_analysis_result.pdf")
+        imagePath = outputDir
         if (
-            self.working_layer is not None
-            and hasattr(self.working_layer, "source")
-            and self.working_layer.source.path
+            self.workingLayer is not None
+            and hasattr(self.workingLayer, "source")
+            and self.workingLayer.source.path
         ):
-            image_path = self.working_layer.source.path
-            output_dir = os.path.dirname(image_path)
-            output_path = os.path.join(
-                output_dir, f"{self.working_layer.name}_analysis_result.pdf"
+            imagePath = self.workingLayer.source.path
+            outputDir = os.path.dirname(imagePath)
+            outputPath = os.path.join(
+                outputDir, f"{self.workingLayer.name}_analysis_result.pdf"
             )
-            output_csv_path = os.path.join(
-                output_dir, f"{self.working_layer.name}_analysis_result.csv"
+            outputCSVPath = os.path.join(
+                outputDir, f"{self.workingLayer.name}_analysis_result.csv"
             )
         else:
-            output_path = default_path
-        self.report_generator.output_dir = output_dir
-        self.report_generator.output_path = output_path
-        self.report_generator.analysis_data = self.analysis_data
-        original_dict = self.acquisition_tool_page.widget_PxS.options.items | self.acquisition_tool_page.widget_micro_choice.options.items
-        simplified_dict = {key: sub_dict['value'] for key, sub_dict in original_dict.items()}
-        self.report_generator.image_shape = self.working_layer.data.shape
-        self.report_generator.parameters_acquisition = simplified_dict
-        original_dict = self.detection_tool_page.DetectionParameters.detection_tool_widget.options.items | self.detection_tool_page.DetectionParameters.detection_tool_widget.options_sliders.items | self.detection_tool_page.DetectionParameters.widget_threshold.options.items | self.detection_tool_page.DetectionParameters.widget_threshold.options_sliders.items | self.detection_tool_page.DetectionParameters.widget_rejection.options.items | self.detection_tool_page.DetectionParameters.widget_rejection.options_sliders.items
-        simplified_dict = {key: sub_dict['value'] for key, sub_dict in original_dict.items()}
-        self.report_generator.parameters_detection = simplified_dict
-        self.report_generator.filtered_beads = self.filtered_beads
-        self.report_generator.mean_SBR = self.mean_SBR
-        self.report_generator.theoretical_resolution = (
-            self.MetricTool.theoretical_resolution
-        )
+            outputPath = defaultPath
+        self.reportGenerator.outputDir = outputDir
+        self.reportGenerator.outputPath = outputPath
+        self.reportGenerator.analysisData = self.analysisData
+        originalDict = self.acquisitionToolPage.widgetPxS.options.items | self.acquisitionToolPage.widgetMicroChoice.options.items
+        simplifiedDict = {key: subDict['value'] for key, subDict in originalDict.items()}
+        self.reportGenerator._imageShape = self.workingLayer.data.shape
+        self.reportGenerator.parametersAcquisition = simplifiedDict
+        originalDict = self.detectionToolPage.detectionParameters.detectionToolWidget.options.items | self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.items | self.detectionToolPage.detectionParameters.widgetThreshold.options.items | self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.items | self.detectionToolPage.detectionParameters.widgetRejection.options.items | self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.items
+        simplifiedDict = {key: subDict['value'] for key, subDict in originalDict.items()}
+        self.reportGenerator.parametersDetection = simplifiedDict
+        self.reportGenerator.filteredBeads = self.filteredBeads
+        self.reportGenerator.meanSBR = self.meanSBR
+        self.reportGenerator.theoreticalResolution = self.MetricTool.theoreticalResolution
         yield {"desc": "Generating pdf..."}
-        self.report_generator.generate_pdf_report(image_path)
+        self.reportGenerator.generatePDFReport(imagePath)
         yield {"desc": "Generating html..."}
-        self.report_generator.generate_html_report()
+        self.reportGenerator.generateHTMLReport()
         yield {"desc": "Generating csv..."}
-        self.report_generator.generate_csv_report(output_csv_path)
+        self.reportGenerator.generateCSVReport(outputCSVPath)
 
-    def on_report_finished(self):
-        self.run_btn.setEnabled(True)
+    def onReportFinished(self):
+        self.runButton.setEnabled(True)
 
-    def _open_browser(self):
-        active_path = self.get_active_path(index=self.selected_shape)
-        active_path = os.path.join(active_path, "PSF_analysis_result.html")
-        webbrowser.open(active_path)
+    def openBrowser(self):
+        activePath = self.getActivePath(index=self.selectedShape)
+        activePath = os.path.join(activePath, "PSF_analysis_result.html")
+        webbrowser.open(activePath)
 
-    def _on_mouse_double_click(self, layer, event):
-        """Function to display html report corresponding to the bead selected by user.
+    def onMouseDoubleClick(self, layer, event):
+        """Function to display HTML report corresponding to the bead selected by user.
 
         Args:
             layer : Information about the layer clicked sent with the signal
-            event : Informations relative to the event sent with the signal
+            event : Information relative to the event sent with the signal
         """
 
-        click_pos = self.viewer.cursor.position / self.working_layer.scale
+        clickPos = self.viewer.cursor.position / self.workingLayer.scale
 
-        if self.rois_layer is None:
+        if self.roisLayer is None:
             return
 
-        for i, shape in enumerate(self.rois_layer.data):
-            y_coords = [point[1] for point in shape]
-            x_coords = [point[2] for point in shape]
-            x_min, x_max = min(x_coords), max(x_coords)
-            y_min, y_max = min(y_coords), max(y_coords)
+        for i, shape in enumerate(self.roisLayer.data):
+            yCoords = [point[1] for point in shape]
+            xCoords = [point[2] for point in shape]
+            xMin, xMax = min(xCoords), max(xCoords)
+            yMin, yMax = min(yCoords), max(yCoords)
 
             if (
-                click_pos[1] >= y_min
-                and click_pos[1] <= y_max
-                and click_pos[2] >= x_min
-                and click_pos[2] <= x_max
+                clickPos[1] >= yMin
+                and clickPos[1] <= yMax
+                and clickPos[2] >= xMin
+                and clickPos[2] <= xMax
             ):
-                self.selected_shape = i
-                self._open_browser()
+                self.selectedShape = i
+                self.openBrowser()
                 event.handled = True
                 return
 
-    def get_active_path(self, index):
+    def getActivePath(self, index):
         """
         Args:
-            index (int): Bead ID corresping to it's position in the list
+            index (int): Bead ID corresponding to it's position in the list
 
         Returns:
             Path: Folder's path found (or created) for the selected bead
         """
-        active_path = os.path.join(self.output_dir, f"bead_{index}")
-        if not os.path.exists(active_path):
-            os.makedirs(active_path)
-        return active_path
+        activePath = os.path.join(self.outputDir, f"bead_{index}")
+        if not os.path.exists(activePath):
+            os.makedirs(activePath)
+        return activePath
 
-    def display_layers(self):
+    def displayLayers(self):
         """Add layers for detected beads and extracted ROIs
         Update scale and units of the napari viewer"""
-        rois = [entry["ROI"] for entry in self.analysis_data]
+        rois = [entry["ROI"] for entry in self.analysisData]
         if (
-            isinstance(self.filtered_beads, np.ndarray)
-            and self.filtered_beads.size > 0
+            isinstance(self.filteredBeads, np.ndarray)
+            and self.filteredBeads.size > 0
         ):
-            if self.centroids_layer is None:
-                self.centroids_layer = self.viewer.add_points(
-                    self.filtered_beads,
+            if self.centroidsLayer is None:
+                self.centroidsLayer = self.viewer.add_points(
+                    self.filteredBeads,
                     name="PSF detected",
                     face_color="red",
                     opacity=0.5,
                     size=2,
                 )
             else:
-                self.centroids_layer.data = self.filtered_beads
-            self.detection_tool_page.results_label.setText(
-                f"Here are the results of the detection:\n- {len(self.filtered_beads)} bead(s) detected\n- {len(rois)} ROI(s) extracted"
+                self.centroidsLayer.data = self.filteredBeads
+            self.detectionToolPage.resultsLabel.setText(
+                f"Here are the results of the detection:\n- {len(self.filteredBeads)} bead(s) detected\n- {len(rois)} ROI(s) extracted"
             )
         else:
             show_warning("No PSF found or incorrect format.")
@@ -395,8 +402,8 @@ class Microscopy_Metrics_QWidget(QWidget):
                 "size": 8,
                 "color": "green",
             }
-            if self.rois_layer is None:
-                self.rois_layer = self.viewer.add_shapes(
+            if self.roisLayer is None:
+                self.roisLayer = self.viewer.add_shapes(
                     rois,
                     features=features,
                     text=text,
@@ -406,9 +413,9 @@ class Microscopy_Metrics_QWidget(QWidget):
                     face_color="transparent",
                 )
             else:
-                self.viewer.layers.remove(self.rois_layer)
-                self.rois_layer = None
-                self.rois_layer = self.viewer.add_shapes(
+                self.viewer.layers.remove(self.roisLayer)
+                self.roisLayer = None
+                self.roisLayer = self.viewer.add_shapes(
                     rois,
                     features=features,
                     text=text,
@@ -417,11 +424,11 @@ class Microscopy_Metrics_QWidget(QWidget):
                     edge_color="blue",
                     face_color="transparent",
                 )
-        self.viewer.layers.selection.active = self.working_layer
+        self.viewer.layers.selection.active = self.workingLayer
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
-            self.viewer.layers[i].scale = self.DetectionTool.pixel_size
+            self.viewer.layers[i].scale = self.DetectionTool.pixelSize
+        self.viewer.reset_view()
 
-    def update_scale_detection(self,scale):
-        self.detection_tool_page.DetectionTool._pixel_size = scale
-        print(self.detection_tool_page.DetectionTool._pixel_size)
+    def updateScaleDetection(self, scale):
+        self.detectionToolPage.detectionTool._pixelSize = scale

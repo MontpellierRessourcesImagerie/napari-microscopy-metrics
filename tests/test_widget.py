@@ -12,5 +12,5 @@ def test_widget_initialize(qapp):
     params = read_file_data("parameters_data.json")
     parameters_acquisition = read_file_data("acquisition_data.json")
     widget = Microscopy_Metrics_QWidget(mock_viewer)
-    assert widget.parameters_detection == params
-    assert widget.parameters_acquisition == parameters_acquisition
+    assert widget.parametersDetection == params
+    assert widget.parametersAcquisition == parameters_acquisition
