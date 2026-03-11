@@ -38,6 +38,8 @@ class FittingOptionWidget(QWidget):
         options = Options("Fitting option","set fitting option")
         options.addChoice(name="Fit type", choices=[x for x in FittingTool._fittingClasses.keys()], value="1D")
         options.load()
+        if options.items["Fit type"]['choices'] != [x for x in FittingTool._fittingClasses.keys()] :
+            options.items["Fit type"]['choices'] = [x for x in FittingTool._fittingClasses.keys()]
         return options
 
 class Metricstoolpage(QWidget):
