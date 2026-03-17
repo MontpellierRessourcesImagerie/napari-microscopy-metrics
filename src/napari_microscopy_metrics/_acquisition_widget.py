@@ -34,7 +34,7 @@ class ImageSizeWidget(QWidget):
     def createLayout(self):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(self.apply)
-        self.widget.mainLayout.itemAt(3).widget().setText("Appy and save scale")
+        self.widget.mainLayout.itemAt(3).widget().setText("Apply and save scale")
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.setLayout(layout)
