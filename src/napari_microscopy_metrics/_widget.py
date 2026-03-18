@@ -88,14 +88,20 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.runButton = QPushButton("Run analysis")
         self.runButton.setStyleSheet("background-color : green")
         self.runButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        # Button to access documentation
+        self.docButton = QPushButton("Documentation")
+        self.docButton.setStyleSheet("background-color : blue")
+        self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         # Creation of the layout
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
         self.layout().addWidget(self.tab)
         self.layout().addWidget(self.runButton)
+        self.layout().addWidget(self.docButton)
         # Connect signals and slots
         self.runButton.pressed.connect(self.startProcessing)
+        self.docButton.pressed.connect(self.openDocumentation)
         self.viewer.mouse_double_click_callbacks.append(
             self.onMouseDoubleClick
         )
@@ -326,6 +332,14 @@ class Microscopy_Metrics_QWidget(QWidget):
         activePath = self.getActivePath(index=self.selectedShape)
         activePath = os.path.join(activePath, "PSF_analysis_result.html")
         webbrowser.open(activePath)
+
+    def openDocumentation(self):
+        path = Path(__file__).resolve()
+        documentationPath = path.parent.parent.parent / "documentation" / "build" / "html" / "index.html"
+        if documentationPath.exists():
+            webbrowser.open(f"file://{documentationPath}")
+        else :
+            print(f"File {documentationPath} doesn't exists")
 
     def onMouseDoubleClick(self, layer, event):
         """Function to display HTML report corresponding to the bead selected by user.
