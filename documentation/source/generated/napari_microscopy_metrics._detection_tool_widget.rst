@@ -1,0 +1,17 @@
+﻿napari\_microscopy\_metrics.\_detection\_tool\_widget
+=====================================================
+
+.. automodule:: napari_microscopy_metrics._detection_tool_widget
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DetectionParametersWidget
+      DetectionToolTab
+      DetectionToolWidget
+      ParamsSignal
+      RoiWidget
+      ThresholdWidget
+   

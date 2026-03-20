@@ -19,6 +19,8 @@ from microscopy_metrics.theoretical_resolution import TheoreticalResolution
 
 
 class UpdateScaleSignal(QObject):
+    """Signal sent to main widget when pixel scale is updated
+    """
     scaleUpdate = Signal(list)
 
 
@@ -109,6 +111,8 @@ class AcquisitionToolPage(QWidget):
         self.viewer.layers.selection.events.active.connect(self.onLayerChanged)
 
     def initUi(self):
+        """Initialize user interface
+        """
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)

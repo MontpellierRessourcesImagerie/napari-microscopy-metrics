@@ -19,7 +19,5 @@ Contents
 
 .. toctree::
    usage
-   acquisition
-   detection
-   metrics
-   results
+   how_to
+   api

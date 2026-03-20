@@ -1,6 +1,8 @@
 Detection Widget
 ==================
 
+.. _detection:
+
 The Detection Widget is a form concerning informations about beads detection et extraction for analysis.
 
 Detection Parameters

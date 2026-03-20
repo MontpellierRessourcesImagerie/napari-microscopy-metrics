@@ -1,5 +1,6 @@
 Acquisition Widget
 ==================
+.. _acquisition:
 
 The Acquisition Widget is a form concerning informations about image scaling and microscope acquisition parameters.
 
@@ -44,4 +45,5 @@ This widget concerns parameters about microscope acquisition:
     :width: 500px
     :alt: MicroscopeParametersWidget
     :align: center
+
 

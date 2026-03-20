@@ -1,6 +1,5 @@
 """
-This module contains a napari widgets for PSF analysis:
-- A QWidget class for performing PSF detection using two methods (_centroids and peak_local_max)
+This module contains a QWidget class for performing PSF analysis.
 
 """
 
@@ -13,9 +12,9 @@ from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject, QThread
 from qtpy.QtWidgets import *
-from ._detection_tool_widget import DetectionToolTab
-from ._acquisition_widget import *
-from ._metrics_widget import *
+from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
+from napari_microscopy_metrics._acquisition_widget import *
+from napari_microscopy_metrics._metrics_widget import *
 from microscopy_metrics.detection import Detection
 from microscopy_metrics.detection_tool import DetectionTool,PeakLocalMaxDetector
 from microscopy_metrics.metrics import Metrics
@@ -26,10 +25,8 @@ import webbrowser
 import numpy as np
 
 class Microscopy_Metrics_QWidget(QWidget):
-    """Main Widget of the Microscopy_Metrics module
-
-    Args:
-        QWidget: Parent widget of the plugin
+    """
+    Main Widget of the plugin
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -42,32 +39,23 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.reportGenerator = ReportGenerator()
         self.parametersDetection = {}
         self.parametersAcquisition = {}
-        # Declaration of the layers
         self.centroidsLayer = None
         self.roisLayer = None
-        # List of all detected bead centroid
         self.filteredBeads = None
-        # Layer containing the Image to analyse
         self.workingLayer = None
-        # Output directory based on current Image
         self.outputDir = None
-        # Metrics of the picture
         self.meanSBR = 0
-        # Actual shape selected
         self.selectedShape = 0
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        # TabWidget for navigation between tools
         self.tab = QTabWidget()
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.tab.setDocumentMode(True)
-        # Initialisation of Acquisition tool page
         self.acquisitionToolPage = AcquisitionToolPage(self.viewer)
         self.acquisitionToolPage.widgetPxS.signal.scaleUpdate.connect(self.updateScaleDetection)
         self.acquisitionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.tab.addTab(self.acquisitionToolPage, "Acquisition parameters")
-        # Initialisation of Detection tool page
         self.detectionToolPage = DetectionToolTab(self.viewer)
         self.detectionToolPage.detectionTool._pixelSize = [
                 self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
@@ -78,28 +66,23 @@ class Microscopy_Metrics_QWidget(QWidget):
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.tab.addTab(self.detectionToolPage, "Detection parameters")
-        # Initialisation of Metrics tool page
         self.metricsToolPage = Metricstoolpage(self.viewer)
         self.metricsToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.tab.addTab(self.metricsToolPage, "Metrics parameters")
-        # Button to run global analyze
         self.runButton = QPushButton("Run analysis")
         self.runButton.setStyleSheet("background-color : green")
         self.runButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        # Button to access documentation
         self.docButton = QPushButton("Documentation")
         self.docButton.setStyleSheet("background-color : blue")
         self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        # Creation of the layout
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
         self.layout().addWidget(self.tab)
         self.layout().addWidget(self.runButton)
         self.layout().addWidget(self.docButton)
-        # Connect signals and slots
         self.runButton.pressed.connect(self.startProcessing)
         self.docButton.pressed.connect(self.openDocumentation)
         self.viewer.mouse_double_click_callbacks.append(
@@ -112,7 +95,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.analysisData = []
         if self.workingLayer is None or not isinstance(
             self.workingLayer, napari.layers.Image
-        ):  # Catch if Image layer not selected
+        ):
             show_error("Please, select a valid layer of type Image")
             return
         self.detectionToolPage.erase_Layers()
@@ -326,14 +309,19 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.reportGenerator.generateCSVReport(outputCSVPath)
 
     def onReportFinished(self):
+        """Called to Enable the button to run analysis"""
         self.runButton.setEnabled(True)
 
     def openBrowser(self):
+        """Open html page report of the selected shape
+        """
         activePath = self.getActivePath(index=self.selectedShape)
         activePath = os.path.join(activePath, "PSF_analysis_result.html")
         webbrowser.open(activePath)
 
     def openDocumentation(self):
+        """Open index page of documentation
+        """
         path = Path(__file__).resolve()
         documentationPath = path.parent.parent.parent / "documentation" / "build" / "html" / "index.html"
         if documentationPath.exists():
@@ -445,4 +433,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.viewer.reset_view()
 
     def updateScaleDetection(self, scale):
+        """Update detectionToolPage when pixel scale is changed in acquisitionToolPage
+
+        Args:
+            scale (List): List of pixel scale for each axis
+        """
         self.detectionToolPage.detectionTool._pixelSize = scale

@@ -1,5 +1,6 @@
 Outputs
 ==================
+.. _results:
 
 At the end of analysis, the plugin will produce many visual support to help use understand and evaluate results.
 

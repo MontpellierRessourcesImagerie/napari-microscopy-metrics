@@ -1,5 +1,6 @@
 Metrics Widget
 ==================
+.. _metrics:
 
 The Metrics Widget display calculated metrics and also let user choose 1D, 2D or 3D fitting
 
