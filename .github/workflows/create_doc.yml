@@ -16,6 +16,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install sphinx-tabs
+
       - name: Build HTML
         uses: ammaraskar/sphinx-action@master
         with:
