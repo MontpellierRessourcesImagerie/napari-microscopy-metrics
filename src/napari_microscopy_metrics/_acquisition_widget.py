@@ -16,6 +16,8 @@ from napari.utils.notifications import *
 from .json_utils import *
 from autooptions import *
 from microscopy_metrics.theoretical_resolution import TheoreticalResolution
+import webbrowser
+
 
 
 class UpdateScaleSignal(QObject):
@@ -40,9 +42,19 @@ class ImageSizeWidget(QWidget):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(self.apply)
         self.widget.mainLayout.itemAt(3).widget().setText("Apply and save scale")
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
+        
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/acquisition.html#image-scaling-parameters"
+        webbrowser.open(documentationPath)
 
     @classmethod
     def getOptions(cls):
@@ -90,8 +102,12 @@ class MicroscopeParametersWidget(QWidget):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(4).widget().setText("Save microscope parameters")
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
 
     @classmethod
@@ -108,6 +124,11 @@ class MicroscopeParametersWidget(QWidget):
         options.addFloat(name="Numerical aperture", value=1.0)
         options.load()
         return options
+
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/acquisition.html#microscope-acquisition-parameters"
+        webbrowser.open(documentationPath)
 
 
 class AcquisitionToolPage(QWidget):
@@ -128,8 +149,7 @@ class AcquisitionToolPage(QWidget):
         self.viewer.layers.selection.events.active.connect(self.onLayerChanged)
 
     def initUi(self):
-        """Initialize user interface
-        """
+        """Initialize user interface"""
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)

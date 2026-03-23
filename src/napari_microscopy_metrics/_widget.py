@@ -322,12 +322,9 @@ class Microscopy_Metrics_QWidget(QWidget):
     def openDocumentation(self):
         """Open index page of documentation
         """
-        path = Path(__file__).resolve()
-        documentationPath = path.parent.parent.parent / "documentation" / "build" / "html" / "index.html"
-        if documentationPath.exists():
-            webbrowser.open(f"file://{documentationPath}")
-        else :
-            print(f"File {documentationPath} doesn't exists")
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/index.html"
+        webbrowser.open(documentationPath)
+
 
     def onMouseDoubleClick(self, layer, event):
         """Function to display HTML report corresponding to the bead selected by user.

@@ -21,6 +21,8 @@ from .json_utils import *
 from autooptions import *
 from napari.qt.threading import create_worker
 from scipy import ndimage as ndi
+import webbrowser
+
 
 
 class ParamsSignal(QObject):
@@ -79,6 +81,10 @@ class DetectionToolWidget(QWidget):
         self.paramsStack.addWidget(self.centroidMethodWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(self.apply)
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.minDistanceDetection.valueChanged.connect(self.updateMinDistance)
@@ -142,6 +148,11 @@ class DetectionToolWidget(QWidget):
         self.blobSigmaLabel.setText("Sigma: " + str(value))
         self.optionsSliders.items["Sigma"]["value"] = value
 
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#detection-parameters"
+        webbrowser.open(documentationPath)
+
 
 class ThresholdWidget(QWidget):
     """A widget allowing user to choose the Threshold he wants to apply to the image for analysis."""
@@ -185,6 +196,10 @@ class ThresholdWidget(QWidget):
         self.paramsStack.addWidget(self.emptyWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(self.apply)
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.thresholdRel.valueChanged.connect(self.updateThreshold)
@@ -264,6 +279,11 @@ class ThresholdWidget(QWidget):
             self.layer.contrast_limits = [max(min(valueThreshold + np.min(self.layer.data), self.oldContrastLimits[1] - 1), self.oldContrastLimits[0]), self.oldContrastLimits[1]]
             self.layer.colormap = 'HiLo'
             self.layer.blending = "additive"
+            
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#threshold-parameters"
+        webbrowser.open(documentationPath)
 
 class RoiWidget(QWidget):
     """A widget allowing user to setup region of interest parameters."""
@@ -288,6 +308,10 @@ class RoiWidget(QWidget):
         self.widget.mainLayout.addWidget(self.cropFactorLabel)
         self.widget.mainLayout.addWidget(self.cropFactor)
         self.widget.addApplyButton(self.apply)
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.cropFactor.valueChanged.connect(self.updateCropFactor)
 
@@ -331,6 +355,10 @@ class RoiWidget(QWidget):
         self.cropFactorLabel.setText("Crop factor: " + str(value))
         self.optionsSliders.items["crop factor"]["value"] = value
 
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#region-of-interest-parameters"
+        webbrowser.open(documentationPath)
 
 
 class DetectionParametersWidget(QWidget):

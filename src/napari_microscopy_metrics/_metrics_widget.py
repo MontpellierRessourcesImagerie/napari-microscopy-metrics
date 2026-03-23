@@ -16,6 +16,8 @@ from napari.utils.notifications import *
 from .json_utils import *
 from autooptions import *
 from microscopy_metrics.fitting import FittingTool
+import webbrowser
+
 
 class FittingOptionWidget(QWidget):
     """A widget alowing user to select the fitting method he wants to use to estimate full-width half maximum."""
@@ -32,9 +34,18 @@ class FittingOptionWidget(QWidget):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(1).widget().setText("Save fitting option")
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
+        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
+
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/metrics.html#metrics-parameters"
+        webbrowser.open(documentationPath)
 
     @classmethod
     def getOptions(cls):
@@ -78,9 +89,12 @@ class Metricstoolpage(QWidget):
         self.groupResults = QGroupBox("Mean metrics measured")
         self.layoutResults = QVBoxLayout()
         self.resultsLabel = QLabel("No metric mesured yet.")
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24,24)
+        self.layoutResults.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.layoutResults.addWidget(self.resultsLabel)
         self.groupResults.setLayout(self.layoutResults)
-
         layout.addWidget(self.groupMetrics)
         layout.addWidget(self.groupResults)
         layout.addStretch()
@@ -94,3 +108,8 @@ class Metricstoolpage(QWidget):
         """
         text = f"- Signal to background ratio: {SBR:.2f}"
         self.resultsLabel.setText(text)
+
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/results.html#napari-viewer"
+        webbrowser.open(documentationPath)
