@@ -1,5 +1,8 @@
 How To
 ======
+
+.. _how_to:
+
 This plugin is used to run full analysis of the PSF. This analysis is composed with : 
 
 * :ref:`Acquisition <acquisition>` phase : The user have to enter parameters of the acquisition, those will be used massively, so it is a really important step.

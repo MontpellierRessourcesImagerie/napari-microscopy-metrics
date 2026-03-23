@@ -30,6 +30,8 @@ class ParamsSignal(QObject):
 
 
 class DetectionToolWidget(QWidget):
+    """A widget allowing user to choose the detection tool he wants to use with related parameters.
+    """
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -39,14 +41,13 @@ class DetectionToolWidget(QWidget):
         self.createLayout()
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
         self.toolChoiceWidget = self.widget.mainLayout.itemAt(0).itemAt(1).widget()
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
-
         self.paramsStack = QStackedWidget()
-
         self.peakMethodWidget = QWidget()
         self.peakMethodLayout = QVBoxLayout()
         self.peakMethodLayout.setContentsMargins(0, 0, 0, 0)
@@ -60,7 +61,6 @@ class DetectionToolWidget(QWidget):
         self.peakMethodLayout.addWidget(self.minDistanceLabel)
         self.peakMethodLayout.addWidget(self.minDistanceDetection)
         self.peakMethodWidget.setLayout(self.peakMethodLayout)
-
         self.blobMethodWidget = QWidget()
         self.blobMethodLayout = QVBoxLayout()
         self.blobSigmaSlider = QSlider(Qt.Horizontal)
@@ -70,16 +70,13 @@ class DetectionToolWidget(QWidget):
         self.blobMethodLayout.addWidget(self.blobSigmaLabel)
         self.blobMethodLayout.addWidget(self.blobSigmaSlider)
         self.blobMethodWidget.setLayout(self.blobMethodLayout)
-
         self.centroidMethodWidget = QWidget()
         self.centroidMethodLayout = QVBoxLayout()
         self.centroidMethodWidget.setLayout(self.centroidMethodLayout)
-
         self.paramsStack.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.paramsStack.addWidget(self.peakMethodWidget)
         self.paramsStack.addWidget(self.blobMethodWidget)
         self.paramsStack.addWidget(self.centroidMethodWidget)
-
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(self.apply)
         self.setLayout(layout)
@@ -89,12 +86,22 @@ class DetectionToolWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for detection tool informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Detection Parameters","Set parameters for detection tool")
         options.addChoice(name="Detection tool", value="Centroids", choices=[x for x in DetectionTool._detectionClasses])
         options.load()
         return options
 
     def getSliders(self):
+        """A method which create entries for detection tool sliders informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         optionsSliders = Options("Sliders value", "Store value of sliders")
         optionsSliders.addInt(name="Min dist", value=1)
         optionsSliders.addInt(name="Sigma", value=3)
@@ -102,27 +109,43 @@ class DetectionToolWidget(QWidget):
         return optionsSliders
 
     def selectedAction(self, value):
-        """Update the display for selected tool and assign the value in params"""
+        """Update the display for selected tool.
+
+        Args:
+            value (int): Index of the selection.
+        """
         index = self.toolChoiceWidget.currentIndex()
         if index >= 2:
             index = index - 1
         self.paramsStack.setCurrentIndex(index)
 
     def apply(self):
+        """Called on click button to save option sliders with actual sliders values.
+        """
         self.optionsSliders.save()
 
     def updateMinDistance(self, value):
-        """Update the label for minimal distance and assign the value in params"""
+        """Update the label for minimal distance and assign the value in optionSliders
+
+        Args:
+            value (int): Minimal distance value
+        """
         self.minDistanceLabel.setText("Minimal distance: " + str(value))
         self.optionsSliders.items["Min dist"]["value"] = value
 
     def updateSigma(self, value):
-        """Update the label for sigma and assign the value in params"""
+        """Update the label for sigma and assign the value in optionSliders
+
+        Args:
+            value (int): Sigma value
+        """
         self.blobSigmaLabel.setText("Sigma: " + str(value))
         self.optionsSliders.items["Sigma"]["value"] = value
 
 
 class ThresholdWidget(QWidget):
+    """A widget allowing user to choose the Threshold he wants to apply to the image for analysis."""
+
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -134,14 +157,13 @@ class ThresholdWidget(QWidget):
         self.oldContrastLimits = []
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
         self.toolChoiceWidget = self.widget.mainLayout.itemAt(0).itemAt(1).widget()
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
-
         self.paramsStack = QStackedWidget()
-
         self.thresholdRelWidget = QWidget()
         self.thresholdRelLayout = QVBoxLayout()
         self.thresholdRelLayout.setContentsMargins(0, 0, 0, 0)
@@ -169,31 +191,50 @@ class ThresholdWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for threshold informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Threshold parameters","Set parameters for threshold")
         options.addChoice(name="Threshold", value="otsu", choices=[x for x in Threshold._thresholdClasses])
         options.load()
         return options
 
     def getSliders(self):
+        """A method which create entries for threshold sliders informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         optionsSliders = Options("Sliders value", "Store value of sliders")
         optionsSliders.addInt(name="threshold", value=50)
         optionsSliders.load()
         return optionsSliders
 
     def selectedAction(self, value):
-        """Update the display for selected tool and assign the value in params"""
+        """Update the display for selected threshold.
+
+        Args:
+            value (string): label of the selection.
+        """
         if value == "manual":
             self.paramsStack.setCurrentIndex(0)
         else :
             self.paramsStack.setCurrentIndex(1)
 
     def apply(self):
+        """Called on validation to save optionSliders with current sliders value and update the view with thresholded image."""
         self.optionsSliders.save()
         if self.toolChoiceWidget.currentText() != "manual":
             self.displayThreshold(self.toolChoiceWidget.currentText())
 
     def updateThreshold(self, value):
-        """Update the label for relative threshold and assign the value in params"""
+        """Update the label for relative threshold, assign the value in optionSliders and update the view with new thresholded image.
+
+        Args:
+            value (int): The actual value of the slider.
+        """
         self.thresholdRelLabel.setText(
             "Relative threshold: " + str(value / 100)
         )
@@ -201,6 +242,12 @@ class ThresholdWidget(QWidget):
         self.displayThreshold("manual", value=value / 100)
 
     def displayThreshold(self, thresholdStr, value=0.5):
+        """A method to change layer properties to display (or not) a render view of the thresholded image with actual properties.
+
+        Args:
+            thresholdStr (Str): The label of the selected threshold.
+            value (float, optional): Relative value of the threshold. Defaults to 0.5.
+        """
         if isinstance(self.viewer.layers.selection.active, napari.layers.Image):
             if self.layer != self.viewer.layers.selection.active and self.layer is not None:
                 self.layer.contrast_limits = self.oldContrastLimits
@@ -219,6 +266,8 @@ class ThresholdWidget(QWidget):
             self.layer.blending = "additive"
 
 class RoiWidget(QWidget):
+    """A widget allowing user to setup region of interest parameters."""
+
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -228,6 +277,7 @@ class RoiWidget(QWidget):
         self.createLayout()
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
@@ -243,6 +293,11 @@ class RoiWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for region of interest informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Extraction parameters","Set parameters for extraction")
         options.addFloat(name="Theoretical bead size (µm)",value=0.6)
         options.addFloat(name="Z axis rejection margin (µm)",value=0.5)
@@ -252,6 +307,11 @@ class RoiWidget(QWidget):
         return options
 
     def getSliders(self):
+        """A method which create entries for region of interest sliders informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         optionsSliders = Options("Crop factor value", "Store value of crop factor")
         optionsSliders.addInt(name="crop factor", value=5)
         optionsSliders.load()
@@ -259,17 +319,22 @@ class RoiWidget(QWidget):
 
 
     def apply(self):
+        """Called on validation to save optionSliders with current sliders value."""
         self.optionsSliders.save()
 
     def updateCropFactor(self, value):
-        """Updates the label for crop factor and assign the value in params"""
+        """Updates the label for crop factor and assign the value to optionSliders
+
+        Args:
+            value (int): Value of the crop factor.
+        """
         self.cropFactorLabel.setText("Crop factor: " + str(value))
         self.optionsSliders.items["crop factor"]["value"] = value
 
 
 
 class DetectionParametersWidget(QWidget):
-    """Widget for processing PSF detection and extraction
+    """A widget for processing PSF detection and extraction
 
     Parameters
     ----------
@@ -363,7 +428,11 @@ class DetectionToolTab(QWidget):
         self.viewer.layers.events.removed.connect(self.onLayerRemoved)
 
     def onLayerRemoved(self, event):
-        """Manage the suppression of ROI and _centroids layers"""
+        """Manage the suppression of ROI and _centroids layers
+
+        Args:
+            event (QEvent): Informations about the triggering event
+        """
         if (
             hasattr(self, "detectedBeadsLayer")
             and self.detectedBeadsLayer == event.value
@@ -373,7 +442,7 @@ class DetectionToolTab(QWidget):
             self.ROILayer = None
 
     def openParametersWindow(self):
-        """Open the parameters window"""
+        """A method to create parameters window and limit the maximum window number to one."""
         if self.countWindows == 0:
             self.parametersWindow = QDialog(self)
             self.parametersWindow.setWindowTitle("Detection parameters")
@@ -388,7 +457,11 @@ class DetectionToolTab(QWidget):
             self.countWindows += 1
 
     def onParametersWindowClosed(self, result):
-        """Catch the close event of the window and update the counter"""
+        """Called when parameters window is closed to unlock the possibility to open another one and erase threshold preview.
+
+        Args:
+            result : Parameter sent by the window when closed
+        """
         self.countWindows -= 1
         if self.detectionParameters.widgetThreshold.layer is not None :
             self.detectionParameters.widgetThreshold.layer.contrast_limits = self.detectionParameters.widgetThreshold.oldContrastLimits
@@ -396,26 +469,30 @@ class DetectionToolTab(QWidget):
             self.detectionParameters.widgetThreshold.layer.blending = "additive"
 
     def erase_Layers(self):
-        """Delete all layers made by this wiget"""
+        """A method to delete all layers made by this wiget"""
         if self.ROILayer:
             self.viewer.layers.remove(self.ROILayer)
         if self.detectedBeadsLayer:
             self.viewer.layers.remove(self.detectedBeadsLayer)
 
     def getLogoPath(self, theme):
+        """A method to automatically return the logo corresponding to the application theme.
+
+        Args:
+            theme (napari.theme): The actual theme of the napari application.
+
+        Returns:
+            Path: path to the logo corresponding to the theme.
+        """
         logoDirectory = Path(__file__).parent / "res" / "drawable"
         if theme == "dark":
             return logoDirectory / "logo_dark.png"
         else:
             return logoDirectory / "logo_light.png"
 
-    def onThemeChange(self):
-        iconPath = self.getLogoPath(get_settings().appearance.theme)
-        self.parametersButton.setIcon(QIcon(str(iconPath)))
-        self.parametersButton.setIconSize(QSize(35, 35))
-        self.parametersButton.setFixedSize(35, 35)
-
     def apply(self):
+        """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview.
+        """
         self.detectionTool.image = self.viewer.layers.selection.active.data
         self.detectionTool._detectionTool = DetectionTool.getInstance(self.detectionParameters.detectionToolWidget.options.value("Detection tool"))
         self.detectionTool._detectionTool._thresholdTool = Threshold.getInstance(self.detectionParameters.widgetThreshold.options.value("Threshold"))
@@ -440,6 +517,8 @@ class DetectionToolTab(QWidget):
         worker.start()
 
     def displayResult(self):
+        """A method to display detected centroids and region of interest with new layers.
+        """
         workingLayer = self.viewer.layers.selection.active
         if (
             isinstance(self.detectionTool._centroids, np.ndarray)

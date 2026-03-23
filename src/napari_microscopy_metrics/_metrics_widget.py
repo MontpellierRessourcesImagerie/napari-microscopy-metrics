@@ -18,6 +18,8 @@ from autooptions import *
 from microscopy_metrics.fitting import FittingTool
 
 class FittingOptionWidget(QWidget):
+    """A widget alowing user to select the fitting method he wants to use to estimate full-width half maximum."""
+
     def __init__(self,viewer:"napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -26,6 +28,7 @@ class FittingOptionWidget(QWidget):
         self.createLayout()
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(1).widget().setText("Save fitting option")
@@ -35,6 +38,11 @@ class FittingOptionWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for fitting choice and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Fitting option","set fitting option")
         options.addChoice(name="Fit type", choices=[x for x in FittingTool._fittingClasses.keys()], value="1D")
         options.load()
@@ -79,5 +87,10 @@ class Metricstoolpage(QWidget):
         self.setLayout(layout)
 
     def printResults(self, SBR):
+        """A method to update plugin interface with the mean SBR of the image analyzed.
+
+        Args:
+            SBR (float): Mean signal to background ratio of the image.
+        """
         text = f"- Signal to background ratio: {SBR:.2f}"
         self.resultsLabel.setText(text)

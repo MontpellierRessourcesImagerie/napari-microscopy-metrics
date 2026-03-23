@@ -70,15 +70,17 @@ You will also need to install `microscopy-metrics` and `auto-options` from MRI g
 Run
 ---
 
-Napari microscopy metrics is a napari plugin, so you first have to run a napari application : 
+Napari microscopy metrics is a napari plugin, so you first have to run a napari application in your python virtual environment : 
 
 .. code-block:: bash
 
     napari
 
-You know have access to the napari interface. To open the microscopy-metrics plugin, you just have to enable the option at _Plugins > Microscopy Metrics (Microscopy Metrics)
+You now have access to the napari interface. To open the microscopy-metrics plugin, you just have to enable the option at _Plugins > Microscopy Metrics (Microscopy Metrics)
 
 .. image:: _static/open_plugin.png
     :width: 700px
     :alt: Open plugin example
     :align: center
+
+A new widget is supposed to be created at the right side of the application. To use the plugin you can follow this :ref:`tutorial <how_to>` 

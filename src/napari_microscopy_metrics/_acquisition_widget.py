@@ -19,12 +19,13 @@ from microscopy_metrics.theoretical_resolution import TheoreticalResolution
 
 
 class UpdateScaleSignal(QObject):
-    """Signal sent to main widget when pixel scale is updated
-    """
+    """Signal sent to main widget when pixel scale is updated"""
     scaleUpdate = Signal(list)
 
 
 class ImageSizeWidget(QWidget):
+    """A widget allowing user to setup the scaling of the image. Send a signal to automatically resize the actual view.
+    """
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -34,6 +35,8 @@ class ImageSizeWidget(QWidget):
         self.signal = UpdateScaleSignal()
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis.
+        """
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(self.apply)
         self.widget.mainLayout.itemAt(3).widget().setText("Apply and save scale")
@@ -43,6 +46,11 @@ class ImageSizeWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for scale informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Pixel size","set image scale")
         options.addFloat(name="Pixel size X", value=0.069)
         options.addFloat(name="Pixel size Y", value=0.069)
@@ -51,6 +59,7 @@ class ImageSizeWidget(QWidget):
         return options
 
     def apply(self):
+        """Called on validation, resize layers of the view and emit signal to application for updating detection widget."""
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = [
@@ -67,6 +76,7 @@ class ImageSizeWidget(QWidget):
 
 
 class MicroscopeParametersWidget(QWidget):
+    """A widget allowing user to setup microscope parameters."""
     def __init__(self,viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
@@ -75,6 +85,8 @@ class MicroscopeParametersWidget(QWidget):
         self.createLayout()
 
     def createLayout(self):
+        """A method used to create the layout with options setup to previous analysis.
+        """
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(4).widget().setText("Save microscope parameters")
@@ -84,6 +96,11 @@ class MicroscopeParametersWidget(QWidget):
 
     @classmethod
     def getOptions(cls):
+        """A class method which create entries for microscope informations and load previous analysis informations if exists.
+
+        Returns:
+            Options: The object that contains every widget informations.
+        """
         options = Options("Microscope parameters","register microscope parameters")
         options.addChoice(name="Microscope type", choices=[x for x in TheoreticalResolution._microscopesClasses.keys()], value="widefield")
         options.addInt(name="Emission wavelength",value=450)
