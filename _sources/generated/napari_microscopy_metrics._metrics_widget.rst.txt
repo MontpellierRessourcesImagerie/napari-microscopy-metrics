@@ -1,0 +1,13 @@
+﻿napari\_microscopy\_metrics.\_metrics\_widget
+=============================================
+
+.. automodule:: napari_microscopy_metrics._metrics_widget
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FittingOptionWidget
+      Metricstoolpage
+   

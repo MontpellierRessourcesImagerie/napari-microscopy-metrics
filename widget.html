@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">How To</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Main widget</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/widget.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="main-widget">
+<h1>Main widget<a class="headerlink" href="#main-widget" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._widget.</span></span><span class="sig-name descname"><span class="pre">Microscopy_Metrics_QWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>Main Widget of the plugin</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyFitting">
+<span class="sig-name descname"><span class="pre">applyFitting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyFitting" title="Link to this definition"></a></dt>
+<dd><p>Function to update FittingTool and start a worker for Gaussian fitting</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics">
+<span class="sig-name descname"><span class="pre">applyPrefittingMetrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics" title="Link to this definition"></a></dt>
+<dd><p>Function to update MetricTool and start a worker for prefitting metrics calculation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf">
+<span class="sig-name descname"><span class="pre">apply_detect_psf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf" title="Link to this definition"></a></dt>
+<dd><p>Update DetectionTool with new values and start a new worker for detection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.detectFinished">
+<span class="sig-name descname"><span class="pre">detectFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.detectFinished" title="Link to this definition"></a></dt>
+<dd><p>Function to update napari with new layers displaying bead detection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Error raised when the bead detection did not worked or if there are no beads in the image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.displayLayers">
+<span class="sig-name descname"><span class="pre">displayLayers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.displayLayers" title="Link to this definition"></a></dt>
+<dd><p>Add layers for detected beads and extracted ROIs
+Update scale and units of the napari viewer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport">
+<span class="sig-name descname"><span class="pre">generateReport</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport" title="Link to this definition"></a></dt>
+<dd><p>Function for generating PDF,csv and HTML reports</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>string</em> – used to change the description of the napari progress bar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getActivePath">
+<span class="sig-name descname"><span class="pre">getActivePath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getActivePath" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<em>int</em>) – Bead ID corresponding to it’s position in the list</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Folder’s path found (or created) for the selected bead</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished">
+<span class="sig-name descname"><span class="pre">onFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished" title="Link to this definition"></a></dt>
+<dd><p>Function to update result collection and start a worker for report generation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMouseDoubleClick">
+<span class="sig-name descname"><span class="pre">onMouseDoubleClick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMouseDoubleClick" title="Link to this definition"></a></dt>
+<dd><p>Function to display HTML report corresponding to the bead selected by user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layer</strong> – Information about the layer clicked sent with the signal</p></li>
+<li><p><strong>event</strong> – Information relative to the event sent with the signal</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onReportFinished">
+<span class="sig-name descname"><span class="pre">onReportFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onReportFinished" title="Link to this definition"></a></dt>
+<dd><p>Called to Enable the button to run analysis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openBrowser">
+<span class="sig-name descname"><span class="pre">openBrowser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openBrowser" title="Link to this definition"></a></dt>
+<dd><p>Open html page report of the selected shape</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>Open index page of documentation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.prefittingFinished">
+<span class="sig-name descname"><span class="pre">prefittingFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.prefittingFinished" title="Link to this definition"></a></dt>
+<dd><p>Function to update napari display with prefitting metrics results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Raised when an error occurred in the signal to background ratio computation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing">
+<span class="sig-name descname"><span class="pre">startProcessing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing" title="Link to this definition"></a></dt>
+<dd><p>Initialize layers and start thread for analysis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.updateScaleDetection">
+<span class="sig-name descname"><span class="pre">updateScaleDetection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.updateScaleDetection" title="Link to this definition"></a></dt>
+<dd><p>Update detectionToolPage when pixel scale is changed in acquisitionToolPage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>List</em>) – List of pixel scale for each axis</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, MRI-CIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

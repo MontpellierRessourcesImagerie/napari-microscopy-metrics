@@ -1,0 +1,153 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detection Widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Metrics Widget" href="metrics.html" />
+    <link rel="prev" title="Acquisition Widget" href="acquisition.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How To</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Detection Widget</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#detection-parameters">Detection Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#threshold-parameters">Threshold Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#region-of-interest-parameters">Region Of Interest Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">How To</a></li>
+      <li class="breadcrumb-item active">Detection Widget</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/detection.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detection-widget">
+<h1>Detection Widget<a class="headerlink" href="#detection-widget" title="Link to this heading"></a></h1>
+<p id="detection">The Detection Widget is a form concerning informations about beads detection et extraction for analysis.</p>
+<section id="detection-parameters">
+<h2>Detection Parameters<a class="headerlink" href="#detection-parameters" title="Link to this heading"></a></h2>
+<p>This section concerns the choice of tool used for beads detection. Actually, we have four of them :
+* <strong>Peak local maxima</strong> : fastest but also the less accurate of the list.
+* <strong>Laplacian of Gaussian</strong> : the most accurate and also the slowest.
+* <strong>Difference of Gaussian</strong> : A faster alternative of the LoG, also a little bit less accurate.
+* <strong>Centroids</strong> : Faster and more accurate than peak local maxima.</p>
+<a class="reference internal image-reference" href="_images/detection_tool.png"><img alt="DetectionParameters" class="align-center" src="_images/detection_tool.png" style="width: 500px;" />
+</a>
+</section>
+<section id="threshold-parameters">
+<h2>Threshold Parameters<a class="headerlink" href="#threshold-parameters" title="Link to this heading"></a></h2>
+<p>This interactive widget allows user to select the most accurate threshold to segment the image. To make it easier, the user can push apply button to see the result of the selected threshold. In the case he selected “manual” threshold, he will have access to a slider and a real-time render.
+There are many threshold available, but, the default one is otsu which is really polyvalent. The legacy threshold is used for SBR calculation and is also really accurate. Please, check on the microscopy-metrics documentation for more details.</p>
+<a class="reference internal image-reference" href="_images/threshold_tool.png"><img alt="MicroscopeParametersWidget" class="align-center" src="_images/threshold_tool.png" style="width: 500px;" />
+</a>
+</section>
+<section id="region-of-interest-parameters">
+<h2>Region Of Interest Parameters<a class="headerlink" href="#region-of-interest-parameters" title="Link to this heading"></a></h2>
+<p>A section relative to beads extraction and signal to background calculation. It is one of the most important step of the analysis, it can entirely make it wrong, so user have to take care of the values he enters :</p>
+<ul class="simple">
+<li><p><strong>Theoretical bead size (µm)</strong> : Corresponds to the theoretical size of the bead, in other words, it is the size of the beads user wanted them to be when he make the slide.</p></li>
+<li><p><strong>Z axis rejection margin (µm)</strong> : When extracting ROIs, we have to pay attention to exclude beads too near to top/bottom, because they would produce a bad fit and impact the accuracy of analysis.</p></li>
+<li><p><strong>Inner annulus distance to bead (µm)</strong> : To compute signal to background ratio, we use a ring of pixels around the detected bead as “background”. This value represents the distance between inner annulus and border of the bead.</p></li>
+<li><p><strong>Annulus thickness (µm)</strong> : The thickness of the ring, or the distance to inner annulus where pixels are “background”.</p></li>
+<li><p><strong>Crop factor</strong> : The size of the ROI is estimated by : Theoretical bead size x crop factor. This crop factor is an abritrary value to make ROI bigger or smaller. Usually set to 5.</p></li>
+</ul>
+<a class="reference internal image-reference" href="_images/ROI_parameters.png"><img alt="ROIParametersWidget" class="align-center" src="_images/ROI_parameters.png" style="width: 500px;" />
+</a>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="acquisition.html" class="btn btn-neutral float-left" title="Acquisition Widget" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics Widget" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, MRI-CIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
