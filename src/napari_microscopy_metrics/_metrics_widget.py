@@ -33,7 +33,7 @@ class FittingOptionWidget(QWidget):
         """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
-        self.widget.mainLayout.itemAt(1).widget().setText("Save fitting option")
+        self.widget.mainLayout.itemAt(2).widget().setText("Save fitting option")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
@@ -56,6 +56,7 @@ class FittingOptionWidget(QWidget):
         """
         options = Options("Fitting option","set fitting option")
         options.addChoice(name="Fit type", choices=[x for x in FittingTool._fittingClasses.keys()], value="1D")
+        options.addFloat(name="Threshold R2", value=0.95)
         options.load()
         if options.items["Fit type"]['choices'] != [x for x in FittingTool._fittingClasses.keys()] :
             options.items["Fit type"]['choices'] = [x for x in FittingTool._fittingClasses.keys()]

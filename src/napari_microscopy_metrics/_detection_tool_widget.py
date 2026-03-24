@@ -305,8 +305,14 @@ class RoiWidget(QWidget):
         self.cropFactor.setRange(1, 10)
         self.cropFactor.setValue(self.optionsSliders.value("crop factor"))
         self.cropFactorLabel = QLabel("Crop factor: " + str(self.cropFactor.value()))
+        self.thresholdIntensity = QSlider(Qt.Horizontal)
+        self.thresholdIntensity.setRange(0,100)
+        self.thresholdIntensity.setValue(self.optionsSliders.value("threshold intensity"))
+        self.thresholdIntensityLabel = QLabel("Threshold mean intensity: " + str(self.thresholdIntensity.value()))
         self.widget.mainLayout.addWidget(self.cropFactorLabel)
         self.widget.mainLayout.addWidget(self.cropFactor)
+        self.widget.mainLayout.addWidget(self.thresholdIntensityLabel)
+        self.widget.mainLayout.addWidget(self.thresholdIntensity)
         self.widget.addApplyButton(self.apply)
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
@@ -314,6 +320,7 @@ class RoiWidget(QWidget):
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.cropFactor.valueChanged.connect(self.updateCropFactor)
+        self.thresholdIntensity.valueChanged.connect(self.updateThresholdIntensity)
 
     @classmethod
     def getOptions(cls):
@@ -338,6 +345,7 @@ class RoiWidget(QWidget):
         """
         optionsSliders = Options("Crop factor value", "Store value of crop factor")
         optionsSliders.addInt(name="crop factor", value=5)
+        optionsSliders.addInt(name="threshold intensity",value=95)
         optionsSliders.load()
         return optionsSliders
 
@@ -354,6 +362,15 @@ class RoiWidget(QWidget):
         """
         self.cropFactorLabel.setText("Crop factor: " + str(value))
         self.optionsSliders.items["crop factor"]["value"] = value
+    
+    def updateThresholdIntensity(self,value):
+        """Updates the label for threshold mean intensity and assign the value to optionSliders
+
+        Args:
+            value (int): Value of the mean intensity threshold.
+        """
+        self.thresholdIntensityLabel.setText("Threshold mean intensity: " + str(value))
+        self.optionsSliders.items["threshold intensity"]["value"] = value
 
     def openDocumentation(self):
         """A method to open the documentation webPage relative to this widget"""
@@ -531,6 +548,7 @@ class DetectionToolTab(QWidget):
         if isinstance(self.detectionTool._detectionTool, PeakLocalMaxDetector):
             self.detectionTool._detectionTool.minDistance = self.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
         self.detectionTool.cropFactor = self.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
+        self.detectionTool._thresholdIntensity = self.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity") / 100
         self.detectionTool.beadSize = self.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
         self.detectionTool.rejectionDistance = self.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
         kwargs = {"cropPsf": False}

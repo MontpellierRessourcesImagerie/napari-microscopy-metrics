@@ -116,6 +116,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.DetectionTool._image = image
         self.DetectionTool._sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
         self.DetectionTool._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
+        self.DetectionTool._thresholdIntensity = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity")/100
         self.DetectionTool._beadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
         self.DetectionTool._rejectionDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
         self.DetectionTool._pixelSize = np.array(
@@ -226,6 +227,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.FittingTool.rois = [entry["ROI"] for entry in self.analysisData]
         self.FittingTool.outputDir = self.outputDir
         self.FittingTool.fitType = self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
+        self.FittingTool._thresholdRSquared = self.metricsToolPage.widgetFittingChoice.options.value("Threshold R2")
 
         worker = create_worker(
             self.FittingTool.computeFitting,
@@ -251,6 +253,11 @@ class Microscopy_Metrics_QWidget(QWidget):
             ] = self.MetricTool.sphericity
             self.analysisData[result[0]]["uncertainty"] = result[2]
             self.analysisData[result[0]]["determination"] = result[3]
+        if len(self.FittingTool.results) == len(self.FittingTool.retainedId):
+            tmp = []
+            for i in self.FittingTool.retainedId:
+                tmp.append(self.analysisData[i])
+            self.analysisData = tmp
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
