@@ -70,6 +70,11 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.metricsToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
+        self.metricsToolPage.spacing = [
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+            ]
         self.tab.addTab(self.metricsToolPage, "Metrics parameters")
         self.runButton = QPushButton("Run analysis")
         self.runButton.setStyleSheet("background-color : green")
@@ -443,3 +448,4 @@ class Microscopy_Metrics_QWidget(QWidget):
             scale (List): List of pixel scale for each axis
         """
         self.detectionToolPage.detectionTool._pixelSize = scale
+        self.metricsToolPage.spacing = scale
