@@ -6,7 +6,7 @@
 Napari microscopy metrics documentation
 =======================================
 
-**Napari microscopy metrics** is a Python pugin for napari that gives tools to do mcroscopes quality control using point spread function.
+**Napari microscopy metrics** is a Python plugin for napari that gives tools to do microscopes quality control using point spread function.
 
 Check out the :doc:`usage` section for further information, including how to :ref:`install <installation>` and :ref:`run <run>` the project.
 
