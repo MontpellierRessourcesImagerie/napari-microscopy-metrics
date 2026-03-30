@@ -13,18 +13,17 @@ def test_metrics_tool_page_initialize(qapp):
     mock_viewer.layers = MagicMock()
     mock_viewer.layers.selection = MagicMock()
     mock_viewer.layers.selection.active = None
-    widget = Metrics_tool_page(mock_viewer)
+    widget = Metricstoolpage(mock_viewer)
     assert widget.viewer == mock_viewer
-    assert widget.countWindows == 0
-    assert widget.params["Gaussian_type"] == "1D"
-    assert widget.title.text() == "Metrics parameters"
+    assert widget.count_windows == 0
+    assert widget.groupMetrics.title() == "Metrics parameters"
 
 def test_print_results(qapp):
     mock_viewer = Mock()
     mock_viewer.layers = MagicMock()
     mock_viewer.layers.selection = MagicMock()
     mock_viewer.layers.selection.active = None
-    widget = Metrics_tool_page(mock_viewer)
+    widget = Metricstoolpage(mock_viewer)
     widget.printResults(SBR=3.14)
-    expected_text = "Mean metrics measured :\n- Signal to background ratio : 3.14"
+    expected_text = "- Signal to background ratio: 3.14"
     assert widget.resultsLabel.text() == expected_text

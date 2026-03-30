@@ -11,11 +11,11 @@ def test_write_and_read_file_data():
         os.environ["HOME"] = temp_dir
         filename = "test_config.json"
         data = {"first":123, "second":"test"}
-        write_file_data(filename,data)
-        read_data = read_file_data(filename)
+        writeFileData(filename,data)
+        read_data = readFileData(filename)
         assert read_data == data
         config_path = os.path.join(os.environ["HOME"],".napari","microscopy_metrics",filename)
         assert os.path.exists(config_path)
         del os.environ["HOME"]
-        read_data = read_file_data(filename)
+        read_data = readFileData(filename)
         assert read_data == {}

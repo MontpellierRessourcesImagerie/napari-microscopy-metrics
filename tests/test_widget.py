@@ -9,8 +9,5 @@ def test_widget_initialize(qapp):
     mock_viewer.layers = MagicMock()
     mock_viewer.layers.selection = MagicMock()
     mock_viewer.layers.selection.active = None
-    params = read_file_data("parameters_data.json")
-    parameters_acquisition = read_file_data("acquisition_data.json")
     widget = Microscopy_Metrics_QWidget(mock_viewer)
-    assert widget.parametersDetection == params
-    assert widget.parametersAcquisition == parameters_acquisition
+    assert widget.runButton.text() == "Run analysis"

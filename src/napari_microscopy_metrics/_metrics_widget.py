@@ -83,6 +83,7 @@ class FittingOptionWidget(QWidget):
         """
         if value == "Prominence":
             self.paramsStack.setCurrentIndex(0)
+            self.displayFWHM(self.prominenceRel.value())
         else :
             self.paramsStack.setCurrentIndex(1)
 
