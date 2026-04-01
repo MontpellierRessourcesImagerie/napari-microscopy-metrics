@@ -11,8 +11,8 @@
     "metrics": 0.003,
     "results": 0.003,
     "usage": 0.008,
-    "widget": 0.099,
-    "widget_acquisition": 0.034,
-    "widget_detection": 0.101,
-    "widget_metrics": 0.035
+    "widget": 0.138,
+    "widget_acquisition": 0.035,
+    "widget_detection": 0.099,
+    "widget_metrics": 0.161
 }
