@@ -9,61 +9,19 @@ def qapp():
     app = QApplication.instance() or QApplication([])
     yield app
 
-def test_Detection_parameter_widget_initialize(qapp):
+@pytest.fixture
+def mock_viewer():
     mock_viewer = Mock()
     mock_viewer.layers = MagicMock()
     mock_viewer.layers.selection = MagicMock()
     mock_viewer.layers.selection.active = None
+    yield mock_viewer
+
+def test_Detection_parameter_widget_initialize(qapp,mock_viewer):
     widget = DetectionParametersWidget(mock_viewer)
     assert widget.viewer == mock_viewer
 
-"""def test_on_confirm(qtbot,qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
-    widget = DetectionToolTab(viewer=mock_viewer)
-    with qtbot.capture_exceptions() as ex :
-        widget.apply()
-    assert not ex"""
-
-"""def test_updates(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
-    widget = Detection_Parameters_Widget(viewer=mock_viewer,params=params)
-    widget.updateMinDistance(123)
-    assert widget.minDistanceLabel.text() == "Minimal distance :123"
-    assert widget.params["Min_dist"] == 123
-    widget.updateSigma(456)
-    assert widget.blobSigmaLabel.text() == "Sigma : 456"
-    assert widget.params["Sigma"] == 456
-    widget.updateThreshold(789)
-    assert widget.thresholdRelLabel.text() == "Relative threshold : 7.89"
-    assert widget.params["Rel_threshold"] == 789
-    widget.updateCropFactor(159)
-    assert widget.cropFactorLabel.text() == "Crop factor : 159"
-    assert widget.params["cropFactor"] == 159
-    widget.selectedAction(2)
-    assert widget.paramsStack.currentIndex() == 1
-    widget._update_auto_threshold(2)
-    assert widget.params["auto_threshold"] == True"""
-
-"""def test_Detection_tool_tab_initialize(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
-    params = read_file_data("parameters_data.json")
-    widget = Detection_Tool_Tab(mock_viewer)
-    assert widget.params == params"""
-
-def test_Detection_tool_tab_layer_removed(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
+def test_Detection_tool_tab_layer_removed(qapp,mock_viewer):
     widget = DetectionToolTab(mock_viewer)
     mock_filter_layer = Mock()
     mock_filter_layer.name = "ROI"
@@ -83,11 +41,7 @@ def test_Detection_tool_tab_layer_removed(qapp):
     widget.onLayerRemoved(mock_event)
     assert widget.detectedBeadsLayer is None
 
-def test_Detection_tool_tab_open_parameters_window(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
+def test_Detection_tool_tab_open_parameters_window(qapp,mock_viewer):
     widget = DetectionToolTab(mock_viewer)
     widget.openParametersWindow()
     assert widget.countWindows == 1
@@ -96,42 +50,7 @@ def test_Detection_tool_tab_open_parameters_window(qapp):
     widget.onParametersWindowClosed({})
     assert widget.countWindows == 0
 
-"""def test_Detection_tool_tab_on_params_updated(qapp, tmp_path):
-    original_home = os.path.expanduser("~")
-    os.environ["HOME"] = str(tmp_path)
-    config_dir = os.path.join(tmp_path, ".napari", "microscopy_metrics")
-    os.makedirs(config_dir, exist_ok=True)
-    config_path = os.path.join(config_dir, "acquisition_data.json")
-    params = {
-        "Min_dist": 10,
-        "Rel_threshold": 6,
-        "Sigma": 3,
-        "theorical_bead_size": 10,
-        "cropFactor": 5,
-        "selected_tool": 0,
-        "auto_threshold": False,
-        "rejectionZone": 10,
-        "distance_annulus": 10,
-        "thickness_annulus": 10,
-        "threshold_choice": "otsu"
-    }
-    with open(config_path, 'w') as f:
-        json.dump(params, f)
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
-    widget = Detection_Tool_Tab(mock_viewer)
-    assert widget.params == params
-    widget.parametersWindow = Mock()
-    new_params = params.copy()
-    new_params["Min_dist"] = 11
-    widget.on_params_updated(new_params)
-    assert widget.params == new_params"""
-
-def test_erase_Layers(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
+def test_erase_Layers(qapp,mock_viewer):
     widget = DetectionToolTab(mock_viewer)
     mock_filter_layer = Mock()
     mock_filtered_layer = Mock()

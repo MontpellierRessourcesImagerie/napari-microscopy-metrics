@@ -14,9 +14,9 @@ from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
 import napari
 from napari.utils.notifications import *
-from .json_utils import *
 from autooptions import *
-from microscopy_metrics.fitting import FittingTool,Prominence
+from microscopy_metrics.fittingTools.fittingTool import FittingTool
+from microscopy_metrics.fittingTools import Prominence
 import webbrowser
 
 
@@ -60,9 +60,11 @@ class FittingOptionWidget(QWidget):
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(3).widget().setText("Save fitting option")
+        self.widget.setToolTip("Select a fit tool and a threshold for rejecting bead's with a low fit quality")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
@@ -194,9 +196,11 @@ class Metricstoolpage(QWidget):
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         self.layoutResults.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.layoutResults.addWidget(self.resultsLabel)
         self.groupResults.setLayout(self.layoutResults)
+        self.groupResults.setToolTip("Metrics measured at this point")
         layout.addWidget(self.groupMetrics)
         layout.addWidget(self.groupResults)
         layout.addStretch()

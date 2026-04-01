@@ -13,9 +13,8 @@ from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
 import napari
 from napari.utils.notifications import *
-from .json_utils import *
 from autooptions import *
-from microscopy_metrics.theoretical_resolution import TheoreticalResolution
+from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
 import webbrowser
 
 
@@ -42,8 +41,11 @@ class ImageSizeWidget(QWidget):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(self.apply)
         self.widget.mainLayout.itemAt(3).widget().setText("Apply and save scale")
+        self.widget.mainLayout.itemAt(3).widget().setToolTip("Apply scale to actual view and save values for next session")
+        self.widget.setToolTip("Enter for each axis the size represented by a single pixel (µm/px)")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setToolTip("Go to documentation")
         self.btnDoc.setFixedSize(24,24)
         self.btnDoc
         layout = QVBoxLayout()
@@ -102,9 +104,12 @@ class MicroscopeParametersWidget(QWidget):
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
         self.widget.mainLayout.itemAt(4).widget().setText("Save microscope parameters")
+        self.widget.mainLayout.itemAt(4).widget().setToolTip("Apply parameters for analysis and save them for next session")
+        self.widget.setToolTip("Microscope's parameters used for acquisition")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)

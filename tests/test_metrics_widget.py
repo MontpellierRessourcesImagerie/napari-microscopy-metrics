@@ -8,21 +8,21 @@ def qapp():
     app = QApplication.instance() or QApplication([])
     yield app
 
-def test_metrics_tool_page_initialize(qapp):
+@pytest.fixture
+def mock_viewer():
     mock_viewer = Mock()
     mock_viewer.layers = MagicMock()
     mock_viewer.layers.selection = MagicMock()
     mock_viewer.layers.selection.active = None
+    yield mock_viewer
+
+def test_metrics_tool_page_initialize(qapp,mock_viewer):
     widget = Metricstoolpage(mock_viewer)
     assert widget.viewer == mock_viewer
     assert widget.count_windows == 0
     assert widget.groupMetrics.title() == "Metrics parameters"
 
-def test_print_results(qapp):
-    mock_viewer = Mock()
-    mock_viewer.layers = MagicMock()
-    mock_viewer.layers.selection = MagicMock()
-    mock_viewer.layers.selection.active = None
+def test_print_results(qapp,mock_viewer):
     widget = Metricstoolpage(mock_viewer)
     widget.printResults(SBR=3.14)
     expected_text = "- Signal to background ratio: 3.14"

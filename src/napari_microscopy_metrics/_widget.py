@@ -2,7 +2,7 @@
 This module contains a QWidget class for performing PSF analysis.
 
 """
-
+import os
 from typing import TYPE_CHECKING, Optional
 import types
 import napari
@@ -13,14 +13,16 @@ from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtCore import Qt, QSize, Signal, QObject, QThread
 from qtpy.QtWidgets import *
 from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
-from napari_microscopy_metrics._acquisition_widget import *
-from napari_microscopy_metrics._metrics_widget import *
+from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
+from napari_microscopy_metrics._metrics_widget import Metricstoolpage
 from microscopy_metrics.detection import Detection
-from microscopy_metrics.detection_tool import DetectionTool,PeakLocalMaxDetector
+from microscopy_metrics.detectionTools.detection_tool import DetectionTool
+from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
 from microscopy_metrics.metrics import Metrics
-from microscopy_metrics.threshold_tool import Threshold
+from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 from microscopy_metrics.fitting import Fitting
 from microscopy_metrics.report_generator import ReportGenerator
+from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
 import webbrowser
 import numpy as np
 

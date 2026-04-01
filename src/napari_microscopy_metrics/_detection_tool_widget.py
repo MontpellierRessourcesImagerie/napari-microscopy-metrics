@@ -1,7 +1,7 @@
 """
 This module contains a napari widgets for PSF detection
 """
-
+import numpy as np
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 import types
@@ -11,13 +11,14 @@ from qtpy.QtCore import Qt, QSize, Signal, QObject
 from qtpy.QtWidgets import *
 from qtpy.QtGui import QIntValidator, QIcon
 from skimage.util import img_as_float
-from microscopy_metrics.detection import *
-from microscopy_metrics.metrics import *
-from microscopy_metrics.detection_tool import DetectionTool,PeakLocalMaxDetector
+from microscopy_metrics.detection import Detection
+from microscopy_metrics.metrics import Metrics
+from microscopy_metrics.detectionTools.detection_tool import DetectionTool
+from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
+from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 import napari
 from napari.settings import get_settings
 from napari.utils.notifications import *
-from .json_utils import *
 from autooptions import *
 from napari.qt.threading import create_worker
 from scipy import ndimage as ndi
@@ -81,9 +82,11 @@ class DetectionToolWidget(QWidget):
         self.paramsStack.addWidget(self.centroidMethodWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(self.apply)
+        self.widget.setToolTip("Select a detection tool")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
@@ -196,9 +199,11 @@ class ThresholdWidget(QWidget):
         self.paramsStack.addWidget(self.emptyWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(self.apply)
+        self.widget.setToolTip("Choose a threshold for the detection")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
@@ -314,9 +319,11 @@ class RoiWidget(QWidget):
         self.widget.mainLayout.addWidget(self.thresholdIntensityLabel)
         self.widget.mainLayout.addWidget(self.thresholdIntensity)
         self.widget.addApplyButton(self.apply)
+        self.widget.setToolTip("Parameters for ROI extraction and bead's rejecting criterions")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setToolTip("Go to documentation")
         layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.cropFactor.valueChanged.connect(self.updateCropFactor)
@@ -455,8 +462,10 @@ class DetectionToolTab(QWidget):
         self.parametersButton.setIcon(QIcon(str(iconPath)))
         self.parametersButton.setIconSize(QSize(35, 35))
         self.parametersButton.setFixedSize(35, 35)
+        self.parametersButton.setToolTip("Open detection configurator")
 
         self.detectionButton = QPushButton("Visualize beads detection")
+        self.detectionButton.setToolTip("Get a preview of detection with current parameters")
         self.detectionButton.clicked.connect(self.apply)
 
         self.resultsLabel = QLabel()
