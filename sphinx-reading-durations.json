@@ -1,7 +1,7 @@
 {
-    "acquisition": 0.018,
-    "api": 0.007,
-    "detection": 0.008,
+    "acquisition": 0.019,
+    "api": 0.008,
+    "detection": 0.007,
     "generated/napari_microscopy_metrics._acquisition_widget": 0.014,
     "generated/napari_microscopy_metrics._detection_tool_widget": 0.02,
     "generated/napari_microscopy_metrics._metrics_widget": 0.008,
@@ -11,8 +11,8 @@
     "metrics": 0.003,
     "results": 0.003,
     "usage": 0.008,
-    "widget": 0.138,
+    "widget": 0.123,
     "widget_acquisition": 0.035,
-    "widget_detection": 0.099,
-    "widget_metrics": 0.161
+    "widget_detection": 0.101,
+    "widget_metrics": 0.176
 }
