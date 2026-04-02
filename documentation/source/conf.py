@@ -11,8 +11,8 @@ print(sys.path)
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Napari microscopy metrics'
-copyright = '2026, MRI-CIA'
-author = 'MRI-CIA'
+copyright = '2026, CNRS'
+author = 'Bastian Langouët'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
