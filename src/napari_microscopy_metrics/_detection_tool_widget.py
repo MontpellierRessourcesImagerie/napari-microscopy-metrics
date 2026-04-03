@@ -46,7 +46,7 @@ class DetectionToolWidget(QWidget):
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
-        self.toolChoiceWidget = self.widget.mainLayout.itemAt(0).itemAt(1).widget()
+        self.toolChoiceWidget = self.widget.widgets["Detection tool"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
@@ -173,7 +173,7 @@ class ThresholdWidget(QWidget):
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
-        self.toolChoiceWidget = self.widget.mainLayout.itemAt(0).itemAt(1).widget()
+        self.toolChoiceWidget = self.widget.widgets["Threshold"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)

@@ -35,7 +35,7 @@ class FittingOptionWidget(QWidget):
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
         self.widget = OptionsWidget(self.viewer,self.options)
-        self.toolChoiceWidget = self.widget.mainLayout.itemAt(0).itemAt(1).widget()
+        self.toolChoiceWidget = self.widget.widgets["Fit type"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         self.prominenceRelWidget = QWidget()
         self.prominenceRelLayout = QVBoxLayout()
@@ -59,7 +59,7 @@ class FittingOptionWidget(QWidget):
         self.paramsStack.addWidget(self.emptyWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
         self.widget.addApplyButton(lambda : None)
-        self.widget.mainLayout.itemAt(3).widget().setText("Save fitting option")
+        self.widget.getApplyButton().setText("Save fitting option")
         self.widget.setToolTip("Select a fit tool and a threshold for rejecting bead's with a low fit quality")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
@@ -93,7 +93,7 @@ class FittingOptionWidget(QWidget):
         """A method to display mean FWHM of image if ROI are already extracted and prominence is selected. 
 
         Args:
-            value (int): Value of the relative prominence
+            value (str): Value of the relative prominence
         """
         self.prominenceRelLabel.setText(f"Relative prominence: {value/100}")
         if "ROI" in self.viewer.layers : 

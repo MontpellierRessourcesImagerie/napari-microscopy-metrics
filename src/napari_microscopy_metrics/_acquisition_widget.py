@@ -40,8 +40,8 @@ class ImageSizeWidget(QWidget):
         """
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(self.apply)
-        self.widget.mainLayout.itemAt(3).widget().setText("Apply and save scale")
-        self.widget.mainLayout.itemAt(3).widget().setToolTip("Apply scale to actual view and save values for next session")
+        self.widget.getApplyButton().setText("Apply and save scale")
+        self.widget.getApplyButton().setToolTip("Apply scale to actual view and save values for next session")
         self.widget.setToolTip("Enter for each axis the size represented by a single pixel (µm/px)")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
@@ -103,8 +103,8 @@ class MicroscopeParametersWidget(QWidget):
         """
         self.widget = OptionsWidget(self.viewer,self.options)
         self.widget.addApplyButton(lambda : None)
-        self.widget.mainLayout.itemAt(4).widget().setText("Save microscope parameters")
-        self.widget.mainLayout.itemAt(4).widget().setToolTip("Apply parameters for analysis and save them for next session")
+        self.widget.getApplyButton().setText("Save microscope parameters")
+        self.widget.getApplyButton().setToolTip("Apply parameters for analysis and save them for next session")
         self.widget.setToolTip("Microscope's parameters used for acquisition")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
