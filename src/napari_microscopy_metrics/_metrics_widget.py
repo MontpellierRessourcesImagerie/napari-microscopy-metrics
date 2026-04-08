@@ -107,7 +107,6 @@ class FittingOptionWidget(QWidget):
         if not isinstance(self.viewer.layers.selection.active,napari.layers.Image) or self.viewer.layers.selection.active is None:
             return
         image = self.viewer.layers.selection.active.data
-        centers_ROIs = []
         meanFWHM = [0.0,0.0,0.0]
         total = 0
         for roi in ROIs:
@@ -116,12 +115,13 @@ class FittingOptionWidget(QWidget):
             index_min_distance = np.argmin(dist)
             prominence = Prominence()
             roi_int = roi.astype(int)
-            prominence._image = data = image[..., roi_int[0][1] : roi_int[2][1], roi_int[0][2] : roi_int[1][2]]
+            prominence._image = image[..., roi_int[0][1] : roi_int[2][1], roi_int[0][2] : roi_int[1][2]]
             prominence._roi = roi
             prominence._centroid = centroids[index_min_distance]
             prominence._prominenceRel = value / 100
             prominence._spacing = self.parent.spacing
-            result = prominence.processSingleFit(0)
+            prominence.processSingleFit(0)
+            result = [0, prominence.fwhms, prominence.parameters]
             if result is None :
                 continue
             total += 1

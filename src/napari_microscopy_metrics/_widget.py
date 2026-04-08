@@ -23,6 +23,7 @@ from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 from microscopy_metrics.fitting import Fitting
 from microscopy_metrics.report_generator import ReportGenerator
 from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
+from microscopy_metrics.scripts.evaluate_fitting import generateRandomBornoWolfPSF,PSF_SIZE
 import webbrowser
 import numpy as np
 
@@ -84,14 +85,18 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.docButton = QPushButton("Documentation")
         self.docButton.setStyleSheet("background-color : blue")
         self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.genButton = QPushButton("Generate random PSF")
+        self.genButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
         self.layout().addWidget(self.tab)
+        self.layout().addWidget(self.genButton)
         self.layout().addWidget(self.runButton)
         self.layout().addWidget(self.docButton)
         self.runButton.pressed.connect(self.startProcessing)
         self.docButton.pressed.connect(self.openDocumentation)
+        self.genButton.pressed.connect(self.generateRandomPSF)
         self.viewer.mouse_double_click_callbacks.append(
             self.onMouseDoubleClick
         )
@@ -281,7 +286,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         Yields:
             string : used to change the description of the napari progress bar
         """
-        # Extracting ROIs and _cropped layers from analysisData
         rois = [entry["ROI"] for entry in self.analysisData]
         croppedLayers = [entry["_cropped"] for entry in self.analysisData]
         outputDir = os.path.expanduser("~/")
@@ -451,3 +455,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         """
         self.detectionToolPage.detectionTool._pixelSize = scale
         self.metricsToolPage.spacing = scale
+
+    def generateRandomPSF(self):
+        seed = np.random.randint(0, 1000000)
+        psf,_,_ = generateRandomBornoWolfPSF(seed=seed)
+        psf = psf.reshape((PSF_SIZE, PSF_SIZE, PSF_SIZE))
+        self.viewer.add_image(psf, name=f"Random PSF (seed: {seed})")
