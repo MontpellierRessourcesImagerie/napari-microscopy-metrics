@@ -1,8 +1,9 @@
-import json
 import os
+import json
 
 
 def readFileData(filename):
+    """Reads the data from a JSON file located in the user's home directory under .napari/microscopy_metrics/filename."""
     configPath = configPath = os.path.join(
         os.path.expanduser("~"), ".napari", "microscopy_metrics", filename
     )
@@ -13,6 +14,7 @@ def readFileData(filename):
 
 
 def writeFileData(filename, data):
+    """Writes the data to a JSON file located in the user's home directory under .napari/microscopy_metrics/filename."""
     configDir = os.path.join(
         os.path.expanduser("~"), ".napari", "microscopy_metrics"
     )

@@ -2,28 +2,32 @@
 This module contains a napari widgets form for microscope acquisition parameters
 """
 
-from pathlib import Path
-import numpy as np
-from typing import TYPE_CHECKING, Optional
-import types
-from magicgui import magic_factory
-from magicgui.widgets import CheckBox, Container, create_widget
-from qtpy.QtCore import Qt, QSize, Signal, QObject
-from qtpy.QtWidgets import *
-from qtpy.QtGui import QIntValidator, QIcon
-from skimage.util import img_as_float
 import napari
-from napari.utils.notifications import *
-from autooptions import *
+import webbrowser
+import numpy as np
+
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QLabel,
+    QGroupBox,
+    QSizePolicy,
+    QStackedWidget,
+    QSlider,
+)
+from autooptions import Options
+from autooptions import OptionsWidget
+
 from microscopy_metrics.fittingTools.fittingTool import FittingTool
 from microscopy_metrics.fittingTools import Prominence
-import webbrowser
 
 
 class FittingOptionWidget(QWidget):
-    """A widget alowing user to select the fitting method he wants to use to estimate full-width half maximum."""
+    """A widget allowing user to setup fitting options for PSF detection and save them for next session."""
 
-    def __init__(self,viewer:"napari.viewer.Viewer",parent):
+    def __init__(self, viewer: "napari.viewer.Viewer", parent):
         super().__init__()
         self.viewer = viewer
         self.parent = parent
@@ -34,7 +38,7 @@ class FittingOptionWidget(QWidget):
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer,self.options)
+        self.widget = OptionsWidget(self.viewer, self.options)
         self.toolChoiceWidget = self.widget.widgets["Fit type"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         self.prominenceRelWidget = QWidget()
@@ -58,16 +62,18 @@ class FittingOptionWidget(QWidget):
         self.paramsStack.addWidget(self.prominenceRelWidget)
         self.paramsStack.addWidget(self.emptyWidget)
         self.widget.mainLayout.addWidget(self.paramsStack)
-        self.widget.addApplyButton(lambda : None)
+        self.widget.addApplyButton(lambda: None)
         self.widget.getApplyButton().setText("Save fitting option")
-        self.widget.setToolTip("Select a fit tool and a threshold for rejecting bead's with a low fit quality")
+        self.widget.setToolTip(
+            "Select a fit tool and a threshold for rejecting bead's with a low fit quality"
+        )
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
-        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
+        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.prominenceRel.valueChanged.connect(self.displayFWHM)
@@ -78,36 +84,39 @@ class FittingOptionWidget(QWidget):
         webbrowser.open(documentationPath)
 
     def selectedAction(self, value):
-        """Update the display for selected fit.
-
+        """A method to display prominence slider if prominence is selected as fitting tool and hide it otherwise.
         Args:
-            value (string): label of the selection.
+            value (str): Value of the fitting tool choice
         """
         if value == "Prominence":
             self.paramsStack.setCurrentIndex(0)
             self.displayFWHM(self.prominenceRel.value())
-        else :
+        else:
             self.paramsStack.setCurrentIndex(1)
 
-    def displayFWHM(self,value):
-        """A method to display mean FWHM of image if ROI are already extracted and prominence is selected. 
-
+    def displayFWHM(self, value):
+        """A method to display mean FWHM of detected PSF with prominence fitting tool and update it when changing prominence slider value.
         Args:
-            value (str): Value of the relative prominence
+            value (int): Value of the prominence slider
         """
         self.prominenceRelLabel.setText(f"Relative prominence: {value/100}")
-        if "ROI" in self.viewer.layers : 
+        if "ROI" in self.viewer.layers:
             ROIs = self.viewer.layers["ROI"].data
-        else :
+        else:
             return
         if "PSF detected" in self.viewer.layers:
             centroids = self.viewer.layers["PSF detected"].data
-        else : 
+        else:
             return
-        if not isinstance(self.viewer.layers.selection.active,napari.layers.Image) or self.viewer.layers.selection.active is None:
+        if (
+            not isinstance(
+                self.viewer.layers.selection.active, napari.layers.Image
+            )
+            or self.viewer.layers.selection.active is None
+        ):
             return
         image = self.viewer.layers.selection.active.data
-        meanFWHM = [0.0,0.0,0.0]
+        meanFWHM = [0.0, 0.0, 0.0]
         total = 0
         for roi in ROIs:
             center = np.mean(roi, axis=0)
@@ -115,45 +124,61 @@ class FittingOptionWidget(QWidget):
             index_min_distance = np.argmin(dist)
             prominence = Prominence()
             roi_int = roi.astype(int)
-            prominence._image = image[..., roi_int[0][1] : roi_int[2][1], roi_int[0][2] : roi_int[1][2]]
+            prominence._image = image[
+                ...,
+                roi_int[0][1] : roi_int[2][1],
+                roi_int[0][2] : roi_int[1][2],
+            ]
             prominence._roi = roi
             prominence._centroid = centroids[index_min_distance]
             prominence._prominenceRel = value / 100
             prominence._spacing = self.parent.spacing
             prominence.processSingleFit(0)
             result = [0, prominence.fwhms, prominence.parameters]
-            if result is None :
+            if result is None:
                 continue
             total += 1
-            meanFWHM = [meanFWHM[0]+result[1][0], meanFWHM[1]+result[1][1], meanFWHM[2]+result[1][2]]
+            meanFWHM = [
+                meanFWHM[0] + result[1][0],
+                meanFWHM[1] + result[1][1],
+                meanFWHM[2] + result[1][2],
+            ]
         if total > 0:
-            meanFWHM = [meanFWHM[0]/total, meanFWHM[1]/total, meanFWHM[2]/total]
-        else : 
-            meanFWHM = [0,0,0]
-        
+            meanFWHM = [
+                meanFWHM[0] / total,
+                meanFWHM[1] / total,
+                meanFWHM[2] / total,
+            ]
+        else:
+            meanFWHM = [0, 0, 0]
+
         self.parent.printFWHM(meanFWHM)
-
-
-
 
     @classmethod
     def getOptions(cls):
-        """A class method which create entries for fitting choice and load previous analysis informations if exists.
-
+        """A class method which create entries for fitting options and load previous analysis informations if exists.
         Returns:
             Options: The object that contains every widget informations.
         """
-        options = Options("Fitting option","set fitting option")
-        options.addChoice(name="Fit type", choices=[x for x in FittingTool._fittingClasses.keys()], value="1D")
+        options = Options("Fitting option", "set fitting option")
+        options.addChoice(
+            name="Fit type",
+            choices=[x for x in FittingTool._fittingClasses.keys()],
+            value="1D",
+        )
         options.addFloat(name="Threshold R2", value=0.95)
         options.load()
-        if options.items["Fit type"]['choices'] != [x for x in FittingTool._fittingClasses.keys()] :
-            options.items["Fit type"]['choices'] = [x for x in FittingTool._fittingClasses.keys()]
+        if options.items["Fit type"]["choices"] != [
+            x for x in FittingTool._fittingClasses.keys()
+        ]:
+            options.items["Fit type"]["choices"] = [
+                x for x in FittingTool._fittingClasses.keys()
+            ]
         return options
 
-    def getSliders(self):
-        """A method which create entries for prominence sliders informations and load previous analysis informations if exists.
-
+    @classmethod
+    def getSliders(cls):
+        """A class method which create entries for sliders values and load previous analysis informations if exists.
         Returns:
             Options: The object that contains every widget informations.
         """
@@ -162,14 +187,9 @@ class FittingOptionWidget(QWidget):
         optionsSliders.load()
         return optionsSliders
 
-class Metricstoolpage(QWidget):
-    """The main widget for microscope metrics parameters
 
-    Parameter
-    ---------
-    viewer : napari.viewer.Viewer
-        The environment were the widget will be displayed
-    """
+class Metricstoolpage(QWidget):
+    """A widget allowing user to setup metrics parameters and display results of metrics measurement."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
@@ -177,7 +197,7 @@ class Metricstoolpage(QWidget):
         self.count_windows = 0
         self.SBR = None
         self.FWHM = []
-        self.spacing = [1,1,1]
+        self.spacing = [1, 1, 1]
 
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
@@ -186,7 +206,7 @@ class Metricstoolpage(QWidget):
         self.groupLayout = QVBoxLayout()
         self.groupMetrics.setLayout(self.groupLayout)
         self.layoutParameters = QVBoxLayout()
-        self.widgetFittingChoice = FittingOptionWidget(self.viewer,self)
+        self.widgetFittingChoice = FittingOptionWidget(self.viewer, self)
         self.layoutParameters.addWidget(self.widgetFittingChoice)
         self.groupLayout.addLayout(self.layoutParameters)
 
@@ -195,9 +215,9 @@ class Metricstoolpage(QWidget):
         self.resultsLabel = QLabel("No metric mesured yet.")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
-        self.layoutResults.addWidget(self.btnDoc,alignment=Qt.AlignRight)
+        self.layoutResults.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.layoutResults.addWidget(self.resultsLabel)
         self.groupResults.setLayout(self.layoutResults)
         self.groupResults.setToolTip("Metrics measured at this point")
@@ -207,27 +227,25 @@ class Metricstoolpage(QWidget):
         self.setLayout(layout)
 
     def printResults(self, SBR):
-        """A method to update plugin interface with the mean SBR of the image analyzed.
-
+        """A method to update plugin interface with the SBR of the image analyzed.
         Args:
-            SBR (float): Mean signal to background ratio of the image.
+            SBR (float): Signal to background ratio of the image.
         """
         if self.FWHM != []:
             text = f"- Signal to background ratio: {SBR:.2f}\n- FWHM Z: {self.FWHM[0]:.4f}\n- FWHM Y: {self.FWHM[1]:.4f}\n- FWHM X: {self.FWHM[2]:.4f}"
-        else :
+        else:
             text = f"- Signal to background ratio: {SBR:.2f}"
         self.resultsLabel.setText(text)
         self.SBR = SBR
 
     def printFWHM(self, FWHM):
-        """A method to update plugin interface with the mean FWHM of the image analyzed.
-
+        """A method to update plugin interface with the FWHM of the image analyzed.
         Args:
-            FWHM (float): Mean FWHM of the image.
+            FWHM (list): List of 3 values corresponding to FWHM in Z, Y and X of the image.
         """
-        if self.SBR is not None :
+        if self.SBR is not None:
             text = f"- Signal to background ratio: {self.SBR:.2f}\n- FWHM Z: {FWHM[0]:.4f}\n- FWHM Y: {FWHM[1]:.4f}\n- FWHM X: {FWHM[2]:.4f}"
-        else :
+        else:
             text = f"- FWHM Z: {FWHM[0]:.4f}\n- FWHM Y: {FWHM[1]:.4f}\n- FWHM X: {FWHM[2]:.4f}"
         self.resultsLabel.setText(text)
         self.FWHM = FWHM

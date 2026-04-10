@@ -1,29 +1,35 @@
 """
 This module contains a napari widgets for PSF detection
 """
+
+import napari
+import webbrowser
 import numpy as np
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
-import types
-from magicgui import magic_factory
-from magicgui.widgets import CheckBox, Container, create_widget
+
+from qtpy.QtGui import QIcon
+from autooptions import Options
+from autooptions import OptionsWidget
+from napari.settings import get_settings
+from napari.qt.threading import create_worker
 from qtpy.QtCore import Qt, QSize, Signal, QObject
-from qtpy.QtWidgets import *
-from qtpy.QtGui import QIntValidator, QIcon
-from skimage.util import img_as_float
+from napari.utils.notifications import show_warning
+from qtpy.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QLabel,
+    QDialog,
+    QSizePolicy,
+    QStackedWidget,
+    QGroupBox,
+    QSlider,
+)
+
 from microscopy_metrics.detection import Detection
-from microscopy_metrics.metrics import Metrics
+from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 from microscopy_metrics.detectionTools.detection_tool import DetectionTool
 from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
-from microscopy_metrics.thresholdTools.threshold_tool import Threshold
-import napari
-from napari.settings import get_settings
-from napari.utils.notifications import *
-from autooptions import *
-from napari.qt.threading import create_worker
-from scipy import ndimage as ndi
-import webbrowser
-
 
 
 class ParamsSignal(QObject):
@@ -33,9 +39,9 @@ class ParamsSignal(QObject):
 
 
 class DetectionToolWidget(QWidget):
-    """A widget allowing user to choose the detection tool he wants to use with related parameters.
-    """
-    def __init__(self,viewer: "napari.viewer.Viewer"):
+    """A widget allowing user to choose the detection tool he wants to use with related parameters."""
+
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
         self.options = self.getOptions()
@@ -45,7 +51,7 @@ class DetectionToolWidget(QWidget):
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer,self.options)
+        self.widget = OptionsWidget(self.viewer, self.options)
         self.toolChoiceWidget = self.widget.widgets["Detection tool"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
@@ -57,10 +63,18 @@ class DetectionToolWidget(QWidget):
         self.peakMethodLayout.setSpacing(2)
         self.minDistanceDetection = QSlider(Qt.Horizontal)
         self.minDistanceDetection.setRange(0, 20)
-        self.minDistanceDetection.setValue(self.optionsSliders.value("Min dist"))
-        self.minDistanceDetection.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        self.minDistanceLabel = QLabel("Minimal distance: " + str(self.minDistanceDetection.value()))
-        self.minDistanceLabel.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.minDistanceDetection.setValue(
+            self.optionsSliders.value("Min dist")
+        )
+        self.minDistanceDetection.setSizePolicy(
+            QSizePolicy.Preferred, QSizePolicy.Fixed
+        )
+        self.minDistanceLabel = QLabel(
+            "Minimal distance: " + str(self.minDistanceDetection.value())
+        )
+        self.minDistanceLabel.setSizePolicy(
+            QSizePolicy.Preferred, QSizePolicy.Fixed
+        )
         self.peakMethodLayout.addWidget(self.minDistanceLabel)
         self.peakMethodLayout.addWidget(self.minDistanceDetection)
         self.peakMethodWidget.setLayout(self.peakMethodLayout)
@@ -69,7 +83,9 @@ class DetectionToolWidget(QWidget):
         self.blobSigmaSlider = QSlider(Qt.Horizontal)
         self.blobSigmaSlider.setRange(1, 10)
         self.blobSigmaSlider.setValue(self.optionsSliders.value("Sigma"))
-        self.blobSigmaLabel = QLabel("Sigma: " + str(self.blobSigmaSlider.value()))
+        self.blobSigmaLabel = QLabel(
+            "Sigma: " + str(self.blobSigmaSlider.value())
+        )
         self.blobMethodLayout.addWidget(self.blobSigmaLabel)
         self.blobMethodLayout.addWidget(self.blobSigmaSlider)
         self.blobMethodWidget.setLayout(self.blobMethodLayout)
@@ -85,9 +101,9 @@ class DetectionToolWidget(QWidget):
         self.widget.setToolTip("Select a detection tool")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
-        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
+        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.minDistanceDetection.valueChanged.connect(self.updateMinDistance)
@@ -100,8 +116,14 @@ class DetectionToolWidget(QWidget):
         Returns:
             Options: The object that contains every widget informations.
         """
-        options = Options("Detection Parameters","Set parameters for detection tool")
-        options.addChoice(name="Detection tool", value="Centroids", choices=[x for x in DetectionTool._detectionClasses])
+        options = Options(
+            "Detection Parameters", "Set parameters for detection tool"
+        )
+        options.addChoice(
+            name="Detection tool",
+            value="Centroids",
+            choices=[x for x in DetectionTool._detectionClasses],
+        )
         options.load()
         return options
 
@@ -129,8 +151,7 @@ class DetectionToolWidget(QWidget):
         self.paramsStack.setCurrentIndex(index)
 
     def apply(self):
-        """Called on click button to save option sliders with actual sliders values.
-        """
+        """Called on click button to save option sliders with actual sliders values."""
         self.optionsSliders.save()
 
     def updateMinDistance(self, value):
@@ -160,7 +181,7 @@ class DetectionToolWidget(QWidget):
 class ThresholdWidget(QWidget):
     """A widget allowing user to choose the Threshold he wants to apply to the image for analysis."""
 
-    def __init__(self,viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
         self.options = self.getOptions()
@@ -172,7 +193,7 @@ class ThresholdWidget(QWidget):
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer,self.options)
+        self.widget = OptionsWidget(self.viewer, self.options)
         self.toolChoiceWidget = self.widget.widgets["Threshold"]
         self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
         layout = QVBoxLayout()
@@ -202,9 +223,9 @@ class ThresholdWidget(QWidget):
         self.widget.setToolTip("Choose a threshold for the detection")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
-        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
+        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.thresholdRel.valueChanged.connect(self.updateThreshold)
@@ -216,8 +237,14 @@ class ThresholdWidget(QWidget):
         Returns:
             Options: The object that contains every widget informations.
         """
-        options = Options("Threshold parameters","Set parameters for threshold")
-        options.addChoice(name="Threshold", value="otsu", choices=[x for x in Threshold._thresholdClasses])
+        options = Options(
+            "Threshold parameters", "Set parameters for threshold"
+        )
+        options.addChoice(
+            name="Threshold",
+            value="otsu",
+            choices=[x for x in Threshold._thresholdClasses],
+        )
         options.load()
         return options
 
@@ -240,7 +267,7 @@ class ThresholdWidget(QWidget):
         """
         if value == "manual":
             self.paramsStack.setCurrentIndex(0)
-        else :
+        else:
             self.paramsStack.setCurrentIndex(1)
 
     def apply(self):
@@ -268,8 +295,13 @@ class ThresholdWidget(QWidget):
             thresholdStr (Str): The label of the selected threshold.
             value (float, optional): Relative value of the threshold. Defaults to 0.5.
         """
-        if isinstance(self.viewer.layers.selection.active, napari.layers.Image):
-            if self.layer != self.viewer.layers.selection.active and self.layer is not None:
+        if isinstance(
+            self.viewer.layers.selection.active, napari.layers.Image
+        ):
+            if (
+                self.layer != self.viewer.layers.selection.active
+                and self.layer is not None
+            ):
                 self.layer.contrast_limits = self.oldContrastLimits
                 self.layer.colormap = "gray"
                 self.layer.blending = "additive"
@@ -281,19 +313,29 @@ class ThresholdWidget(QWidget):
             if thresholdStr == "manual":
                 threshold._relThreshold = value
             valueThreshold = threshold.getThreshold(self.layer.data)
-            self.layer.contrast_limits = [max(min(valueThreshold + np.min(self.layer.data), self.oldContrastLimits[1] - 1), self.oldContrastLimits[0]), self.oldContrastLimits[1]]
-            self.layer.colormap = 'HiLo'
+            self.layer.contrast_limits = [
+                max(
+                    min(
+                        valueThreshold + np.min(self.layer.data),
+                        self.oldContrastLimits[1] - 1,
+                    ),
+                    self.oldContrastLimits[0],
+                ),
+                self.oldContrastLimits[1],
+            ]
+            self.layer.colormap = "HiLo"
             self.layer.blending = "additive"
-            
+
     def openDocumentation(self):
         """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#threshold-parameters"
         webbrowser.open(documentationPath)
 
+
 class RoiWidget(QWidget):
     """A widget allowing user to setup region of interest parameters."""
 
-    def __init__(self,viewer: "napari.viewer.Viewer"):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
         self.options = self.getOptions()
@@ -303,31 +345,41 @@ class RoiWidget(QWidget):
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer,self.options)
+        self.widget = OptionsWidget(self.viewer, self.options)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.cropFactor = QSlider(Qt.Horizontal)
         self.cropFactor.setRange(1, 10)
         self.cropFactor.setValue(self.optionsSliders.value("crop factor"))
-        self.cropFactorLabel = QLabel("Crop factor: " + str(self.cropFactor.value()))
+        self.cropFactorLabel = QLabel(
+            "Crop factor: " + str(self.cropFactor.value())
+        )
         self.thresholdIntensity = QSlider(Qt.Horizontal)
-        self.thresholdIntensity.setRange(0,100)
-        self.thresholdIntensity.setValue(self.optionsSliders.value("threshold intensity"))
-        self.thresholdIntensityLabel = QLabel("Threshold mean intensity: " + str(self.thresholdIntensity.value()))
+        self.thresholdIntensity.setRange(0, 100)
+        self.thresholdIntensity.setValue(
+            self.optionsSliders.value("threshold intensity")
+        )
+        self.thresholdIntensityLabel = QLabel(
+            "Threshold mean intensity: " + str(self.thresholdIntensity.value())
+        )
         self.widget.mainLayout.addWidget(self.cropFactorLabel)
         self.widget.mainLayout.addWidget(self.cropFactor)
         self.widget.mainLayout.addWidget(self.thresholdIntensityLabel)
         self.widget.mainLayout.addWidget(self.thresholdIntensity)
         self.widget.addApplyButton(self.apply)
-        self.widget.setToolTip("Parameters for ROI extraction and bead's rejecting criterions")
+        self.widget.setToolTip(
+            "Parameters for ROI extraction and bead's rejecting criterions"
+        )
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24,24)
+        self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
-        layout.addWidget(self.btnDoc,alignment=Qt.AlignRight)
+        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.cropFactor.valueChanged.connect(self.updateCropFactor)
-        self.thresholdIntensity.valueChanged.connect(self.updateThresholdIntensity)
+        self.thresholdIntensity.valueChanged.connect(
+            self.updateThresholdIntensity
+        )
 
     @classmethod
     def getOptions(cls):
@@ -336,11 +388,13 @@ class RoiWidget(QWidget):
         Returns:
             Options: The object that contains every widget informations.
         """
-        options = Options("Extraction parameters","Set parameters for extraction")
-        options.addFloat(name="Theoretical bead size (µm)",value=0.6)
-        options.addFloat(name="Z axis rejection margin (µm)",value=0.5)
-        options.addFloat(name="Inner annulus distance to bead (µm)",value=1.0)
-        options.addFloat(name="Annulus thickness (µm)",value=2.0)
+        options = Options(
+            "Extraction parameters", "Set parameters for extraction"
+        )
+        options.addFloat(name="Theoretical bead size (µm)", value=0.6)
+        options.addFloat(name="Z axis rejection margin (µm)", value=0.5)
+        options.addFloat(name="Inner annulus distance to bead (µm)", value=1.0)
+        options.addFloat(name="Annulus thickness (µm)", value=2.0)
         options.load()
         return options
 
@@ -350,12 +404,13 @@ class RoiWidget(QWidget):
         Returns:
             Options: The object that contains every widget informations.
         """
-        optionsSliders = Options("Crop factor value", "Store value of crop factor")
+        optionsSliders = Options(
+            "Crop factor value", "Store value of crop factor"
+        )
         optionsSliders.addInt(name="crop factor", value=5)
-        optionsSliders.addInt(name="threshold intensity",value=95)
+        optionsSliders.addInt(name="threshold intensity", value=95)
         optionsSliders.load()
         return optionsSliders
-
 
     def apply(self):
         """Called on validation to save optionSliders with current sliders value."""
@@ -369,14 +424,16 @@ class RoiWidget(QWidget):
         """
         self.cropFactorLabel.setText("Crop factor: " + str(value))
         self.optionsSliders.items["crop factor"]["value"] = value
-    
-    def updateThresholdIntensity(self,value):
+
+    def updateThresholdIntensity(self, value):
         """Updates the label for threshold mean intensity and assign the value to optionSliders
 
         Args:
             value (int): Value of the mean intensity threshold.
         """
-        self.thresholdIntensityLabel.setText("Threshold mean intensity: " + str(value))
+        self.thresholdIntensityLabel.setText(
+            "Threshold mean intensity: " + str(value)
+        )
         self.optionsSliders.items["threshold intensity"]["value"] = value
 
     def openDocumentation(self):
@@ -465,7 +522,9 @@ class DetectionToolTab(QWidget):
         self.parametersButton.setToolTip("Open detection configurator")
 
         self.detectionButton = QPushButton("Visualize beads detection")
-        self.detectionButton.setToolTip("Get a preview of detection with current parameters")
+        self.detectionButton.setToolTip(
+            "Get a preview of detection with current parameters"
+        )
         self.detectionButton.clicked.connect(self.apply)
 
         self.resultsLabel = QLabel()
@@ -517,10 +576,14 @@ class DetectionToolTab(QWidget):
             result : Parameter sent by the window when closed
         """
         self.countWindows -= 1
-        if self.detectionParameters.widgetThreshold.layer is not None :
-            self.detectionParameters.widgetThreshold.layer.contrast_limits = self.detectionParameters.widgetThreshold.oldContrastLimits
+        if self.detectionParameters.widgetThreshold.layer is not None:
+            self.detectionParameters.widgetThreshold.layer.contrast_limits = (
+                self.detectionParameters.widgetThreshold.oldContrastLimits
+            )
             self.detectionParameters.widgetThreshold.layer.colormap = "gray"
-            self.detectionParameters.widgetThreshold.layer.blending = "additive"
+            self.detectionParameters.widgetThreshold.layer.blending = (
+                "additive"
+            )
 
     def erase_Layers(self):
         """A method to delete all layers made by this wiget"""
@@ -545,21 +608,63 @@ class DetectionToolTab(QWidget):
             return logoDirectory / "logo_light.png"
 
     def apply(self):
-        """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview.
-        """
+        """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview."""
         self.detectionTool.image = self.viewer.layers.selection.active.data
-        self.detectionTool._detectionTool = DetectionTool.getInstance(self.detectionParameters.detectionToolWidget.options.value("Detection tool"))
-        self.detectionTool._detectionTool._thresholdTool = Threshold.getInstance(self.detectionParameters.widgetThreshold.options.value("Threshold"))
-        if self.detectionParameters.widgetThreshold.options.value("Threshold") == "manual":
-            self.detectionTool._detectionTool._thresholdTool._relThreshold = self.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
-        self.detectionTool._detectionTool._image = self.viewer.layers.selection.active.data
-        self.detectionTool._detectionTool.sigma = self.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        self.detectionTool._detectionTool = DetectionTool.getInstance(
+            self.detectionParameters.detectionToolWidget.options.value(
+                "Detection tool"
+            )
+        )
+        self.detectionTool._detectionTool._thresholdTool = (
+            Threshold.getInstance(
+                self.detectionParameters.widgetThreshold.options.value(
+                    "Threshold"
+                )
+            )
+        )
+        if (
+            self.detectionParameters.widgetThreshold.options.value("Threshold")
+            == "manual"
+        ):
+            self.detectionTool._detectionTool._thresholdTool._relThreshold = (
+                self.detectionParameters.widgetThreshold.optionsSliders.value(
+                    "threshold"
+                )
+                / 100
+            )
+        self.detectionTool._detectionTool._image = (
+            self.viewer.layers.selection.active.data
+        )
+        self.detectionTool._detectionTool.sigma = (
+            self.detectionParameters.detectionToolWidget.optionsSliders.value(
+                "Sigma"
+            )
+        )
         if isinstance(self.detectionTool._detectionTool, PeakLocalMaxDetector):
-            self.detectionTool._detectionTool.minDistance = self.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
-        self.detectionTool.cropFactor = self.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
-        self.detectionTool._thresholdIntensity = self.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity") / 100
-        self.detectionTool.beadSize = self.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
-        self.detectionTool.rejectionDistance = self.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
+            self.detectionTool._detectionTool.minDistance = self.detectionParameters.detectionToolWidget.optionsSliders.value(
+                "Min dist"
+            )
+        self.detectionTool.cropFactor = (
+            self.detectionParameters.widgetRejection.optionsSliders.value(
+                "crop factor"
+            )
+        )
+        self.detectionTool._thresholdIntensity = (
+            self.detectionParameters.widgetRejection.optionsSliders.value(
+                "threshold intensity"
+            )
+            / 100
+        )
+        self.detectionTool.beadSize = (
+            self.detectionParameters.widgetRejection.options.value(
+                "Theoretical bead size (µm)"
+            )
+        )
+        self.detectionTool.rejectionDistance = (
+            self.detectionParameters.widgetRejection.options.value(
+                "Z axis rejection margin (µm)"
+            )
+        )
         kwargs = {"cropPsf": False}
         worker = create_worker(
             self.detectionTool.run,
@@ -567,13 +672,12 @@ class DetectionToolTab(QWidget):
             _progress={"desc": "Detecting beads..."},
         )
         worker.finished.connect(self.displayResult)
-        worker.errored.connect(lambda : self.detectionButton.setEnabled(True))
+        worker.errored.connect(lambda: self.detectionButton.setEnabled(True))
         self.detectionButton.setEnabled(False)
         worker.start()
 
     def displayResult(self):
-        """A method to display detected centroids and region of interest with new layers.
-        """
+        """A method to display detected centroids and region of interest with new layers."""
         workingLayer = self.viewer.layers.selection.active
         if (
             isinstance(self.detectionTool._centroids, np.ndarray)

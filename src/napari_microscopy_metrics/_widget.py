@@ -2,35 +2,44 @@
 This module contains a QWidget class for performing PSF analysis.
 
 """
+
 import os
-from typing import TYPE_CHECKING, Optional
-import types
 import napari
-from napari.qt.threading import thread_worker,create_worker
-from napari.utils import progress
-from magicgui import magic_factory
-from magicgui.widgets import CheckBox, Container, create_widget
-from qtpy.QtCore import Qt, QSize, Signal, QObject, QThread
-from qtpy.QtWidgets import *
-from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
-from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
-from napari_microscopy_metrics._metrics_widget import Metricstoolpage
-from microscopy_metrics.detection import Detection
-from microscopy_metrics.detectionTools.detection_tool import DetectionTool
-from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
-from microscopy_metrics.metrics import Metrics
-from microscopy_metrics.thresholdTools.threshold_tool import Threshold
-from microscopy_metrics.fitting import Fitting
-from microscopy_metrics.report_generator import ReportGenerator
-from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
-from microscopy_metrics.scripts.evaluate_fitting import generateRandomBornoWolfPSF,PSF_SIZE
 import webbrowser
 import numpy as np
 
+from napari.qt.threading import create_worker
+from qtpy.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QSizePolicy,
+    QTabWidget,
+)
+from napari.utils.notifications import show_info, show_warning, show_error
+
+from microscopy_metrics.fitting import Fitting
+from microscopy_metrics.metrics import Metrics
+from microscopy_metrics.detection import Detection
+from microscopy_metrics.report_generator import ReportGenerator
+from microscopy_metrics.thresholdTools.threshold_tool import Threshold
+from microscopy_metrics.detectionTools.detection_tool import DetectionTool
+from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
+from microscopy_metrics.resolutionTools.theoretical_resolution import (
+    TheoreticalResolution,
+)
+from microscopy_metrics.scripts.evaluate_fitting import (
+    generateRandomBornoWolfPSF,
+    PSF_SIZE,
+)
+
+from napari_microscopy_metrics._metrics_widget import Metricstoolpage
+from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
+from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
+
+
 class Microscopy_Metrics_QWidget(QWidget):
-    """
-    Main Widget of the plugin
-    """
+    """A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
@@ -54,17 +63,19 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.tab.setDocumentMode(True)
         self.acquisitionToolPage = AcquisitionToolPage(self.viewer)
-        self.acquisitionToolPage.widgetPxS.signal.scaleUpdate.connect(self.updateScaleDetection)
+        self.acquisitionToolPage.widgetPxS.signal.scaleUpdate.connect(
+            self.updateScaleDetection
+        )
         self.acquisitionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.tab.addTab(self.acquisitionToolPage, "Acquisition parameters")
         self.detectionToolPage = DetectionToolTab(self.viewer)
         self.detectionToolPage.detectionTool._pixelSize = [
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
-            ]
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+        ]
         self.detectionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
@@ -74,10 +85,10 @@ class Microscopy_Metrics_QWidget(QWidget):
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.metricsToolPage.spacing = [
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
-            ]
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
+            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+        ]
         self.tab.addTab(self.metricsToolPage, "Metrics parameters")
         self.runButton = QPushButton("Run analysis")
         self.runButton.setStyleSheet("background-color : green")
@@ -102,7 +113,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         )
 
     def startProcessing(self):
-        """Initialize layers and start thread for analysis"""
+        """Function called when pressing the button to run analysis. It check if the selected layer is valid and launch the bead detection process."""
         self.workingLayer = self.viewer.layers.selection.active
         self.analysisData = []
         if self.workingLayer is None or not isinstance(
@@ -115,27 +126,68 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.apply_detect_psf()
 
     def apply_detect_psf(self):
-        """Update DetectionTool with new values and start a new worker for detection"""
+        """Function to update DetectionTool and start a worker for bead detection"""
         image = self.workingLayer.data
-        self.DetectionTool._detectionTool = DetectionTool.getInstance(self.detectionToolPage.detectionParameters.detectionToolWidget.options.value("Detection tool"))
-        self.DetectionTool._detectionTool._thresholdTool = Threshold.getInstance(self.detectionToolPage.detectionParameters.widgetThreshold.options.value("Threshold"))
-        if self.detectionToolPage.detectionParameters.widgetThreshold.options.value("Threshold") == "manual":
-            self.DetectionTool._detectionTool._thresholdTool._relThreshold = self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
+        self.DetectionTool._detectionTool = DetectionTool.getInstance(
+            self.detectionToolPage.detectionParameters.detectionToolWidget.options.value(
+                "Detection tool"
+            )
+        )
+        self.DetectionTool._detectionTool._thresholdTool = Threshold.getInstance(
+            self.detectionToolPage.detectionParameters.widgetThreshold.options.value(
+                "Threshold"
+            )
+        )
+        if (
+            self.detectionToolPage.detectionParameters.widgetThreshold.options.value(
+                "Threshold"
+            )
+            == "manual"
+        ):
+            self.DetectionTool._detectionTool._thresholdTool._relThreshold = (
+                self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.value(
+                    "threshold"
+                )
+                / 100
+            )
         self.DetectionTool._detectionTool._image = image
-        self.DetectionTool._detectionTool.sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        self.DetectionTool._detectionTool.sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
+            "Sigma"
+        )
         if isinstance(self.DetectionTool._detectionTool, PeakLocalMaxDetector):
-            self.DetectionTool._detectionTool.minDistance = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
+            self.DetectionTool._detectionTool.minDistance = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
+                "Min dist"
+            )
         self.DetectionTool._image = image
-        self.DetectionTool._sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
-        self.DetectionTool._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
-        self.DetectionTool._thresholdIntensity = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity")/100
-        self.DetectionTool._beadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
-        self.DetectionTool._rejectionDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
+        self.DetectionTool._sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
+            "Sigma"
+        )
+        self.DetectionTool._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value(
+            "crop factor"
+        )
+        self.DetectionTool._thresholdIntensity = (
+            self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value(
+                "threshold intensity"
+            )
+            / 100
+        )
+        self.DetectionTool._beadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
+            "Theoretical bead size (µm)"
+        )
+        self.DetectionTool._rejectionDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
+            "Z axis rejection margin (µm)"
+        )
         self.DetectionTool._pixelSize = np.array(
             [
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-                self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+                self.acquisitionToolPage.widgetPxS.options.value(
+                    "Pixel size Z"
+                ),
+                self.acquisitionToolPage.widgetPxS.options.value(
+                    "Pixel size Y"
+                ),
+                self.acquisitionToolPage.widgetPxS.options.value(
+                    "Pixel size X"
+                ),
             ]
         )
         self.outputDir = os.path.expanduser("~/")
@@ -160,10 +212,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
     def detectFinished(self):
-        """Function to update napari with new layers displaying bead detection
-
+        """Function to update result collection after bead detection and start prefitting metrics calculation
         Raises:
-            ValueError: Error raised when the bead detection did not worked or if there are no beads in the image
+            ValueError: Raised when there is a problem with the signal to background ratio calculation
         """
         self.filteredBeads = self.DetectionTool._centroids
         if (
@@ -193,12 +244,34 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.MetricTool.images = [
             entry["_cropped"] for entry in self.analysisData
         ]
-        self.MetricTool.ringInnerDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Inner annulus distance to bead (µm)")
-        self.MetricTool.ringThickness = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Annulus thickness (µm)")
-        self.MetricTool.theoreticalResolutionTool = TheoreticalResolution.getInstance(self.acquisitionToolPage.widgetMicroChoice.options.value("Microscope type"))
-        self.MetricTool.theoreticalResolutionTool.numericalAperture = self.acquisitionToolPage.widgetMicroChoice.options.value("Numerical aperture")
-        self.MetricTool.theoreticalResolutionTool.emissionWavelength = self.acquisitionToolPage.widgetMicroChoice.options.value("Emission wavelength")
-        self.MetricTool.theoreticalResolutionTool.refractiveIndex = self.acquisitionToolPage.widgetMicroChoice.options.value("Refraction index")
+        self.MetricTool.ringInnerDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
+            "Inner annulus distance to bead (µm)"
+        )
+        self.MetricTool.ringThickness = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
+            "Annulus thickness (µm)"
+        )
+        self.MetricTool.theoreticalResolutionTool = (
+            TheoreticalResolution.getInstance(
+                self.acquisitionToolPage.widgetMicroChoice.options.value(
+                    "Microscope type"
+                )
+            )
+        )
+        self.MetricTool.theoreticalResolutionTool.numericalAperture = (
+            self.acquisitionToolPage.widgetMicroChoice.options.value(
+                "Numerical aperture"
+            )
+        )
+        self.MetricTool.theoreticalResolutionTool.emissionWavelength = (
+            self.acquisitionToolPage.widgetMicroChoice.options.value(
+                "Emission wavelength"
+            )
+        )
+        self.MetricTool.theoreticalResolutionTool.refractiveIndex = (
+            self.acquisitionToolPage.widgetMicroChoice.options.value(
+                "Refraction index"
+            )
+        )
         self.MetricTool.pixelSize = np.array(physicalPixel)
         worker = create_worker(
             self.MetricTool.runPrefittingMetrics,
@@ -209,10 +282,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
     def prefittingFinished(self):
-        """Function to update napari display with prefitting metrics results
-
+        """Function to update result collection after prefitting metrics calculation and start fitting process
         Raises:
-            ValueError: Raised when an error occurred in the signal to background ratio computation
+            ValueError: Raised when there is a problem with the signal to background ratio calculation
         """
         if len(self.MetricTool.SBR) != len(self.analysisData):
             raise ValueError("Problem with SBR calculation")
@@ -223,7 +295,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.applyFitting()
 
     def applyFitting(self):
-        """Function to update FittingTool and start a worker for Gaussian fitting"""
+        """Function to update FittingTool and start a worker for fitting process"""
         self.FittingTool.images = [
             entry["_cropped"] for entry in self.analysisData
         ]
@@ -238,8 +310,14 @@ class Microscopy_Metrics_QWidget(QWidget):
         ]
         self.FittingTool.rois = [entry["ROI"] for entry in self.analysisData]
         self.FittingTool.outputDir = self.outputDir
-        self.FittingTool.fitType = self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
-        self.FittingTool._thresholdRSquared = self.metricsToolPage.widgetFittingChoice.options.value("Threshold R2")
+        self.FittingTool.fitType = (
+            self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
+        )
+        self.FittingTool._thresholdRSquared = (
+            self.metricsToolPage.widgetFittingChoice.options.value(
+                "Threshold R2"
+            )
+        )
 
         worker = create_worker(
             self.FittingTool.computeFitting,
@@ -250,7 +328,10 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
     def onFinished(self):
-        """Function to update result collection and start a worker for report generation"""
+        """Function to update result collection after fitting process and start report generation
+        Raises:
+            ValueError: Raised when there is a problem with the fitting results collection
+        """
         for i, result in enumerate(self.FittingTool.results):
             self.analysisData[result[0]]["FWHM"] = []
             self.analysisData[result[0]]["uncertainty"] = []
@@ -281,13 +362,12 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.start()
 
     def generateReport(self):
-        """Function for generating PDF,csv and HTML reports
-
-        Yields:
-            string : used to change the description of the napari progress bar
+        """Function to generate report with ReportGenerator using the results of the analysis and information setup by user in the widget.
+        Raises:
+            ValueError: Raised when there is a problem with the report generation (missing information, problem with the data collected, etc.)
+        yield:
+            dict: A dictionary containing the description of the current step of the report generation to update the progress bar description
         """
-        rois = [entry["ROI"] for entry in self.analysisData]
-        croppedLayers = [entry["_cropped"] for entry in self.analysisData]
         outputDir = os.path.expanduser("~/")
         defaultPath = os.path.expanduser("~/PSF_analysis_result.pdf")
         imagePath = outputDir
@@ -309,16 +389,32 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.reportGenerator.outputDir = outputDir
         self.reportGenerator.outputPath = outputPath
         self.reportGenerator.analysisData = self.analysisData
-        originalDict = self.acquisitionToolPage.widgetPxS.options.items | self.acquisitionToolPage.widgetMicroChoice.options.items
-        simplifiedDict = {key: subDict['value'] for key, subDict in originalDict.items()}
+        originalDict = (
+            self.acquisitionToolPage.widgetPxS.options.items
+            | self.acquisitionToolPage.widgetMicroChoice.options.items
+        )
+        simplifiedDict = {
+            key: subDict["value"] for key, subDict in originalDict.items()
+        }
         self.reportGenerator._imageShape = self.workingLayer.data.shape
         self.reportGenerator.parametersAcquisition = simplifiedDict
-        originalDict = self.detectionToolPage.detectionParameters.detectionToolWidget.options.items | self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.items | self.detectionToolPage.detectionParameters.widgetThreshold.options.items | self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.items | self.detectionToolPage.detectionParameters.widgetRejection.options.items | self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.items
-        simplifiedDict = {key: subDict['value'] for key, subDict in originalDict.items()}
+        originalDict = (
+            self.detectionToolPage.detectionParameters.detectionToolWidget.options.items
+            | self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.items
+            | self.detectionToolPage.detectionParameters.widgetThreshold.options.items
+            | self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.items
+            | self.detectionToolPage.detectionParameters.widgetRejection.options.items
+            | self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.items
+        )
+        simplifiedDict = {
+            key: subDict["value"] for key, subDict in originalDict.items()
+        }
         self.reportGenerator.parametersDetection = simplifiedDict
         self.reportGenerator.filteredBeads = self.filteredBeads
         self.reportGenerator.meanSBR = self.meanSBR
-        self.reportGenerator.theoreticalResolution = self.MetricTool.theoreticalResolution
+        self.reportGenerator.theoreticalResolution = (
+            self.MetricTool.theoreticalResolution
+        )
         yield {"desc": "Generating pdf..."}
         self.reportGenerator.generatePDFReport(imagePath)
         yield {"desc": "Generating html..."}
@@ -327,31 +423,34 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.reportGenerator.generateCSVReport(outputCSVPath)
 
     def onReportFinished(self):
-        """Called to Enable the button to run analysis"""
+        """Function to display a message when the report generation is finished or if there is an error during the process and re-enable the run button"""
+        show_info(
+            "Report generation finished! You can find the report in the same folder as your image with the name <image_name>_analysis_result.pdf"
+        )
         self.runButton.setEnabled(True)
 
     def openBrowser(self):
-        """Open html page report of the selected shape
+        """Function to open the HTML report corresponding to the bead selected by user in napari viewer when double-clicking on it
+        Raises:
+            ValueError: Raised when there is a problem with the path to the report corresponding to the bead selected (missing report, problem with the path, etc.)
         """
         activePath = self.getActivePath(index=self.selectedShape)
         activePath = os.path.join(activePath, "PSF_analysis_result.html")
         webbrowser.open(activePath)
 
     def openDocumentation(self):
-        """Open index page of documentation
-        """
+        """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/index.html"
         webbrowser.open(documentationPath)
 
-
     def onMouseDoubleClick(self, layer, event):
-        """Function to display HTML report corresponding to the bead selected by user.
-
+        """Function to select the bead corresponding to the position of the double click and open the corresponding report in a web browser
         Args:
-            layer : Information about the layer clicked sent with the signal
-            event : Information relative to the event sent with the signal
+            layer (Layer): The napari layer on which the double click event happened
+            event (MouseEvent): The mouse event corresponding to the double click
+        Raises:
+            ValueError: Raised when there is a problem with the position of the click or if there is no bead corresponding to the click position
         """
-
         clickPos = self.viewer.cursor.position / self.workingLayer.scale
 
         if self.roisLayer is None:
@@ -375,12 +474,13 @@ class Microscopy_Metrics_QWidget(QWidget):
                 return
 
     def getActivePath(self, index):
-        """
+        """Function to get the path to the report corresponding to the bead selected by user in napari viewer
         Args:
-            index (int): Bead ID corresponding to it's position in the list
-
+            index (int): The index of the bead selected corresponding to the index of the ROI in the list of ROIs extracted during the detection step
+        Raises:
+            ValueError: Raised when there is a problem with the path to the report corresponding to the bead selected (missing report, problem with the path, etc.)
         Returns:
-            Path: Folder's path found (or created) for the selected bead
+            str: The path to the report corresponding to the bead selected
         """
         activePath = os.path.join(self.outputDir, f"bead_{index}")
         if not os.path.exists(activePath):
@@ -388,8 +488,10 @@ class Microscopy_Metrics_QWidget(QWidget):
         return activePath
 
     def displayLayers(self):
-        """Add layers for detected beads and extracted ROIs
-        Update scale and units of the napari viewer"""
+        """Function to display the layers corresponding to the results of the detection (centroids and ROIs) in napari viewer and update the scale of all layers according to pixel size setup by user in acquisitionToolPage
+        Raises:
+            ValueError: Raised when there is a problem with the data of the beads detected or the ROIs extracted (missing data, incorrect format, etc.)
+        """
         rois = [entry["ROI"] for entry in self.analysisData]
         if (
             isinstance(self.filteredBeads, np.ndarray)
@@ -448,16 +550,21 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.viewer.reset_view()
 
     def updateScaleDetection(self, scale):
-        """Update detectionToolPage when pixel scale is changed in acquisitionToolPage
-
+        """Function to update the scale of the layers in napari viewer and the pixel size in DetectionTool and MetricTool when user update the pixel size in acquisitionToolPage
         Args:
-            scale (List): List of pixel scale for each axis
+            scale (list): The new pixel size to apply corresponding to the value setup by user in acquisitionToolPage
+        Raises:
+            ValueError: Raised when there is a problem with the scale provided (incorrect format, missing value, etc.)
         """
         self.detectionToolPage.detectionTool._pixelSize = scale
         self.metricsToolPage.spacing = scale
 
     def generateRandomPSF(self):
+        """Function to generate a random PSF and display it in the napari viewer
+        Raises:
+            ValueError: Raised when there is a problem with the generation of the random PSF
+        """
         seed = np.random.randint(0, 1000000)
-        psf,_,_ = generateRandomBornoWolfPSF(seed=seed)
+        psf, _, _ = generateRandomBornoWolfPSF(seed=seed)
         psf = psf.reshape((PSF_SIZE, PSF_SIZE, PSF_SIZE))
         self.viewer.add_image(psf, name=f"Random PSF (seed: {seed})")
