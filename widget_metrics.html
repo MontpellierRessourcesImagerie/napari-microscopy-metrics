@@ -76,13 +76,7 @@
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._metrics_widget.</span></span><span class="sig-name descname"><span class="pre">Metricstoolpage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
-<p>The main widget for microscope metrics parameters</p>
-<section id="parameter">
-<h2>Parameter<a class="headerlink" href="#parameter" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>viewer<span class="classifier">napari.viewer.Viewer</span></dt><dd><p>The environment were the widget will be displayed</p>
-</dd>
-</dl>
+<p>A widget allowing user to setup metrics parameters and display results of metrics measurement.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.openDocumentation">
 <span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.openDocumentation" title="Link to this definition"></a></dt>
@@ -92,33 +86,26 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.printFWHM">
 <span class="sig-name descname"><span class="pre">printFWHM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">FWHM</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printFWHM" title="Link to this definition"></a></dt>
-<dd><p>A method to update plugin interface with the mean FWHM of the image analyzed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>FWHM</strong> (<em>float</em>) – Mean FWHM of the image.</p>
-</dd>
-</dl>
+<dd><p>A method to update plugin interface with the FWHM of the image analyzed.
+:param FWHM: List of 3 values corresponding to FWHM in Z, Y and X of the image.
+:type FWHM: list</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.printResults">
 <span class="sig-name descname"><span class="pre">printResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SBR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printResults" title="Link to this definition"></a></dt>
-<dd><p>A method to update plugin interface with the mean SBR of the image analyzed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>SBR</strong> (<em>float</em>) – Mean signal to background ratio of the image.</p>
-</dd>
-</dl>
+<dd><p>A method to update plugin interface with the SBR of the image analyzed.
+:param SBR: Signal to background ratio of the image.
+:type SBR: float</p>
 </dd></dl>
 
-</section>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._metrics_widget.</span></span><span class="sig-name descname"><span class="pre">FittingOptionWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
-<p>A widget alowing user to select the fitting method he wants to use to estimate full-width half maximum.</p>
+<p>A widget allowing user to setup fitting options for PSF detection and save them for next session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout">
 <span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout" title="Link to this definition"></a></dt>
@@ -128,40 +115,25 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.displayFWHM">
 <span class="sig-name descname"><span class="pre">displayFWHM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.displayFWHM" title="Link to this definition"></a></dt>
-<dd><p>A method to display mean FWHM of image if ROI are already extracted and prominence is selected.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – Value of the relative prominence</p>
-</dd>
-</dl>
+<dd><p>A method to display mean FWHM of detected PSF with prominence fitting tool and update it when changing prominence slider value.
+:param value: Value of the prominence slider
+:type value: int</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getOptions">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getOptions" title="Link to this definition"></a></dt>
-<dd><p>A class method which create entries for fitting choice and load previous analysis informations if exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The object that contains every widget informations.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Options</p>
-</dd>
-</dl>
+<dd><p>A class method which create entries for fitting options and load previous analysis informations if exists.
+:returns: The object that contains every widget informations.
+:rtype: Options</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders">
-<span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders" title="Link to this definition"></a></dt>
-<dd><p>A method which create entries for prominence sliders informations and load previous analysis informations if exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The object that contains every widget informations.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Options</p>
-</dd>
-</dl>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders" title="Link to this definition"></a></dt>
+<dd><p>A class method which create entries for sliders values and load previous analysis informations if exists.
+:returns: The object that contains every widget informations.
+:rtype: Options</p>
 </dd></dl>
 
 <dl class="py method">
@@ -173,12 +145,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.selectedAction">
 <span class="sig-name descname"><span class="pre">selectedAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.selectedAction" title="Link to this definition"></a></dt>
-<dd><p>Update the display for selected fit.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>string</em>) – label of the selection.</p>
-</dd>
-</dl>
+<dd><p>A method to display prominence slider if prominence is selected as fitting tool and hide it otherwise.
+:param value: Value of the fitting tool choice
+:type value: str</p>
 </dd></dl>
 
 </dd></dl>

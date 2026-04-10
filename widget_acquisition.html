@@ -76,26 +76,22 @@
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._acquisition_widget.</span></span><span class="sig-name descname"><span class="pre">AcquisitionToolPage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
-<p>The main widget for microscope acquisition parameters</p>
-<section id="parameter">
-<h2>Parameter<a class="headerlink" href="#parameter" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>viewer<span class="classifier">napari.viewer.Viewer</span></dt><dd><p>The environment were the widget will be displayed</p>
-</dd>
-</dl>
+<p>A napari widget form for microscope acquisition parameters. It contains an ImageSizeWidget for setting scale informations and a MicroscopeParametersWidget for setting microscope informations.
+It also update scale informations in detection widget when changing layer or applying new scale.
+:param viewer: The environment where the widget will be displayed
+:type viewer: napari.viewer.Viewer</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage.initUi">
 <span class="sig-name descname"><span class="pre">initUi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage.initUi" title="Link to this definition"></a></dt>
-<dd><p>Initialize user interface</p>
+<dd><p>A method used to create the layout of the widget.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage.onLayerChanged">
 <span class="sig-name descname"><span class="pre">onLayerChanged</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.AcquisitionToolPage.onLayerChanged" title="Link to this definition"></a></dt>
-<dd><p>updating image shape values when changing layer</p>
+<dd><p>A method called when changing active layer. It update scale informations in detection widget if the new active layer is an image and update label with the shape of the new active image.</p>
 </dd></dl>
 
-</section>
 </dd></dl>
 
 <dl class="py class">
@@ -112,15 +108,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.getOptions">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.getOptions" title="Link to this definition"></a></dt>
-<dd><p>A class method which create entries for microscope informations and load previous analysis informations if exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The object that contains every widget informations.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Options</p>
-</dd>
-</dl>
+<dd><p>A class method which create entries for microscope parameters and load previous analysis informations if exists.
+:returns: The object that contains every widget informations.
+:rtype: Options</p>
 </dd></dl>
 
 <dl class="py method">
@@ -135,7 +125,7 @@
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._acquisition_widget.</span></span><span class="sig-name descname"><span class="pre">ImageSizeWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
-<p>A widget allowing user to setup the scaling of the image. Send a signal to automatically resize the actual view.</p>
+<p>A widget allowing user to setup scale informations for the view and save them for next session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.apply" title="Link to this definition"></a></dt>
@@ -151,15 +141,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.getOptions">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.getOptions" title="Link to this definition"></a></dt>
-<dd><p>A class method which create entries for scale informations and load previous analysis informations if exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The object that contains every widget informations.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Options</p>
-</dd>
-</dl>
+<dd><p>A class method which create entries for scale informations and load previous analysis informations if exists.
+:returns: The object that contains every widget informations.
+:rtype: Options</p>
 </dd></dl>
 
 <dl class="py method">
