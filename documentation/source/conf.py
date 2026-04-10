@@ -42,4 +42,4 @@ html_static_path = ['_static']
 epub_show_urls = "footnote"
 
 autoclass_content = 'both'
-autodoc_mock_imports = ["microscopy_metrics"]
+autodoc_mock_imports = ["microscopy_metrics", "questionary"]
