@@ -7,7 +7,10 @@ import os
 import napari
 import webbrowser
 import numpy as np
+import skimage.filters
 
+from skimage.measure import marching_cubes
+from scipy.spatial import ConvexHull
 from napari.qt.threading import create_worker
 from qtpy.QtWidgets import (
     QWidget,
@@ -98,6 +101,8 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.genButton = QPushButton("Generate random PSF")
         self.genButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.meshButton = QPushButton("Generate 3D mesh")
+        self.meshButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
@@ -105,9 +110,11 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.layout().addWidget(self.genButton)
         self.layout().addWidget(self.runButton)
         self.layout().addWidget(self.docButton)
+        self.layout().addWidget(self.meshButton)
         self.runButton.pressed.connect(self.startProcessing)
         self.docButton.pressed.connect(self.openDocumentation)
         self.genButton.pressed.connect(self.generateRandomPSF)
+        self.meshButton.pressed.connect(self.generateMesh)
         self.viewer.mouse_double_click_callbacks.append(
             self.onMouseDoubleClick
         )
@@ -568,3 +575,38 @@ class Microscopy_Metrics_QWidget(QWidget):
         psf, _, _ = generateRandomBornoWolfPSF(seed=seed)
         psf = psf.reshape((PSF_SIZE, PSF_SIZE, PSF_SIZE))
         self.viewer.add_image(psf, name=f"Random PSF (seed: {seed})")
+
+    def getContourspoints(self,psf):
+        points = []
+        for i in range(psf.shape[0]):
+            slice_2d = psf[i]
+            level = Threshold().getInstance("otsu")
+            level = level.getThreshold(psf)
+            contours = skimage.measure.find_contours(slice_2d,level = level)
+            for contour in contours:
+                for point in contour :
+                    points.append([i,point[0],point[1]])
+        return np.array(points)
+
+    def generateMesh(self, psf = None):
+        if psf is None :
+            psf = self.viewer.layers.selection.active.data
+        psf_normalized = (psf - psf.min()) / (psf.max() - psf.min())
+
+        level = Threshold().getInstance("legacy")
+        level = level.getThreshold(psf_normalized)
+        vertices, faces, _, _ = marching_cubes(psf_normalized,level=level)
+        self.viewer.add_surface(
+            (vertices, faces),
+            name=f"PSF Isosurface (level={level})",
+            colormap="viridis",
+            opacity=0.7,
+        )
+        points = self.getContourspoints(psf)
+        self.viewer.add_points(
+            points,
+            name=f"PSF points",
+            face_color = "green",
+            size=0.5
+        )
+
