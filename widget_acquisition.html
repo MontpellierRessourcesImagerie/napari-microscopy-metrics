@@ -97,8 +97,14 @@ It also update scale informations in detection widget when changing layer or app
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._acquisition_widget.</span></span><span class="sig-name descname"><span class="pre">MicroscopeParametersWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to setup microscope parameters.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.createDatas">
+<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.createDatas" title="Link to this definition"></a></dt>
+<dd><p>A method to create a MicroscopeDatas object with current microscope parameters values.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.createLayout">
 <span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.MicroscopeParametersWidget.createLayout" title="Link to this definition"></a></dt>
@@ -124,12 +130,18 @@ It also update scale informations in detection widget when changing layer or app
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._acquisition_widget.</span></span><span class="sig-name descname"><span class="pre">ImageSizeWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to setup scale informations for the view and save them for next session.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on validation, resize layers of the view and emit signal to application for updating detection widget.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.createDatas">
+<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._acquisition_widget.ImageSizeWidget.createDatas" title="Link to this definition"></a></dt>
+<dd><p>A method to create a SizeDatas object with current scale values.</p>
 </dd></dl>
 
 <dl class="py method">

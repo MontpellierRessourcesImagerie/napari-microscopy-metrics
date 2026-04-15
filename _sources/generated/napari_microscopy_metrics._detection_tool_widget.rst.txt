@@ -10,8 +10,4 @@
    
       DetectionParametersWidget
       DetectionToolTab
-      DetectionToolWidget
-      ParamsSignal
-      RoiWidget
-      ThresholdWidget
    

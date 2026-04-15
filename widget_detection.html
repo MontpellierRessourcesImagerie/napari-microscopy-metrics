@@ -164,12 +164,18 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">RoiWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to setup region of interest parameters.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on validation to save optionSliders with current sliders value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.createDatas">
+<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.createDatas" title="Link to this definition"></a></dt>
+<dd><p>A method to create a ROIDatas object with current region of interest parameters values.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -239,12 +245,18 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">ThresholdWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to choose the Threshold he wants to apply to the image for analysis.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on validation to save optionSliders with current sliders value and update the view with thresholded image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createDatas">
+<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createDatas" title="Link to this definition"></a></dt>
+<dd><p>A method to create a ThresholdDatas object with current threshold and parameters values.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -328,12 +340,18 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">DetectionToolWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Viewer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to choose the detection tool he wants to use with related parameters.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on click button to save option sliders with actual sliders values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createDatas">
+<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createDatas" title="Link to this definition"></a></dt>
+<dd><p>A method to create a DetectionToolDatas object with current detection tool and parameters values.</p>
 </dd></dl>
 
 <dl class="py method">
