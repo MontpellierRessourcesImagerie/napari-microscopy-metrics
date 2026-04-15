@@ -10,7 +10,6 @@ import numpy as np
 import skimage.filters
 
 from skimage.measure import marching_cubes
-from scipy.spatial import ConvexHull
 from napari.qt.threading import create_worker
 from qtpy.QtWidgets import (
     QWidget,
@@ -135,68 +134,15 @@ class Microscopy_Metrics_QWidget(QWidget):
     def apply_detect_psf(self):
         """Function to update DetectionTool and start a worker for bead detection"""
         image = self.workingLayer.data
-        self.DetectionTool._detectionTool = DetectionTool.getInstance(
-            self.detectionToolPage.detectionParameters.detectionToolWidget.options.value(
-                "Detection tool"
-            )
-        )
-        self.DetectionTool._detectionTool._thresholdTool = Threshold.getInstance(
-            self.detectionToolPage.detectionParameters.widgetThreshold.options.value(
-                "Threshold"
-            )
-        )
-        if (
-            self.detectionToolPage.detectionParameters.widgetThreshold.options.value(
-                "Threshold"
-            )
-            == "manual"
-        ):
-            self.DetectionTool._detectionTool._thresholdTool._relThreshold = (
-                self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.value(
-                    "threshold"
-                )
-                / 100
-            )
-        self.DetectionTool._detectionTool._image = image
-        self.DetectionTool._detectionTool.sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
-            "Sigma"
-        )
-        if isinstance(self.DetectionTool._detectionTool, PeakLocalMaxDetector):
-            self.DetectionTool._detectionTool.minDistance = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
-                "Min dist"
-            )
+        parametersDetection = self.detectionToolPage.detectionParameters.detectionToolWidget.createDatas()
+        parametersDetection.sendDatas(self.DetectionTool)
         self.DetectionTool._image = image
-        self.DetectionTool._sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value(
-            "Sigma"
-        )
-        self.DetectionTool._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value(
-            "crop factor"
-        )
-        self.DetectionTool._thresholdIntensity = (
-            self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value(
-                "threshold intensity"
-            )
-            / 100
-        )
-        self.DetectionTool._beadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
-            "Theoretical bead size (µm)"
-        )
-        self.DetectionTool._rejectionDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
-            "Z axis rejection margin (µm)"
-        )
-        self.DetectionTool._pixelSize = np.array(
-            [
-                self.acquisitionToolPage.widgetPxS.options.value(
-                    "Pixel size Z"
-                ),
-                self.acquisitionToolPage.widgetPxS.options.value(
-                    "Pixel size Y"
-                ),
-                self.acquisitionToolPage.widgetPxS.options.value(
-                    "Pixel size X"
-                ),
-            ]
-        )
+        parametersThreshold = self.detectionToolPage.detectionParameters.widgetThreshold.createDatas()
+        parametersThreshold.sendDatas(self.DetectionTool._detectionTool)
+        parametersROI = self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
+        parametersROI.sendDatas(self.DetectionTool)
+        parametersPixelSize = self.acquisitionToolPage.widgetPxS.createDatas()
+        parametersPixelSize.sendDatas(self.DetectionTool)
         self.outputDir = os.path.expanduser("~/")
         if (
             self.workingLayer is not None
@@ -242,44 +188,16 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def applyPrefittingMetrics(self):
         """Function to update MetricTool and start a worker for prefitting metrics calculation"""
-        physicalPixel = [
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
-        ]
         self.MetricTool.image = self.workingLayer.data
         self.MetricTool.images = [
             entry["_cropped"] for entry in self.analysisData
         ]
-        self.MetricTool.ringInnerDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
-            "Inner annulus distance to bead (µm)"
-        )
-        self.MetricTool.ringThickness = self.detectionToolPage.detectionParameters.widgetRejection.options.value(
-            "Annulus thickness (µm)"
-        )
-        self.MetricTool.theoreticalResolutionTool = (
-            TheoreticalResolution.getInstance(
-                self.acquisitionToolPage.widgetMicroChoice.options.value(
-                    "Microscope type"
-                )
-            )
-        )
-        self.MetricTool.theoreticalResolutionTool.numericalAperture = (
-            self.acquisitionToolPage.widgetMicroChoice.options.value(
-                "Numerical aperture"
-            )
-        )
-        self.MetricTool.theoreticalResolutionTool.emissionWavelength = (
-            self.acquisitionToolPage.widgetMicroChoice.options.value(
-                "Emission wavelength"
-            )
-        )
-        self.MetricTool.theoreticalResolutionTool.refractiveIndex = (
-            self.acquisitionToolPage.widgetMicroChoice.options.value(
-                "Refraction index"
-            )
-        )
-        self.MetricTool.pixelSize = np.array(physicalPixel)
+        parametersPixelSize = self.acquisitionToolPage.widgetPxS.createDatas()
+        parametersPixelSize.sendDatas(self.MetricTool)
+        parametersROI = self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
+        parametersROI.sendDatas(self.MetricTool)
+        parametersMicroscope = self.acquisitionToolPage.widgetMicroChoice.createDatas()
+        parametersMicroscope.sendDatas(self.MetricTool)
         worker = create_worker(
             self.MetricTool.runPrefittingMetrics,
             _progress={"desc": "Metrics calculation..."},
@@ -317,14 +235,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         ]
         self.FittingTool.rois = [entry["ROI"] for entry in self.analysisData]
         self.FittingTool.outputDir = self.outputDir
-        self.FittingTool.fitType = (
-            self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
-        )
-        self.FittingTool._thresholdRSquared = (
-            self.metricsToolPage.widgetFittingChoice.options.value(
-                "Threshold R2"
-            )
-        )
+        
+        parametersFitting = self.metricsToolPage.widgetFittingChoice.createDatas()
+        parametersFitting.sendDatas(self.FittingTool)
 
         worker = create_worker(
             self.FittingTool.computeFitting,
