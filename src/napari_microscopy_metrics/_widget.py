@@ -51,11 +51,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.MetricTool = Metrics()
         self.FittingTool = Fitting()
         self.reportGenerator = ReportGenerator()
-        self.parametersDetection = {}
-        self.parametersAcquisition = {}
+
         self.centroidsLayer = None
         self.roisLayer = None
-        self.filteredBeads = None
         self.workingLayer = None
         self.outputDir = None
         self.meanSBR = 0
@@ -122,6 +120,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         """Function called when pressing the button to run analysis. It check if the selected layer is valid and launch the bead detection process."""
         self.workingLayer = self.viewer.layers.selection.active
         self.analysisData = []
+        self.imageAnalyze = None
         if self.workingLayer is None or not isinstance(
             self.workingLayer, napari.layers.Image
         ):
@@ -169,29 +168,20 @@ class Microscopy_Metrics_QWidget(QWidget):
         Raises:
             ValueError: Raised when there is a problem with the signal to background ratio calculation
         """
-        self.filteredBeads = self.DetectionTool._centroids
-        if (
-            isinstance(self.filteredBeads, np.ndarray)
-            and self.filteredBeads.size > 0
-        ):
-            rois = self.DetectionTool._roisExtracted
-            centroidsROI = self.DetectionTool._listIdCentroidsRetained
-            for x, id in enumerate(centroidsROI):
-                data = {"id": id, "ROI": rois[x]}
-                self.analysisData.append(data)
-        if len(self.DetectionTool._cropped) == 0:
-            raise ValueError("There are no _cropped PSF !")
-        for i in range(len(self.DetectionTool._cropped)):
-            self.analysisData[i]["_cropped"] = self.DetectionTool._cropped[i]
+        if self.DetectionTool._imageAnalyze is None or len(self.DetectionTool._imageAnalyze._beadAnalyze) == 0:
+            raise ValueError("There are no bead detected !")
+        else :
+            self.imageAnalyze = self.DetectionTool._imageAnalyze
+            for bead in self.DetectionTool._imageAnalyze._beadAnalyze:
+                if not bead._rejected:
+                    data = {"id": bead._id, "ROI": bead._roi, "centroid": bead._centroid, "rejected": bead._rejected, "_cropped": bead._image}
+                    self.analysisData.append(data)
         self.displayLayers()
         self.applyPrefittingMetrics()
 
     def applyPrefittingMetrics(self):
         """Function to update MetricTool and start a worker for prefitting metrics calculation"""
-        self.MetricTool.image = self.workingLayer.data
-        self.MetricTool.images = [
-            entry["_cropped"] for entry in self.analysisData
-        ]
+        self.MetricTool._imageAnalyze = self.imageAnalyze
         parametersPixelSize = self.acquisitionToolPage.widgetPxS.createDatas()
         parametersPixelSize.sendDatas(self.MetricTool)
         parametersROI = self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
@@ -211,29 +201,16 @@ class Microscopy_Metrics_QWidget(QWidget):
         Raises:
             ValueError: Raised when there is a problem with the signal to background ratio calculation
         """
-        if len(self.MetricTool.SBR) != len(self.analysisData):
-            raise ValueError("Problem with SBR calculation")
-        for x, sbr in enumerate(self.MetricTool.SBR):
-            self.analysisData[x]["SBR"] = sbr
-        self.metricsToolPage.printResults(self.MetricTool.meanSBR)
-        self.meanSBR = self.MetricTool.meanSBR
+        for i, bead in enumerate([bead for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]):
+            if not bead._rejected:
+                self.analysisData[i]["SBR"] = bead._metricTool._SBR
+        self.metricsToolPage.printResults(self.imageAnalyze._meanSBR)
+        self.meanSBR = self.imageAnalyze._meanSBR
         self.applyFitting()
 
     def applyFitting(self):
         """Function to update FittingTool and start a worker for fitting process"""
-        self.FittingTool.images = [
-            entry["_cropped"] for entry in self.analysisData
-        ]
-        centroidsIdx = [entry["id"] for entry in self.analysisData]
-        self.FittingTool._centroids = [
-            self.filteredBeads[i] for i in centroidsIdx
-        ]
-        self.FittingTool.spacing = [
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
-        ]
-        self.FittingTool.rois = [entry["ROI"] for entry in self.analysisData]
+        self.FittingTool._imageAnalyze = self.imageAnalyze
         self.FittingTool.outputDir = self.outputDir
         
         parametersFitting = self.metricsToolPage.widgetFittingChoice.createDatas()
@@ -252,25 +229,15 @@ class Microscopy_Metrics_QWidget(QWidget):
         Raises:
             ValueError: Raised when there is a problem with the fitting results collection
         """
-        for i, result in enumerate(self.FittingTool.results):
-            self.analysisData[result[0]]["FWHM"] = []
-            self.analysisData[result[0]]["uncertainty"] = []
-            self.analysisData[result[0]]["determination"] = []
-            self.analysisData[result[0]]["FWHM"] = result[1]
-            self.MetricTool.FWHM = result[1]
-            self.MetricTool.lateralAsymmetryRatio()
-            self.analysisData[result[0]]["LAR"] = self.MetricTool.LAR
-            self.MetricTool.sphericityRatio()
-            self.analysisData[result[0]][
-                "sphericity"
-            ] = self.MetricTool.sphericity
-            self.analysisData[result[0]]["uncertainty"] = result[2]
-            self.analysisData[result[0]]["determination"] = result[3]
-        if len(self.FittingTool.results) == len(self.FittingTool.retainedId):
-            tmp = []
-            for i in self.FittingTool.retainedId:
-                tmp.append(self.analysisData[i])
-            self.analysisData = tmp
+        for i,bead in enumerate([bead for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]):
+            if not bead._rejected:
+                self.analysisData[i]["FWHM"] = bead._fitTool.fwhm
+                bead._metricTool.lateralAsymmetryRatio(bead._fitTool.fwhms)
+                self.analysisData[i]["LAR"] = bead._metricTool.lateralAsymmetryRatio
+                bead._metricTool.sphericityRatio(bead._fitTool.fwhms)
+                self.analysisData[i]["sphericity"] = bead._metricTool._sphericity
+                self.analysisData[i]["uncertainty"] = bead._fitTool.uncertainties
+                self.analysisData[i]["determination"] = bead._fitTool.determinations
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
@@ -330,7 +297,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             key: subDict["value"] for key, subDict in originalDict.items()
         }
         self.reportGenerator.parametersDetection = simplifiedDict
-        self.reportGenerator.filteredBeads = self.filteredBeads
+        self.reportGenerator.filteredBeads = [bead._centroid for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]
         self.reportGenerator.meanSBR = self.meanSBR
         self.reportGenerator.theoreticalResolution = (
             self.MetricTool.theoreticalResolution
@@ -412,23 +379,22 @@ class Microscopy_Metrics_QWidget(QWidget):
         Raises:
             ValueError: Raised when there is a problem with the data of the beads detected or the ROIs extracted (missing data, incorrect format, etc.)
         """
-        rois = [entry["ROI"] for entry in self.analysisData]
         if (
-            isinstance(self.filteredBeads, np.ndarray)
-            and self.filteredBeads.size > 0
+            len(self.imageAnalyze._beadAnalyze) > 0
         ):
+            rois = [bead._roi for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]
             if self.centroidsLayer is None:
                 self.centroidsLayer = self.viewer.add_points(
-                    self.filteredBeads,
+                    [bead._centroid for bead in self.imageAnalyze._beadAnalyze if not bead._rejected],
                     name="PSF detected",
                     face_color="red",
                     opacity=0.5,
                     size=2,
                 )
             else:
-                self.centroidsLayer.data = self.filteredBeads
+                self.centroidsLayer.data = [bead._centroid for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]
             self.detectionToolPage.resultsLabel.setText(
-                f"Here are the results of the detection:\n- {len(self.filteredBeads)} bead(s) detected\n- {len(rois)} ROI(s) extracted"
+                f"Here are the results of the detection:\n- {len(self.imageAnalyze._beadAnalyze)} bead(s) detected\n- {len([bead for bead in self.imageAnalyze._beadAnalyze if not bead._rejected])} ROI(s) extracted"
             )
         else:
             show_warning("No PSF found or incorrect format.")

@@ -221,12 +221,11 @@ class DetectionToolTab(QWidget):
         """A method to display detected centroids and region of interest with new layers."""
         workingLayer = self.viewer.layers.selection.active
         if (
-            isinstance(self.detectionTool._centroids, np.ndarray)
-            and self.detectionTool._centroids.size > 0
+            len(self.detectionTool._imageAnalyze._beadAnalyze) > 0
         ):
             if self.ROILayer is None:
                 self.ROILayer = self.viewer.add_shapes(
-                    self.detectionTool._roisExtracted,
+                    [bead._roi for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
                     shape_type="rectangle",
                     name="ROI",
                     edge_color="blue",
@@ -235,7 +234,7 @@ class DetectionToolTab(QWidget):
             else:
                 self.viewer.layers.remove(self.ROILayer)
                 self.ROILayer = self.viewer.add_shapes(
-                    self.detectionTool._roisExtracted,
+                    [bead._roi for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
                     shape_type="rectangle",
                     name="ROI",
                     edge_color="blue",
@@ -243,16 +242,16 @@ class DetectionToolTab(QWidget):
                 )
             if self.detectedBeadsLayer is None:
                 self.detectedBeadsLayer = self.viewer.add_points(
-                    self.detectionTool._centroids,
+                    [bead._centroid for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
                     name="PSF detected",
                     face_color="red",
                     opacity=0.5,
                     size=2,
                 )
             else:
-                self.detectedBeadsLayer.data = self.detectionTool._centroids
+                self.detectedBeadsLayer.data = [bead._centroid for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected]
             self.resultsLabel.setText(
-                f"Here are the results of the detection:\n- {len(self.detectionTool._centroids)} bead(s) detected\n- {len(self.detectionTool._roisExtracted)} ROI(s) extracted"
+                f"Here are the results of the detection:\n- {len(self.detectionTool._imageAnalyze._beadAnalyze)} bead(s) detected\n- {len([bead for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected])} ROI(s) extracted"
             )
         else:
             show_warning("No PSF found or incorrect format.")
