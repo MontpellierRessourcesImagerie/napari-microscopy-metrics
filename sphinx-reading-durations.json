@@ -1,18 +1,18 @@
 {
-    "acquisition": 0.021,
-    "api": 0.007,
-    "detection": 0.008,
+    "acquisition": 0.016,
+    "api": 0.006,
+    "detection": 0.007,
     "generated/napari_microscopy_metrics._acquisition_widget": 0.007,
     "generated/napari_microscopy_metrics._detection_tool_widget": 0.009,
-    "generated/napari_microscopy_metrics._metrics_widget": 0.006,
-    "generated/napari_microscopy_metrics._widget": 0.007,
+    "generated/napari_microscopy_metrics._metrics_widget": 0.005,
+    "generated/napari_microscopy_metrics._widget": 0.006,
     "how_to": 0.003,
     "index": 0.003,
     "metrics": 0.004,
     "results": 0.003,
     "usage": 0.008,
     "widget": 0.112,
-    "widget_acquisition": 0.044,
-    "widget_detection": 0.126,
-    "widget_metrics": 0.04
+    "widget_acquisition": 0.041,
+    "widget_detection": 0.114,
+    "widget_metrics": 0.037
 }
