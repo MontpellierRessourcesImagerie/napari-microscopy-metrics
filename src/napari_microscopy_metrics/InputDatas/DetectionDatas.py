@@ -17,5 +17,12 @@ class DetectionDatas(Datas):
         if hasattr(target._detectionTool, "_sigma"):
             target._detectionTool._sigma = self._sigma
 
+    def toDict(self):
+        return {
+            "detectionTool": self._detectionTool,
+            "minDist": self._minDist,
+            "sigma": self._sigma
+        }
+
     
 

@@ -14,3 +14,10 @@ class FittingDatas(Datas):
         if hasattr(target, "_prominenceRel"):
             target._prominenceRel = self._prominenceRel
             
+
+    def toDict(self):
+        return {
+            "fitType": self._fitType,
+            "thresholdRSquared": self._thresholdRSquared,
+            "prominenceRel": self._prominenceRel
+        }

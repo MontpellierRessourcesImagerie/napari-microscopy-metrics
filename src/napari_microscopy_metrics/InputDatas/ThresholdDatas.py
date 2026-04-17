@@ -13,3 +13,9 @@ class ThresholdDatas(Datas):
             target._thresholdTool = Threshold.getInstance(self._thresholdTool)
         if hasattr(target._thresholdTool, "_relThreshold"):
             target._thresholdTool._relThreshold = self._thresholdRel
+
+    def toDict(self):
+        return {
+            "thresholdTool": self._thresholdTool,
+            "thresholdRel": self._thresholdRel
+        }

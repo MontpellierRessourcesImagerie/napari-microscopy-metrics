@@ -7,3 +7,10 @@ class SizeDatas(Datas):
     def sendDatas(self, target):
         if hasattr(target, "_pixelSize"):
             target._pixelSize = self._pixelSize
+    
+    def toDict(self):
+        return {
+            "sizeX": self._pixelSize[2],
+            "sizeY": self._pixelSize[1],
+            "sizeZ": self._pixelSize[0]
+        }

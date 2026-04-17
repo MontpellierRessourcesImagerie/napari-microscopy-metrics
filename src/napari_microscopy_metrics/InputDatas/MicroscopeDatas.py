@@ -19,3 +19,11 @@ class MicroscopeDatas(Datas):
             target._TheoreticalResolutionTool._emissionWavelength = self._emissionWavelength / 1000
         if hasattr(target._TheoreticalResolutionTool, "_refractiveIndex"):
             target._TheoreticalResolutionTool._refractiveIndex = self._refractiveIndex
+
+    def toDict(self):
+        return {
+            "microscopeType": self._microscopeType,
+            "numericalAperture": self._numericalAperture,
+            "emissionWavelength": self._emissionWavelength,
+            "refractiveIndex": self._refractiveIndex
+        }

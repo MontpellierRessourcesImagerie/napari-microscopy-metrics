@@ -7,9 +7,9 @@ import os
 import napari
 import webbrowser
 import numpy as np
-import skimage.filters
 
-from skimage.measure import marching_cubes
+
+from skimage.measure import marching_cubes, find_contours
 from napari.qt.threading import create_worker
 from qtpy.QtWidgets import (
     QWidget,
@@ -25,11 +25,6 @@ from microscopy_metrics.metrics import Metrics
 from microscopy_metrics.detection import Detection
 from microscopy_metrics.report_generator import ReportGenerator
 from microscopy_metrics.thresholdTools.threshold_tool import Threshold
-from microscopy_metrics.detectionTools.detection_tool import DetectionTool
-from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
-from microscopy_metrics.resolutionTools.theoretical_resolution import (
-    TheoreticalResolution,
-)
 from microscopy_metrics.scripts.evaluate_fitting import (
     generateRandomBornoWolfPSF,
     PSF_SIZE,
@@ -46,7 +41,6 @@ class Microscopy_Metrics_QWidget(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer
-        self.analysisData = []
         self.DetectionTool = Detection()
         self.MetricTool = Metrics()
         self.FittingTool = Fitting()
@@ -119,7 +113,6 @@ class Microscopy_Metrics_QWidget(QWidget):
     def startProcessing(self):
         """Function called when pressing the button to run analysis. It check if the selected layer is valid and launch the bead detection process."""
         self.workingLayer = self.viewer.layers.selection.active
-        self.analysisData = []
         self.imageAnalyze = None
         if self.workingLayer is None or not isinstance(
             self.workingLayer, napari.layers.Image
@@ -150,6 +143,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         ):
             imagePath = self.workingLayer.source.path
             self.outputDir = os.path.dirname(imagePath)
+            self.outputDir = os.path.join(self.outputDir, f"{self.workingLayer.name}_analysis")
         args = [self.outputDir]
         worker = create_worker(
             self.DetectionTool.run,
@@ -172,10 +166,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             raise ValueError("There are no bead detected !")
         else :
             self.imageAnalyze = self.DetectionTool._imageAnalyze
-            for bead in self.DetectionTool._imageAnalyze._beadAnalyze:
-                if not bead._rejected:
-                    data = {"id": bead._id, "ROI": bead._roi, "centroid": bead._centroid, "rejected": bead._rejected, "_cropped": bead._image}
-                    self.analysisData.append(data)
+            self.imageAnalyze._path = self.outputDir
         self.displayLayers()
         self.applyPrefittingMetrics()
 
@@ -201,9 +192,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         Raises:
             ValueError: Raised when there is a problem with the signal to background ratio calculation
         """
-        for i, bead in enumerate([bead for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]):
-            if not bead._rejected:
-                self.analysisData[i]["SBR"] = bead._metricTool._SBR
         self.metricsToolPage.printResults(self.imageAnalyze._meanSBR)
         self.meanSBR = self.imageAnalyze._meanSBR
         self.applyFitting()
@@ -224,20 +212,19 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.errored.connect(self.onReportFinished)
         worker.start()
 
+    #TODO: add lateral asymmetry ratio and sphericity calculation in this function
     def onFinished(self):
         """Function to update result collection after fitting process and start report generation
         Raises:
             ValueError: Raised when there is a problem with the fitting results collection
         """
-        for i,bead in enumerate([bead for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]):
-            if not bead._rejected:
-                self.analysisData[i]["FWHM"] = bead._fitTool.fwhm
-                bead._metricTool.lateralAsymmetryRatio(bead._fitTool.fwhms)
-                self.analysisData[i]["LAR"] = bead._metricTool.lateralAsymmetryRatio
-                bead._metricTool.sphericityRatio(bead._fitTool.fwhms)
-                self.analysisData[i]["sphericity"] = bead._metricTool._sphericity
-                self.analysisData[i]["uncertainty"] = bead._fitTool.uncertainties
-                self.analysisData[i]["determination"] = bead._fitTool.determinations
+        if self.imageAnalyze._beadAnalyze is None or len(self.imageAnalyze._beadAnalyze) == 0:
+            raise ValueError("There are no bead analyzed !")
+        for bead in self.imageAnalyze._beadAnalyze:
+            if bead._rejected == False and bead._roi is not None:
+                FWHM = bead._fitTool.fwhms
+                bead._metricTool.lateralAsymmetryRatio(FWHM)
+                bead._metricTool.sphericityRatio(FWHM)
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
@@ -255,59 +242,18 @@ class Microscopy_Metrics_QWidget(QWidget):
         yield:
             dict: A dictionary containing the description of the current step of the report generation to update the progress bar description
         """
-        outputDir = os.path.expanduser("~/")
-        defaultPath = os.path.expanduser("~/PSF_analysis_result.pdf")
-        imagePath = outputDir
-        if (
-            self.workingLayer is not None
-            and hasattr(self.workingLayer, "source")
-            and self.workingLayer.source.path
-        ):
-            imagePath = self.workingLayer.source.path
-            outputDir = os.path.dirname(imagePath)
-            outputPath = os.path.join(
-                outputDir, f"{self.workingLayer.name}_analysis_result.pdf"
-            )
-            outputCSVPath = os.path.join(
-                outputDir, f"{self.workingLayer.name}_analysis_result.csv"
-            )
-        else:
-            outputPath = defaultPath
-        self.reportGenerator.outputDir = outputDir
-        self.reportGenerator.outputPath = outputPath
-        self.reportGenerator.analysisData = self.analysisData
-        originalDict = (
-            self.acquisitionToolPage.widgetPxS.options.items
-            | self.acquisitionToolPage.widgetMicroChoice.options.items
-        )
-        simplifiedDict = {
-            key: subDict["value"] for key, subDict in originalDict.items()
-        }
-        self.reportGenerator._imageShape = self.workingLayer.data.shape
-        self.reportGenerator.parametersAcquisition = simplifiedDict
-        originalDict = (
-            self.detectionToolPage.detectionParameters.detectionToolWidget.options.items
-            | self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.items
-            | self.detectionToolPage.detectionParameters.widgetThreshold.options.items
-            | self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.items
-            | self.detectionToolPage.detectionParameters.widgetRejection.options.items
-            | self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.items
-        )
-        simplifiedDict = {
-            key: subDict["value"] for key, subDict in originalDict.items()
-        }
-        self.reportGenerator.parametersDetection = simplifiedDict
-        self.reportGenerator.filteredBeads = [bead._centroid for bead in self.imageAnalyze._beadAnalyze if not bead._rejected]
-        self.reportGenerator.meanSBR = self.meanSBR
-        self.reportGenerator.theoreticalResolution = (
-            self.MetricTool.theoreticalResolution
-        )
         yield {"desc": "Generating pdf..."}
-        self.reportGenerator.generatePDFReport(imagePath)
+        PDFGenerator = ReportGenerator().getInstance("PDF")
+        PDFGenerator._inputDir = self.outputDir
+        PDFGenerator._imageAnalyze = self.imageAnalyze
+        PDFGenerator._detectionDatas = self.detectionToolPage.detectionParameters.detectionToolWidget.createDatas().toDict()
+        PDFGenerator._thresholdDatas = self.detectionToolPage.detectionParameters.widgetThreshold.createDatas().toDict()
+        PDFGenerator._roiDatas = self.detectionToolPage.detectionParameters.widgetRejection.createDatas().toDict()
+        PDFGenerator._fittingDatas = self.metricsToolPage.widgetFittingChoice.createDatas().toDict()
+        PDFGenerator._microscopeDatas = self.acquisitionToolPage.widgetMicroChoice.createDatas().toDict()
+        PDFGenerator.generateReport(self.outputDir)
         yield {"desc": "Generating html..."}
-        self.reportGenerator.generateHTMLReport()
         yield {"desc": "Generating csv..."}
-        self.reportGenerator.generateCSVReport(outputCSVPath)
 
     def onReportFinished(self):
         """Function to display a message when the report generation is finished or if there is an error during the process and re-enable the run button"""
@@ -461,7 +407,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             slice_2d = psf[i]
             level = Threshold().getInstance("otsu")
             level = level.getThreshold(psf)
-            contours = skimage.measure.find_contours(slice_2d,level = level)
+            contours = find_contours(slice_2d,level = level)
             for contour in contours:
                 for point in contour :
                     points.append([i,point[0],point[1]])

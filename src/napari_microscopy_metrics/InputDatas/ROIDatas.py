@@ -23,3 +23,12 @@ class ROIDatas(Datas):
         if hasattr(target, "_ringThickness"):
             target._ringThickness = self._ringThickness
         
+    def toDict(self):
+        return {
+            "beadSize": self._beadSize,
+            "rejectionDistance": self.rejectionDistance,
+            "ringInnerDistance": self._ringInnerDistance,
+            "ringThickness": self._ringThickness,
+            "cropFactor": self._cropFactor,
+            "thresholdIntensity": self._thresholdIntensity
+        }
