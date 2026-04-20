@@ -8,6 +8,7 @@ from autooptions import Options, OptionsWidget
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 from napari_microscopy_metrics.InputDatas.SizeDatas import SizeDatas
 
+
 class UpdateScaleSignal(QObject):
     """A class used to create a signal for updating scale informations in detection widget when changing layer or applying new scale."""
 
@@ -77,7 +78,7 @@ class ImageSizeWidget(BaseWidget):
                 self.options.value("Pixel size X"),
             ]
         )
-    
+
     def createDatas(self):
         """A method to create a SizeDatas object with current scale values."""
         return SizeDatas(

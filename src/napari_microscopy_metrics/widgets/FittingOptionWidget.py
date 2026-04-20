@@ -1,6 +1,6 @@
 import napari
 import webbrowser
-import numpy as np  
+import numpy as np
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
@@ -13,7 +13,7 @@ from qtpy.QtWidgets import (
     QSlider,
 )
 from autooptions import Options
-from autooptions import OptionsWidget   
+from autooptions import OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 from napari_microscopy_metrics.InputDatas.FittingDatas import FittingDatas

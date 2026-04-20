@@ -4,10 +4,15 @@ from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QVBoxLayout, QPushButton
 from autooptions import Options, OptionsWidget
 
-from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
+from microscopy_metrics.resolutionTools.theoretical_resolution import (
+    TheoreticalResolution,
+)
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.MicroscopeDatas import MicroscopeDatas
+from napari_microscopy_metrics.InputDatas.MicroscopeDatas import (
+    MicroscopeDatas,
+)
+
 
 class MicroscopeParametersWidget(BaseWidget):
     """A widget allowing user to setup microscope parameters."""
@@ -66,5 +71,5 @@ class MicroscopeParametersWidget(BaseWidget):
             microscopeType=self.options.value("Microscope type"),
             emissionWavelength=self.options.value("Emission wavelength"),
             refractiveIndex=self.options.value("Refraction index"),
-            numericalAperture=self.options.value("Numerical aperture")
+            numericalAperture=self.options.value("Numerical aperture"),
         )

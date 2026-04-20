@@ -1,14 +1,22 @@
-
 import napari
 import webbrowser
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QVBoxLayout, QPushButton, QStackedWidget, QWidget, QLabel, QSlider, QSizePolicy
+from qtpy.QtWidgets import (
+    QVBoxLayout,
+    QPushButton,
+    QStackedWidget,
+    QWidget,
+    QLabel,
+    QSlider,
+    QSizePolicy,
+)
 from autooptions import Options, OptionsWidget
 from microscopy_metrics.detectionTools.detection_tool import DetectionTool
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 from napari_microscopy_metrics.InputDatas.DetectionDatas import DetectionDatas
+
 
 class DetectionToolWidget(BaseWidget):
     """A widget allowing user to choose the detection tool he wants to use with related parameters."""

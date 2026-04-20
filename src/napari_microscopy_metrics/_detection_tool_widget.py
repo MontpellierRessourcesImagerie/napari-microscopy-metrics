@@ -3,16 +3,12 @@ This module contains a napari widgets for PSF detection
 """
 
 import napari
-import webbrowser
-import numpy as np
 from pathlib import Path
 
 from qtpy.QtGui import QIcon
-from autooptions import Options
-from autooptions import OptionsWidget
 from napari.settings import get_settings
 from napari.qt.threading import create_worker
-from qtpy.QtCore import Qt, QSize, Signal, QObject
+from qtpy.QtCore import QSize
 from napari.utils.notifications import show_warning
 from qtpy.QtWidgets import (
     QWidget,
@@ -21,25 +17,21 @@ from qtpy.QtWidgets import (
     QLabel,
     QDialog,
     QGroupBox,
-    QSlider,
 )
 
 from microscopy_metrics.detection import Detection
-from microscopy_metrics.thresholdTools.threshold_tool import Threshold
-from microscopy_metrics.detectionTools.detection_tool import DetectionTool
-from microscopy_metrics.detectionTools.peakLocalMax import PeakLocalMaxDetector
 
-from napari_microscopy_metrics.widgets.DetectionToolWidget import DetectionToolWidget
+from napari_microscopy_metrics.widgets.DetectionToolWidget import (
+    DetectionToolWidget,
+)
 from napari_microscopy_metrics.widgets.ThresholdWidget import ThresholdWidget
 from napari_microscopy_metrics.widgets.ROIWidget import RoiWidget
 
-class DetectionParametersWidget(QWidget):
-    """A widget for processing PSF detection and extraction
 
-    Parameters
-    ----------
-    viewer : napari.viewer.Viewer
-        The napari viewer were the widget will be displayed
+class DetectionParametersWidget(QWidget):
+    """A napari widget form for PSF detection parameters.
+    It contains a DetectionToolWidget for setting detection parameters, a ThresholdWidget for setting threshold parameters and a RoiWidget for setting region of interest parameters.
+    It is used in DetectionToolTab widget to create a parameters window and send parameters to the detection tool when applying detection.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -85,12 +77,9 @@ class DetectionParametersWidget(QWidget):
 
 
 class DetectionToolTab(QWidget):
-    """The main widget of the detection tool
-
-    Parameter
-    ---------
-    viewer : napari.viewer.Viewer
-        The environment were the widget will be displayed
+    """A napari widget form for PSF detection.
+    It contains a button to open the parameters window and a button to apply detection with current parameters
+    It also manage the display of detection results with new layers in napari viewer.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -160,7 +149,7 @@ class DetectionToolTab(QWidget):
             self.countWindows += 1
 
     def onParametersWindowClosed(self, result):
-        """Called when parameters window is closed to unlock the possibility to open another one and erase threshold preview.
+        """Called when parameters window is closed to unlock the possibility to open another one and remove threshold preview.
 
         Args:
             result : Parameter sent by the window when closed
@@ -176,7 +165,7 @@ class DetectionToolTab(QWidget):
             )
 
     def erase_Layers(self):
-        """A method to delete all layers made by this wiget"""
+        """A method to delete all layers created by this widget"""
         if self.ROILayer:
             self.viewer.layers.remove(self.ROILayer)
         if self.detectedBeadsLayer:
@@ -200,9 +189,13 @@ class DetectionToolTab(QWidget):
     def apply(self):
         """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview."""
         self.detectionTool.image = self.viewer.layers.selection.active.data
-        parametersDetection = self.detectionParameters.detectionToolWidget.createDatas()
+        parametersDetection = (
+            self.detectionParameters.detectionToolWidget.createDatas()
+        )
         parametersDetection.sendDatas(self.detectionTool)
-        parametersThreshold = self.detectionParameters.widgetThreshold.createDatas()
+        parametersThreshold = (
+            self.detectionParameters.widgetThreshold.createDatas()
+        )
         parametersThreshold.sendDatas(self.detectionTool._detectionTool)
         parametersROI = self.detectionParameters.widgetRejection.createDatas()
         parametersROI.sendDatas(self.detectionTool)
@@ -220,12 +213,14 @@ class DetectionToolTab(QWidget):
     def displayResult(self):
         """A method to display detected centroids and region of interest with new layers."""
         workingLayer = self.viewer.layers.selection.active
-        if (
-            len(self.detectionTool._imageAnalyze._beadAnalyze) > 0
-        ):
+        if len(self.detectionTool._imageAnalyze._beadAnalyze) > 0:
             if self.ROILayer is None:
                 self.ROILayer = self.viewer.add_shapes(
-                    [bead._roi for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
+                    [
+                        bead._roi
+                        for bead in self.detectionTool._imageAnalyze._beadAnalyze
+                        if not bead._rejected
+                    ],
                     shape_type="rectangle",
                     name="ROI",
                     edge_color="blue",
@@ -234,7 +229,11 @@ class DetectionToolTab(QWidget):
             else:
                 self.viewer.layers.remove(self.ROILayer)
                 self.ROILayer = self.viewer.add_shapes(
-                    [bead._roi for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
+                    [
+                        bead._roi
+                        for bead in self.detectionTool._imageAnalyze._beadAnalyze
+                        if not bead._rejected
+                    ],
                     shape_type="rectangle",
                     name="ROI",
                     edge_color="blue",
@@ -242,14 +241,22 @@ class DetectionToolTab(QWidget):
                 )
             if self.detectedBeadsLayer is None:
                 self.detectedBeadsLayer = self.viewer.add_points(
-                    [bead._centroid for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected],
+                    [
+                        bead._centroid
+                        for bead in self.detectionTool._imageAnalyze._beadAnalyze
+                        if not bead._rejected
+                    ],
                     name="PSF detected",
                     face_color="red",
                     opacity=0.5,
                     size=2,
                 )
             else:
-                self.detectedBeadsLayer.data = [bead._centroid for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected]
+                self.detectedBeadsLayer.data = [
+                    bead._centroid
+                    for bead in self.detectionTool._imageAnalyze._beadAnalyze
+                    if not bead._rejected
+                ]
             self.resultsLabel.setText(
                 f"Here are the results of the detection:\n- {len(self.detectionTool._imageAnalyze._beadAnalyze)} bead(s) detected\n- {len([bead for bead in self.detectionTool._imageAnalyze._beadAnalyze if not bead._rejected])} ROI(s) extracted"
             )

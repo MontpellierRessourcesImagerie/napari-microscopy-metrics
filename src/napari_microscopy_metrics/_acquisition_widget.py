@@ -1,7 +1,3 @@
-"""
-This module contains a napari widgets form for microscope acquisition parameters
-"""
-
 import napari
 
 from qtpy.QtWidgets import (
@@ -14,13 +10,15 @@ from qtpy.QtWidgets import (
 )
 
 from napari_microscopy_metrics.widgets.ImageSizeWidget import ImageSizeWidget
-from napari_microscopy_metrics.widgets.MicroscopeParametersWidget import MicroscopeParametersWidget
-
+from napari_microscopy_metrics.widgets.MicroscopeParametersWidget import (
+    MicroscopeParametersWidget,
+)
 
 
 class AcquisitionToolPage(QWidget):
-    """A napari widget form for microscope acquisition parameters. It contains an ImageSizeWidget for setting scale informations and a MicroscopeParametersWidget for setting microscope informations.
-    It also update scale informations in detection widget when changing layer or applying new scale.
+    """A napari widget form for microscope acquisition parameters.
+    It contains an ImageSizeWidget for setting scale informations and a MicroscopeParametersWidget for setting microscope informations.
+    It also update scale informations in detection widget and napari viewer when applying a new scale.
     Args:
         viewer (napari.viewer.Viewer): The environment where the widget will be displayed
     """
@@ -34,7 +32,7 @@ class AcquisitionToolPage(QWidget):
         self.viewer.layers.selection.events.active.connect(self.onLayerChanged)
 
     def initUi(self):
-        """A method used to create the layout of the widget."""
+        """A method to initialize the widget interface."""
         layout = QVBoxLayout()
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
@@ -77,7 +75,9 @@ class AcquisitionToolPage(QWidget):
         self.setLayout(layout)
 
     def onLayerChanged(self):
-        """A method called when changing active layer. It update scale informations in detection widget if the new active layer is an image and update label with the shape of the new active image."""
+        """A method called when changing active layer.
+        It update scale informations in detection widget if the new active layer is an image and update label with the shape of the new active image.
+        """
         currentLayer = self.viewer.layers.selection.active
         if currentLayer is None or not isinstance(
             currentLayer, napari.layers.Image

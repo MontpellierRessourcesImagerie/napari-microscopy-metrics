@@ -3,13 +3,20 @@ import webbrowser
 import numpy as np
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QVBoxLayout, QPushButton, QStackedWidget, QWidget, QLabel, QSlider, QSizePolicy
+from qtpy.QtWidgets import (
+    QVBoxLayout,
+    QPushButton,
+    QStackedWidget,
+    QWidget,
+    QLabel,
+    QSlider,
+    QSizePolicy,
+)
 from autooptions import Options, OptionsWidget
 from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 from napari_microscopy_metrics.InputDatas.ThresholdDatas import ThresholdDatas
-
 
 
 class ThresholdWidget(BaseWidget):

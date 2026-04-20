@@ -2,9 +2,10 @@ import napari
 from qtpy.QtWidgets import QWidget
 from autooptions import Options
 
+
 class BaseWidget(QWidget):
     """A generic base widget for options-based widgets."""
-    
+
     def __init__(self, viewer: "napari.viewer.Viewer", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.viewer = viewer
@@ -20,14 +21,14 @@ class BaseWidget(QWidget):
     @classmethod
     def getOptions(cls) -> Options:
         """
-        Create and load options. 
+        Create and load options.
         Must be implemented by subclasses.
         """
         raise NotImplementedError("Subclasses must implement getOptions()")
-    
+
     def getSliders(self) -> Options:
         """
-        Create and load sliders options. 
+        Create and load sliders options.
         Must be implemented by subclasses.
         """
         pass
@@ -37,7 +38,9 @@ class BaseWidget(QWidget):
         Open the documentation web page.
         Must be implemented by subclasses.
         """
-        raise NotImplementedError("Subclasses must implement openDocumentation()")
-    
+        raise NotImplementedError(
+            "Subclasses must implement openDocumentation()"
+        )
+
     def createDatas(self):
         pass

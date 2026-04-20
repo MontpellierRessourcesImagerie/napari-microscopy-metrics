@@ -1,24 +1,18 @@
-"""
-This module contains a napari widgets form for microscope acquisition parameters
-"""
-
 import napari
 import webbrowser
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
-    QLabel,
-    QGroupBox
-)
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QGroupBox
 
-from napari_microscopy_metrics.widgets.FittingOptionWidget import FittingOptionWidget
+from napari_microscopy_metrics.widgets.FittingOptionWidget import (
+    FittingOptionWidget,
+)
 
 
 class Metricstoolpage(QWidget):
-    """A widget allowing user to setup metrics parameters and display results of metrics measurement."""
+    """A napari widget form for microscopy metrics parameters and results.
+    It contains a FittingOptionWidget for setting fitting parameters and a label to display metrics results.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()

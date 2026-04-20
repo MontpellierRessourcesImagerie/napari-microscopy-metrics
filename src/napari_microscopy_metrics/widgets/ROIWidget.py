@@ -126,5 +126,6 @@ class RoiWidget(BaseWidget):
             ),
             ringThickness=self.options.value("Annulus thickness (µm)"),
             cropFactor=self.optionsSliders.value("crop factor"),
-            thresholdIntensity=self.optionsSliders.value("threshold intensity") / 100,
+            thresholdIntensity=self.optionsSliders.value("threshold intensity")
+            / 100,
         )
