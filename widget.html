@@ -80,74 +80,72 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyFitting">
 <span class="sig-name descname"><span class="pre">applyFitting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyFitting" title="Link to this definition"></a></dt>
-<dd><p>Function to update FittingTool and start a worker for fitting process</p>
+<dd><p>Function to update FittingTool with the image and parameters setup by user in the widget and start a worker for fitting process
+:raises ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics">
 <span class="sig-name descname"><span class="pre">applyPrefittingMetrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics" title="Link to this definition"></a></dt>
-<dd><p>Function to update MetricTool and start a worker for prefitting metrics calculation</p>
+<dd><p>Function to update MetricTool with the image and parameters setup by user in the widget and start a worker for prefitting metrics calculation
+:raises ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf">
 <span class="sig-name descname"><span class="pre">apply_detect_psf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf" title="Link to this definition"></a></dt>
-<dd><p>Function to update DetectionTool and start a worker for bead detection</p>
+<dd><p>Function to update DetectionTool with the image and parameters setup by user in the widget and start a worker for bead detection
+:raises ValueError: Raised when there is a problem with the data of the image selected (missing data, incorrect format, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.detectFinished">
 <span class="sig-name descname"><span class="pre">detectFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.detectFinished" title="Link to this definition"></a></dt>
 <dd><p>Function to update result collection after bead detection and start prefitting metrics calculation
-:raises ValueError: Raised when there is a problem with the signal to background ratio calculation</p>
+:raises ValueError: Raised when there is a problem with the data of the beads detected (missing data, incorrect format, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.displayLayers">
 <span class="sig-name descname"><span class="pre">displayLayers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.displayLayers" title="Link to this definition"></a></dt>
-<dd><p>Function to display the layers corresponding to the results of the detection (centroids and ROIs) in napari viewer and update the scale of all layers according to pixel size setup by user in acquisitionToolPage
-:raises ValueError: Raised when there is a problem with the data of the beads detected or the ROIs extracted (missing data, incorrect format, etc.)</p>
+<dd><p>Function to display the layers corresponding to the beads detected and the ROIs extracted in napari viewer after detection and update the scale of all layers according to the pixel size setup by user in acquisitionToolPage</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateMesh">
 <span class="sig-name descname"><span class="pre">generateMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateMesh" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateRandomPSF">
-<span class="sig-name descname"><span class="pre">generateRandomPSF</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateRandomPSF" title="Link to this definition"></a></dt>
-<dd><p>Function to generate a random PSF and display it in the napari viewer
-:raises ValueError: Raised when there is a problem with the generation of the random PSF</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport">
-<span class="sig-name descname"><span class="pre">generateReport</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport" title="Link to this definition"></a></dt>
-<dd><p>Function to generate report with ReportGenerator using the results of the analysis and information setup by user in the widget.
-:raises ValueError: Raised when there is a problem with the report generation (missing information, problem with the data collected, etc.)</p>
+<dd><p>Function to generate a 3D mesh corresponding to the contours of the PSF and display it in the napari viewer</p>
 <dl class="field-list simple">
-<dt class="field-odd">Yields<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>dict</em> – A dictionary containing the description of the current step of the report generation to update the progress bar description</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>psf</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – The PSF for which to generate a mesh. Defaults to None.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateRandomPSF">
+<span class="sig-name descname"><span class="pre">generateRandomPSF</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateRandomPSF" title="Link to this definition"></a></dt>
+<dd><p>Function to generate a random PSF and display it in the napari viewer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport">
+<span class="sig-name descname"><span class="pre">generateReport</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport" title="Link to this definition"></a></dt>
+<dd><p>Function to generate a PDF report with all the results of the analysis using ReportGenerator</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getActivePath">
 <span class="sig-name descname"><span class="pre">getActivePath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getActivePath" title="Link to this definition"></a></dt>
-<dd><p>Function to get the path to the report corresponding to the bead selected by user in napari viewer
-:param index: The index of the bead selected corresponding to the index of the ROI in the list of ROIs extracted during the detection step
+<dd><p>Function to get the path of the folder corresponding to the bead selected by user in napari viewer
+:param index: The index of the bead selected corresponding to the index of the ROI shape in napari viewer
 :type index: int</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – Raised when there is a problem with the path to the report corresponding to the bead selected (missing report, problem with the path, etc.)</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The path of the folder corresponding to the bead selected by user in napari viewer</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The path to the report corresponding to the bead selected</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -155,73 +153,74 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getContourspoints">
 <span class="sig-name descname"><span class="pre">getContourspoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getContourspoints" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>A method to get the points corresponding to the contours of the PSF for each slice in Z.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>psf</strong> (<em>np.ndarray</em>) – The PSF for which to get contour points.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An array of points corresponding to the contours of the PSF for each slice in Z.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished">
 <span class="sig-name descname"><span class="pre">onFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished" title="Link to this definition"></a></dt>
 <dd><p>Function to update result collection after fitting process and start report generation
-:raises ValueError: Raised when there is a problem with the fitting results collection</p>
+:raises ValueError: Raised when there is a problem with the data of the beads analyzed or the fitting results (missing data, incorrect format, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMouseDoubleClick">
 <span class="sig-name descname"><span class="pre">onMouseDoubleClick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMouseDoubleClick" title="Link to this definition"></a></dt>
-<dd><p>Function to select the bead corresponding to the position of the double click and open the corresponding report in a web browser
-:param layer: The napari layer on which the double click event happened
-:type layer: Layer
-:param event: The mouse event corresponding to the double click
-:type event: MouseEvent</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – Raised when there is a problem with the position of the click or if there is no bead corresponding to the click position</p>
-</dd>
-</dl>
+<dd><p>Function to open the HTML report corresponding to the bead selected by user in napari viewer when user double click on a ROI shape in napari viewer
+:param layer: The layer on which the double click event happened
+:type layer: napari.layers.Layer
+:param event: The double click event
+:type event: napari.utils.events.Event</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onReportFinished">
 <span class="sig-name descname"><span class="pre">onReportFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onReportFinished" title="Link to this definition"></a></dt>
-<dd><p>Function to display a message when the report generation is finished or if there is an error during the process and re-enable the run button</p>
+<dd><p>Function to update plugin interface after report generation and open the HTML report in a web browser</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openBrowser">
 <span class="sig-name descname"><span class="pre">openBrowser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openBrowser" title="Link to this definition"></a></dt>
-<dd><p>Function to open the HTML report corresponding to the bead selected by user in napari viewer when double-clicking on it
-:raises ValueError: Raised when there is a problem with the path to the report corresponding to the bead selected (missing report, problem with the path, etc.)</p>
+<dd><p>Function to open the HTML report corresponding to the bead selected by user in napari viewer in a web browser</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openDocumentation">
 <span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openDocumentation" title="Link to this definition"></a></dt>
-<dd><p>A method to open the documentation webPage relative to this widget</p>
+<dd><p>Function to open the documentation webPage in a web browser</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.prefittingFinished">
 <span class="sig-name descname"><span class="pre">prefittingFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.prefittingFinished" title="Link to this definition"></a></dt>
-<dd><p>Function to update result collection after prefitting metrics calculation and start fitting process
-:raises ValueError: Raised when there is a problem with the signal to background ratio calculation</p>
+<dd><p>Function to update result collection after prefitting metrics calculation and start fitting process</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing">
 <span class="sig-name descname"><span class="pre">startProcessing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing" title="Link to this definition"></a></dt>
-<dd><p>Function called when pressing the button to run analysis. It check if the selected layer is valid and launch the bead detection process.</p>
+<dd><p>Function to start the whole analysis process .
+:raises ValueError: Raised when there is a problem with the selection of the layer to analyze (missing layer, incorrect type, etc.)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.updateScaleDetection">
 <span class="sig-name descname"><span class="pre">updateScaleDetection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.updateScaleDetection" title="Link to this definition"></a></dt>
-<dd><p>Function to update the scale of the layers in napari viewer and the pixel size in DetectionTool and MetricTool when user update the pixel size in acquisitionToolPage
-:param scale: The new pixel size to apply corresponding to the value setup by user in acquisitionToolPage
+<dd><p>A method to update the scale of the detection and metrics tools when user update pixel size in acquisitionToolPage.
+:param scale: List of 3 values corresponding to pixel size in Z, Y and X of the image.
 :type scale: list</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – Raised when there is a problem with the scale provided (incorrect format, missing value, etc.)</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
