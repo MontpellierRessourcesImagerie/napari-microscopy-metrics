@@ -29,21 +29,11 @@ class ReportToolPage(QWidget):
         self.layoutParameters = QVBoxLayout()
         self.widgetReportChoices = ReportWidget(self.viewer)
         self.layoutParameters.addWidget(self.widgetReportChoices)
-        self.btnDoc = QPushButton("?")
-        self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24, 24)
-        self.btnDoc.setToolTip("Go to documentation")
-        self.layoutParameters.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.groupLayout.addLayout(self.layoutParameters)
-
         layout.addWidget(self.groupReport)
         layout.addStretch()
         self.setLayout(layout)
 
-    def openDocumentation(self):
-        """A method to open the documentation webPage relative to this widget"""
-        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/results.html#napari-viewer"
-        webbrowser.open(documentationPath)
 
     def getListReports(self):
         """A method to get the list of report to export based on user choices in the widget interface."""

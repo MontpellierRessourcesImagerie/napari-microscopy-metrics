@@ -8,7 +8,7 @@ authors = [
     { name = "MRI-CIA", email = "mri-cia@mri.cnrs.fr" }, 
     { name = "Voker Baecker", email = "volker.baecker@mri.cnrs.fr"},
     { name = "Clément Benedetti", email = "clement.benedetti@mri.cnrs.fr"},
-    { name = "Bastian Langouet", email = "langouetbastian@gmail.com" } 
+    { name = "Bastian Langouët", email = "langouetbastian@gmail.com" } 
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -35,7 +35,8 @@ dependencies = [
     "magicgui",
     "qtpy",
     "scikit-image",
-    "reportlab"
+    "reportlab",
+    "auto-options-python",
 ]
 
 [project.optional-dependencies]
@@ -48,6 +49,7 @@ dev = [
     "tox-uv",
     "pytest",  # https://docs.pytest.org/en/latest/contents.html
     "pytest-cov",  # https://pytest-cov.readthedocs.io/en/latest/
+    "coverage",
     "pytest-qt",  # https://pytest-qt.readthedocs.io/en/latest/
     "napari[qt]",  # test with napari's default Qt bindings
 ]

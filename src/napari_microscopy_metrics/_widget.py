@@ -3,8 +3,6 @@ import napari
 import webbrowser
 import numpy as np
 
-from datetime import datetime
-
 from skimage.measure import marching_cubes, find_contours
 from napari.qt.threading import create_worker
 from qtpy.QtWidgets import (
@@ -54,7 +52,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.tab.setDocumentMode(True)
         self.acquisitionToolPage = AcquisitionToolPage(self.viewer)
-        self.acquisitionToolPage.widgetPxS.signal.scaleUpdate.connect(
+        self.acquisitionToolPage.pixelSizeWidget.signal.scaleUpdate.connect(
             self.updateScaleDetection
         )
         self.acquisitionToolPage.setSizePolicy(
@@ -63,9 +61,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.tab.addTab(self.acquisitionToolPage, "Acquisition parameters")
         self.detectionToolPage = DetectionToolTab(self.viewer)
         self.detectionToolPage.detectionTool._pixelSize = [
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Z"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Y"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size X"),
         ]
         self.detectionToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
@@ -76,9 +74,9 @@ class Microscopy_Metrics_QWidget(QWidget):
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.metricsToolPage.spacing = [
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Z"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size Y"),
-            self.acquisitionToolPage.widgetPxS.options.value("Pixel size X"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Z"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Y"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size X"),
         ]
         self.tab.addTab(self.metricsToolPage, "Metrics parameters")
 
@@ -148,7 +146,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
         )
         parametersROI.sendDatas(self.DetectionTool)
-        parametersPixelSize = self.acquisitionToolPage.widgetPxS.createDatas()
+        parametersPixelSize = self.acquisitionToolPage.pixelSizeWidget.createDatas()
         parametersPixelSize.sendDatas(self.DetectionTool)
         self.outputDir = os.path.expanduser("~/")
         if (
@@ -196,14 +194,14 @@ class Microscopy_Metrics_QWidget(QWidget):
             ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)
         """
         self.MetricTool._imageAnalyze = self.imageAnalyze
-        parametersPixelSize = self.acquisitionToolPage.widgetPxS.createDatas()
+        parametersPixelSize = self.acquisitionToolPage.pixelSizeWidget.createDatas()
         parametersPixelSize.sendDatas(self.MetricTool)
         parametersROI = (
             self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
         )
         parametersROI.sendDatas(self.MetricTool)
         parametersMicroscope = (
-            self.acquisitionToolPage.widgetMicroChoice.createDatas()
+            self.acquisitionToolPage.microscopeWidget.createDatas()
         )
         parametersMicroscope.sendDatas(self.MetricTool)
         worker = create_worker(
@@ -288,7 +286,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.metricsToolPage.widgetFittingChoice.createDatas().toDict()
             )
             PDFGenerator._microscopeDatas = (
-                self.acquisitionToolPage.widgetMicroChoice.createDatas().toDict()
+                self.acquisitionToolPage.microscopeWidget.createDatas().toDict()
             )
             PDFGenerator.generateReport(self.outputDir)
 

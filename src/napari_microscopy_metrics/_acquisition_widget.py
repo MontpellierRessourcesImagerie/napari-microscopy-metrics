@@ -37,41 +37,28 @@ class AcquisitionToolPage(QWidget):
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(5)
 
-        self.acquisitionGroup = QGroupBox("Image parameters")
-        self.groupLayout = QVBoxLayout()
-        self.acquisitionGroup.setLayout(self.groupLayout)
-        self.pixelSizeLayout = QVBoxLayout()
+        self.pixelSizeGroup = QGroupBox("Pixel size parameters")
+        self.pixelGroupLayout = QVBoxLayout()
+        self.pixelSizeGroup.setLayout(self.pixelGroupLayout)
+        self.pixelSizeWidget = ImageSizeWidget(self.viewer)
         self.lblPixelSize = QLabel("Enter pixel size (µm/px)")
         self.lblPixelSize.setStyleSheet("font-weight: bold")
         self.lblPixelSize.setSizePolicy(
             QSizePolicy.Preferred, QSizePolicy.Fixed
         )
+        self.pixelGroupLayout.addWidget(self.lblPixelSize)
+        self.pixelGroupLayout.addWidget(self.pixelSizeWidget)
 
-        self.widgetPxS = ImageSizeWidget(self.viewer)
-        self.onLayerChanged()
-        self.pixelSizeLayout.addWidget(self.lblPixelSize)
-        self.pixelSizeLayout.addWidget(self.widgetPxS)
-        self.groupLayout.addLayout(self.pixelSizeLayout)
+        layout.addWidget(self.pixelSizeGroup)
 
-        self.groupLayout.addSpacerItem(
-            QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        )
+        self.microscopeGroup = QGroupBox("Microscope parameters")
+        self.microscopeGroupLayout = QVBoxLayout()
+        self.microscopeGroup.setLayout(self.microscopeGroupLayout)
+        self.microscopeWidget = MicroscopeParametersWidget(self.viewer)
+        self.microscopeGroupLayout.addWidget(self.microscopeWidget)
 
-        self.microscopeLayout = QVBoxLayout()
-        self.titleOptionsMicroscope = QLabel("Microscope parameters:")
-        self.titleOptionsMicroscope.setStyleSheet("font-weight: bold")
-        self.titleOptionsMicroscope.setSizePolicy(
-            QSizePolicy.Preferred, QSizePolicy.Fixed
-        )
+        layout.addWidget(self.microscopeGroup)
 
-        self.widgetMicroChoice = MicroscopeParametersWidget(self.viewer)
-        self.microscopeLayout.addWidget(self.titleOptionsMicroscope)
-        self.microscopeLayout.addWidget(self.widgetMicroChoice)
-        self.groupLayout.addLayout(self.microscopeLayout)
-
-        self.groupLayout.addWidget(self.labelShape)
-
-        layout.addWidget(self.acquisitionGroup)
         self.setLayout(layout)
 
     def onLayerChanged(self):

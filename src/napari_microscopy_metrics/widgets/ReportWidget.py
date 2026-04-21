@@ -2,9 +2,9 @@ import napari
 import webbrowser
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QCheckBox, QVBoxLayout, QPushButton, QSlider, QLabel
+from qtpy.QtWidgets import QCheckBox, QHBoxLayout, QSizePolicy, QVBoxLayout, QPushButton
 
-from autooptions import Options, OptionsWidget
+from autooptions import Options
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 
@@ -27,9 +27,17 @@ class ReportWidget(BaseWidget):
         self.HTMLCheckbox = QCheckBox("Export report as HTML")
         self.HTMLCheckbox.setChecked(self.options.value("Export report as HTML"))
         layout.addWidget(self.HTMLCheckbox)
+        self.ButtonLayout = QHBoxLayout()
         self.applyButton = QPushButton("Apply")
+        self.applyButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.applyButton.clicked.connect(self.apply)
-        layout.addWidget(self.applyButton)
+        self.ButtonLayout.addWidget(self.applyButton)
+        self.btnDoc = QPushButton("?")
+        self.btnDoc.pressed.connect(self.openDocumentation)
+        self.btnDoc.setFixedSize(24, 24)
+        self.btnDoc.setToolTip("Go to documentation")
+        self.ButtonLayout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
+        layout.addLayout(self.ButtonLayout)
         self.setLayout(layout)
 
     @classmethod
@@ -50,3 +58,8 @@ class ReportWidget(BaseWidget):
         self.options.setValue("Export report as CSV", self.CSVCheckbox.isChecked())
         self.options.setValue("Export report as HTML", self.HTMLCheckbox.isChecked())
         self.options.save()
+
+    def openDocumentation(self):
+        """A method to open the documentation webPage relative to this widget"""
+        documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/results.html#napari-viewer"
+        webbrowser.open(documentationPath)

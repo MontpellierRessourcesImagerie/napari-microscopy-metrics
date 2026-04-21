@@ -2,7 +2,7 @@ import napari
 import webbrowser
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QVBoxLayout, QPushButton, QSlider, QLabel
+from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton, QSlider, QLabel
 
 from autooptions import Options, OptionsWidget
 
@@ -47,7 +47,9 @@ class RoiWidget(BaseWidget):
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setFixedSize(24, 24)
         self.btnDoc.setToolTip("Go to documentation")
-        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
+        applybtn = self.widget.getApplyButton()
+        applybtn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.widget._getButtonsLayout().addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
         self.cropFactor.valueChanged.connect(self.updateCropFactor)
         self.thresholdIntensity.valueChanged.connect(

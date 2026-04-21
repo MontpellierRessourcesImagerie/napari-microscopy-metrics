@@ -2,7 +2,7 @@ import napari
 import webbrowser
 
 from qtpy.QtCore import Qt, Signal, QObject
-from qtpy.QtWidgets import QVBoxLayout, QPushButton
+from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton
 from autooptions import Options, OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
@@ -37,10 +37,11 @@ class ImageSizeWidget(BaseWidget):
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setToolTip("Go to documentation")
         self.btnDoc.setFixedSize(24, 24)
-        self.btnDoc
+        applybtn = self.widget.getApplyButton()
+        applybtn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.widget._getButtonsLayout().addWidget(self.btnDoc, alignment=Qt.AlignRight)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
-        layout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.setLayout(layout)
 
     def openDocumentation(self):

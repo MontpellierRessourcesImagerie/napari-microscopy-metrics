@@ -1,7 +1,3 @@
-"""
-This module contains a napari widgets for PSF detection
-"""
-
 import napari
 from pathlib import Path
 
