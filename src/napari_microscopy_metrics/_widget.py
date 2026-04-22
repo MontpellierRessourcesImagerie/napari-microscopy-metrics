@@ -254,7 +254,8 @@ class Microscopy_Metrics_QWidget(QWidget):
             if bead._rejected == False and bead._roi is not None:
                 FWHM = bead._fitTool.fwhms
                 bead._metricTool.lateralAsymmetryRatio(FWHM)
-                bead._metricTool.sphericityRatio(FWHM)
+                bead._metricTool.sphericity()
+                bead._metricTool.multiplePeak()
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )

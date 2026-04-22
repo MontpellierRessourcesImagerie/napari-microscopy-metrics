@@ -36,7 +36,7 @@ class ImageSizeWidget(BaseWidget):
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
         self.btnDoc.setToolTip("Go to documentation")
-        self.btnDoc.setFixedSize(24, 24)
+        self.btnDoc.setFixedWidth(25)
         applybtn = self.widget.getApplyButton()
         applybtn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.widget._getButtonsLayout().addWidget(self.btnDoc, alignment=Qt.AlignRight)

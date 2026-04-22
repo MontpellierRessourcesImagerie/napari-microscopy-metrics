@@ -34,7 +34,7 @@ class ReportWidget(BaseWidget):
         self.ButtonLayout.addWidget(self.applyButton)
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24, 24)
+        self.btnDoc.setFixedWidth(25)
         self.btnDoc.setToolTip("Go to documentation")
         self.ButtonLayout.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         layout.addLayout(self.ButtonLayout)

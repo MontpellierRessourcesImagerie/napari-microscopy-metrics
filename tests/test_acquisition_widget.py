@@ -21,7 +21,7 @@ def test_acquisition_page_initialize(qapp,mock_viewer):
     widget = AcquisitionToolPage(mock_viewer)
     assert widget.viewer == mock_viewer
     assert widget.countWindows == 0
-    assert widget.acquisitionGroup.title() == "Image parameters"
+    assert widget.pixelSizeGroup.title() == "Pixel size parameters"
 
 def test_on_layer_changed_with_active_layer(qapp,mock_viewer):
     mock_layer = MagicMock(spec=napari.layers.Image)

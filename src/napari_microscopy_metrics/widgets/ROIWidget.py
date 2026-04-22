@@ -45,7 +45,7 @@ class RoiWidget(BaseWidget):
         )
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24, 24)
+        self.btnDoc.setFixedWidth(25)
         self.btnDoc.setToolTip("Go to documentation")
         applybtn = self.widget.getApplyButton()
         applybtn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)

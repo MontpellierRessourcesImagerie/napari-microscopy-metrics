@@ -38,7 +38,7 @@ class Metricstoolpage(QWidget):
         self.resultsLabel = QLabel("No metric mesured yet.")
         self.btnDoc = QPushButton("?")
         self.btnDoc.pressed.connect(self.openDocumentation)
-        self.btnDoc.setFixedSize(24, 24)
+        self.btnDoc.setFixedWidth(25)
         self.btnDoc.setToolTip("Go to documentation")
         self.layoutResults.addWidget(self.btnDoc, alignment=Qt.AlignRight)
         self.layoutResults.addWidget(self.resultsLabel)
