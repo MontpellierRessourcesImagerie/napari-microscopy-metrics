@@ -255,9 +255,15 @@ class Microscopy_Metrics_QWidget(QWidget):
                 FWHM = bead._fitTool.fwhms
                 bead._metricTool.lateralAsymmetryRatio(FWHM)
                 bead._metricTool.sphericity()
-                bead._metricTool.multiplePeak()
-                self.imageAnalyzer._meanbanana += bead._metricTool._banana
-        self.imageAnalyzer._meanbanana /= len([bead for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+                bead._metricTool.comaticity()
+                bead._metricTool.sphericalAberration()
+                bead._metricTool.astigmatism(bead._fitTool.getMu(), bead._fitTool.getSigma())
+                bead._fitTool.computeContrast()
+                bead._metricTool.ellipsRatio()
+        self.imageAnalyzer._meanComaticity = np.mean([bead._metricTool._comaticity for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+        self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+        self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+        self.imageAnalyzer._meanContrast = np.mean([bead._fitTool.contrast for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
