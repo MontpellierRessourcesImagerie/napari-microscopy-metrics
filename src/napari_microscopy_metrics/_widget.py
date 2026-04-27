@@ -239,7 +239,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         worker.errored.connect(self.onReportFinished)
         worker.start()
 
-    # TODO: add lateral asymmetry ratio and sphericity calculation in this function
     def onFinished(self):
         """Function to update result collection after fitting process and start report generation
         Raises:
@@ -264,6 +263,8 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanContrast = np.mean([bead._fitTool.contrast for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+        self.imageAnalyzer._meanEllipsRatio = np.mean([bead._metricTool._ellipsRatio for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
+        self.imageAnalyzer._meanOrientation = np.mean([bead._metricTool._orientation for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
