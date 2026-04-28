@@ -259,6 +259,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 bead._metricTool.astigmatism(bead._fitTool.getMu(), bead._fitTool.getSigma())
                 bead._fitTool.computeContrast()
                 bead._metricTool.ellipsRatio()
+                bead._metricTool.meshMetrics()
         self.imageAnalyzer._meanComaticity = np.mean([bead._metricTool._comaticity for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
@@ -471,18 +472,23 @@ class Microscopy_Metrics_QWidget(QWidget):
         """
         if psf is None:
             psf = self.viewer.layers.selection.active.data
-        psf_normalized = (psf - psf.min()) / (psf.max() - psf.min())
+        from microscopy_metrics.metricTool.meshTool import MeshBuilder
+        for bead in self.imageAnalyzer._beadAnalyzer :
+            if bead._rejected == False and bead._roi is not None:
+                meshBuilder = MeshBuilder()
+                meshBuilder._image = bead._image
+                vertices, faces = meshBuilder.BuildMesh()
+                for v in vertices:
+                    v[1] += bead._roi[0][1]
+                    v[2] += bead._roi[0][2]
 
-        level = Threshold().getInstance("legacy")
-        level = level.getThreshold(psf_normalized)
-        vertices, faces, _, _ = marching_cubes(psf_normalized, level=level)
-        self.viewer.add_surface(
-            (vertices, faces),
-            name=f"PSF Isosurface (level={level})",
-            colormap="viridis",
-            opacity=0.7,
-        )
-        points = self.getContourspoints(psf)
-        self.viewer.add_points(
-            points, name=f"PSF points", face_color="green", size=0.5
-        )
+                self.viewer.add_surface(
+                    (vertices, faces),
+                    name=f"PSF Isosurface",
+                    colormap="viridis",
+                    opacity=0.7,
+                )
+        for i in range(len(self.viewer.layers)):
+            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].scale = self.DetectionTool.pixelSize
+        self.viewer.reset_view()
