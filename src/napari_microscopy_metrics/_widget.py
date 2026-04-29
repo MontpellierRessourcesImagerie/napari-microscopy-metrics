@@ -259,7 +259,6 @@ class Microscopy_Metrics_QWidget(QWidget):
                 bead._metricTool.astigmatism(bead._fitTool.getMu(), bead._fitTool.getSigma())
                 bead._fitTool.computeContrast()
                 bead._metricTool.ellipsRatio()
-                bead._metricTool.meshMetrics()
         self.imageAnalyzer._meanComaticity = np.mean([bead._metricTool._comaticity for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
@@ -462,7 +461,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             for contour in contours:
                 for point in contour:
                     points.append([i, point[0], point[1]])
-        return np.array(points)
+        return np.array(points)        
 
     def generateMesh(self, psf=None):
         """Function to generate a 3D mesh corresponding to the contours of the PSF and display it in the napari viewer
@@ -473,7 +472,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         if psf is None:
             psf = self.viewer.layers.selection.active.data
         from microscopy_metrics.metricTool.meshTool import MeshBuilder
-        for bead in self.imageAnalyzer._beadAnalyzer :
+        for bead in self.imageAnalyzer._beadAnalyzer:
             if bead._rejected == False and bead._roi is not None:
                 meshBuilder = MeshBuilder()
                 meshBuilder._image = bead._image
