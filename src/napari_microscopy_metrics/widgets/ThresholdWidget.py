@@ -23,15 +23,15 @@ class ThresholdWidget(BaseWidget):
     """A widget allowing user to choose the Threshold he wants to apply to the image for analysis."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        self.paramsStack = None
         super().__init__(viewer)
         self.layer = None
         self.oldContrastLimits = []
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer, self.options)
-        self.toolChoiceWidget = self.widget.widgets["Threshold"]
-        self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
+        self.widget = OptionsWidget(self.viewer, self.options, client=self)
+        self.toolChoiceWidget = self.widget.widgets["Threshold"][1]
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.paramsStack = QStackedWidget()
@@ -68,9 +68,8 @@ class ThresholdWidget(BaseWidget):
         self.selectedAction(self.toolChoiceWidget.currentText())
         self.thresholdRel.valueChanged.connect(self.updateThreshold)
 
-    @classmethod
-    def getOptions(cls):
-        """A class method which create entries for threshold informations and load previous analysis informations if exists.
+    def getOptions(self):
+        """A method which create entries for threshold informations and load previous analysis informations if exists.
 
         Returns:
             Options: The object that contains every widget informations.
@@ -82,6 +81,7 @@ class ThresholdWidget(BaseWidget):
             name="Threshold",
             value="otsu",
             choices=[x for x in Threshold._thresholdClasses],
+            callback=self.selectedAction,
         )
         options.load()
         return options
@@ -103,10 +103,11 @@ class ThresholdWidget(BaseWidget):
         Args:
             value (string): label of the selection.
         """
-        if value == "manual":
-            self.paramsStack.setCurrentIndex(0)
-        else:
-            self.paramsStack.setCurrentIndex(1)
+        if self.paramsStack is not None:
+            if value == "manual":
+                self.paramsStack.setCurrentIndex(0)
+            else:
+                self.paramsStack.setCurrentIndex(1)
 
     def apply(self):
         """Called on validation to save optionSliders with current sliders value and update the view with thresholded image."""

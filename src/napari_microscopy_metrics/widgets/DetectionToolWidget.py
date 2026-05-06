@@ -22,13 +22,13 @@ class DetectionToolWidget(BaseWidget):
     """A widget allowing user to choose the detection tool he wants to use with related parameters."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        self.paramsStack = None
         super().__init__(viewer)
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer, self.options)
-        self.toolChoiceWidget = self.widget.widgets["Detection tool"]
-        self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
+        self.widget = OptionsWidget(self.viewer, self.options, client=self)
+        self.toolChoiceWidget = self.widget.widgets["Detection tool"][1]
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.paramsStack = QStackedWidget()
@@ -86,8 +86,7 @@ class DetectionToolWidget(BaseWidget):
         self.minDistanceDetection.valueChanged.connect(self.updateMinDistance)
         self.blobSigmaSlider.valueChanged.connect(self.updateSigma)
 
-    @classmethod
-    def getOptions(cls):
+    def getOptions(self):
         """A class method which create entries for detection tool informations and load previous analysis informations if exists.
 
         Returns:
@@ -100,6 +99,7 @@ class DetectionToolWidget(BaseWidget):
             name="Detection tool",
             value="Centroids",
             choices=[x for x in DetectionTool._detectionClasses],
+            callback=self.selectedAction,
         )
         options.load()
         return options
@@ -122,10 +122,14 @@ class DetectionToolWidget(BaseWidget):
         Args:
             value (int): Index of the selection.
         """
-        index = self.toolChoiceWidget.currentIndex()
-        if index >= 2:
-            index = index - 1
-        self.paramsStack.setCurrentIndex(index)
+        if value == "peak local maxima":
+            index = 0
+        elif value == "Laplacian of Gaussian" or value == "Difference of Gaussian":
+            index = 1
+        elif value == "Centroids":
+            index = 2
+        if self.paramsStack is not None:
+            self.paramsStack.setCurrentIndex(index)
 
     def apply(self):
         """Called on click button to save option sliders with actual sliders values."""

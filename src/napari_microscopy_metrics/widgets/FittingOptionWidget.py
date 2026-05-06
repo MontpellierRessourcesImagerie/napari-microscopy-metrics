@@ -25,15 +25,15 @@ class FittingOptionWidget(BaseWidget):
     """A widget allowing user to setup fitting options for PSF detection and save them for next session."""
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent):
+        self.paramsStack = None
         self.viewer = viewer
         self.parent = parent
         super().__init__(viewer)
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer, self.options)
-        self.toolChoiceWidget = self.widget.widgets["Fit type"]
-        self.toolChoiceWidget.currentTextChanged.connect(self.selectedAction)
+        self.widget = OptionsWidget(self.viewer, self.options, client=self)
+        self.toolChoiceWidget = self.widget.widgets["Fit type"][1]
         self.prominenceRelWidget = QWidget()
         self.prominenceRelLayout = QVBoxLayout()
         self.prominenceRelLayout.setContentsMargins(0, 0, 0, 0)
@@ -83,11 +83,12 @@ class FittingOptionWidget(BaseWidget):
         Args:
             value (str): Value of the fitting tool choice
         """
-        if value == "Prominence":
-            self.paramsStack.setCurrentIndex(0)
-            self.displayFWHM(self.prominenceRel.value())
-        else:
-            self.paramsStack.setCurrentIndex(1)
+        if self.paramsStack is not None:
+            if value == "Prominence" :
+                self.paramsStack.setCurrentIndex(0)
+                self.displayFWHM(self.prominenceRel.value())
+            else:
+                self.paramsStack.setCurrentIndex(1)
 
     def displayFWHM(self, value):
         """A method to display mean FWHM of detected PSF with prominence fitting tool and update it when changing prominence slider value.
@@ -149,8 +150,7 @@ class FittingOptionWidget(BaseWidget):
 
         self.parent.printFWHM(meanFWHM)
 
-    @classmethod
-    def getOptions(cls):
+    def getOptions(self):
         """A class method which create entries for fitting options and load previous analysis informations if exists.
         Returns:
             Options: The object that contains every widget informations.
@@ -160,6 +160,7 @@ class FittingOptionWidget(BaseWidget):
             name="Fit type",
             choices=[x for x in FittingTool._fittingClasses.keys()],
             value="1D",
+            callback=self.selectedAction,
         )
         options.addFloat(name="Threshold R2", value=0.95)
         options.load()

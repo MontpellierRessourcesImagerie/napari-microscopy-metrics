@@ -93,8 +93,6 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.genButton = QPushButton("Generate random PSF")
         self.genButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        self.meshButton = QPushButton("Generate 3D mesh")
-        self.meshButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
@@ -102,11 +100,9 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.layout().addWidget(self.genButton)
         self.layout().addWidget(self.runButton)
         self.layout().addWidget(self.docButton)
-        self.layout().addWidget(self.meshButton)
         self.runButton.pressed.connect(self.startProcessing)
         self.docButton.pressed.connect(self.openDocumentation)
         self.genButton.pressed.connect(self.generateRandomPSF)
-        self.meshButton.pressed.connect(self.generateMesh)
         self.viewer.mouse_double_click_callbacks.append(
             self.onMouseDoubleClick
         )
@@ -216,6 +212,10 @@ class Microscopy_Metrics_QWidget(QWidget):
         """Function to update result collection after prefitting metrics calculation and start fitting process"""
         self.metricsToolPage.printResults(self.imageAnalyzer._meanSBR)
         self.meanSBR = self.imageAnalyzer._meanSBR
+        for bead in self.imageAnalyzer._beadAnalyzer:
+            if bead._rejected == False and bead._roi is not None:
+                bead._metricTool.meshBuilder.saveMesh(os.path.join(self.getActivePath(bead._id), f"bead_{bead._id}_mesh.obj"))
+        self.generateMesh()
         self.applyFitting()
 
     def applyFitting(self):
@@ -443,50 +443,42 @@ class Microscopy_Metrics_QWidget(QWidget):
         psf = psf.reshape((PSF_SIZE, PSF_SIZE, PSF_SIZE))
         self.viewer.add_image(psf, name=f"Random PSF (seed: {seed})")
 
-    def getContourspoints(self, psf):
-        """A method to get the points corresponding to the contours of the PSF for each slice in Z.
-
-        Args:
-            psf (np.ndarray): The PSF for which to get contour points.
-
-        Returns:
-            np.ndarray: An array of points corresponding to the contours of the PSF for each slice in Z.
-        """
-        points = []
-        for i in range(psf.shape[0]):
-            slice_2d = psf[i]
-            level = Threshold().getInstance("otsu")
-            level = level.getThreshold(psf)
-            contours = find_contours(slice_2d, level=level)
-            for contour in contours:
-                for point in contour:
-                    points.append([i, point[0], point[1]])
-        return np.array(points)        
-
-    def generateMesh(self, psf=None):
+    def generateMesh(self):
         """Function to generate a 3D mesh corresponding to the contours of the PSF and display it in the napari viewer
 
         Args:
             psf (np.ndarray, optional): The PSF for which to generate a mesh. Defaults to None.
         """
-        if psf is None:
-            psf = self.viewer.layers.selection.active.data
-        from microscopy_metrics.metricTool.meshTool import MeshBuilder
+        all_vertices = []
+        all_faces = []
+        all_values = []
+        vertex_offset = 0
         for bead in self.imageAnalyzer._beadAnalyzer:
             if bead._rejected == False and bead._roi is not None:
-                meshBuilder = MeshBuilder()
-                meshBuilder._image = bead._image
-                vertices, faces = meshBuilder.BuildMesh()
-                for v in vertices:
-                    v[1] += bead._roi[0][1]
-                    v[2] += bead._roi[0][2]
-
-                self.viewer.add_surface(
-                    (vertices, faces),
-                    name=f"PSF Isosurface",
-                    colormap="viridis",
-                    opacity=0.7,
-                )
+                vertices = np.array(bead._metricTool.meshBuilder._vertices) 
+                faces = np.array(bead._metricTool.meshBuilder._faces)
+                vertices[:, 1] += bead._roi[0][1]
+                vertices[:, 2] += bead._roi[0][2]
+                offset_faces = faces + vertex_offset
+                all_vertices.append(vertices)
+                all_faces.append(offset_faces)
+                for i in range(len(vertices)):
+                    all_values.append(bead._metricTool.meshBuilder._curvature[i])
+                vertex_offset += len(vertices)
+        
+        if all_vertices:
+            vertices = np.concatenate(all_vertices, axis=0)
+            faces = np.concatenate(all_faces, axis=0)
+            values = np.array(all_values)
+            maxVal = 5.0
+            c_min, cmax = -maxVal, maxVal
+            self.viewer.add_surface(
+                (vertices, faces, values),
+                name=f"PSF_Isosurfaces.obj",
+                colormap="coolwarm",
+                opacity=0.7,
+                contrast_limits=(c_min, cmax),
+            )
         for i in range(len(self.viewer.layers)):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
