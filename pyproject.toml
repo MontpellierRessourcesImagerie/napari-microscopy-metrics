@@ -37,6 +37,7 @@ dependencies = [
     "scikit-image",
     "reportlab",
     "auto-options-python",
+    "napari-stl-exporter",
 ]
 
 [project.optional-dependencies]

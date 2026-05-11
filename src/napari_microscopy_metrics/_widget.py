@@ -3,7 +3,6 @@ import napari
 import webbrowser
 import numpy as np
 
-from skimage.measure import marching_cubes, find_contours
 from napari.qt.threading import create_worker
 from qtpy.QtWidgets import (
     QWidget,
@@ -259,6 +258,9 @@ class Microscopy_Metrics_QWidget(QWidget):
                 bead._metricTool.astigmatism(bead._fitTool.getMu(), bead._fitTool.getSigma())
                 bead._fitTool.computeContrast()
                 bead._metricTool.ellipsRatio()
+                bead._metricTool.skeletonizePath()
+        self.generatePaths()
+        self.generateCentroidsPath()
         self.imageAnalyzer._meanComaticity = np.mean([bead._metricTool._comaticity for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
         self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
@@ -483,3 +485,59 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.viewer.layers[i].units = "µm"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
+
+    def generatePaths(self):
+        """Function to generate the paths of the folders corresponding to each bead analyzed and create these folders if they don't exist yet"""
+        import pandas as pd
+        all_paths = []
+        all_tables = []
+        for bead in self.imageAnalyzer._beadAnalyzer:
+            if bead._rejected == False and bead._roi is not None:
+                skeleton = bead._metricTool._pathSkeleton
+                if skeleton is not None and not skeleton.n_paths == 0:
+                    offset = np.array([0.0, bead._roi[0][1], bead._roi[0][2]])
+                    shifted_paths = [skeleton.path_coordinates(i) + offset for i in range(skeleton.n_paths)]
+                    all_paths.extend(shifted_paths)
+                    paths_table = bead._metricTool._summary
+                    paths_table['path_id'] = np.arange(skeleton.n_paths)
+                    paths_table['random_path_id'] = np.random.default_rng().permutation(skeleton.n_paths)
+                    all_tables.append(paths_table)
+        if not all_paths:
+            return
+        combinedTables = pd.concat(all_tables, ignore_index=True)
+        self.viewer.add_shapes(
+            all_paths,
+            shape_type="path",
+            properties = combinedTables,
+            edge_color='random_path_id',
+            edge_colormap='tab10',
+            name="PSF skeleton paths",
+        )
+        for i in range(len(self.viewer.layers)):
+            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].scale = self.DetectionTool.pixelSize
+        self.viewer.reset_view()
+
+    def generateCentroidsPath(self):
+        """Function to generate the path of the folder corresponding to the centroids of the beads analyzed and create this folder if it doesn't exist yet"""
+        centroids = []
+        for bead in self.imageAnalyzer._beadAnalyzer:
+            if bead._rejected == False and bead._roi is not None:
+                beadPath = []
+                for z,centroid in enumerate(bead._metricTool._centroids):
+                    beadPath.append([centroid[0], bead._roi[0][1] + centroid[1], bead._roi[0][2] + centroid[2]])
+                if beadPath:
+                    centroids.append(np.array(beadPath))
+        if not centroids:
+            return
+        self.viewer.add_shapes(
+            centroids,
+            shape_type="path",
+            edge_color='red',
+            name="Centroids paths",
+        )
+        for i in range(len(self.viewer.layers)):
+            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].scale = self.DetectionTool.pixelSize
+        self.viewer.reset_view()
+                
