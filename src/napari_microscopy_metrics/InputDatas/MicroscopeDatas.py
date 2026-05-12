@@ -13,11 +13,13 @@ class MicroscopeDatas(Datas):
         numericalAperture=1.0,
         emissionWavelength=450,
         refractiveIndex=1.45,
+        excitationWavelength=225
     ):
         self._microscopeType = microscopeType
         self._numericalAperture = numericalAperture
         self._emissionWavelength = emissionWavelength
         self._refractiveIndex = refractiveIndex
+        self._excitationWavelength = excitationWavelength
 
     def sendDatas(self, target):
         """Send the microscope data to the target object. The target object is expected to have a _TheoreticalResolutionTool attribute that can be set with the provided microscope type, numerical aperture, emission wavelength, and refractive index values.
@@ -47,6 +49,8 @@ class MicroscopeDatas(Datas):
             target._TheoreticalResolutionTool._refractiveIndex = (
                 self._refractiveIndex
             )
+        if hasattr(target._TheoreticalResolutionTool, "_excitationWavelength"):
+            target._TheoreticalResolutionTool._excitationWavelength = self._excitationWavelength
 
     def toDict(self):
         """Convert the microscope data to a dictionary format for easier handling and storage.
@@ -58,4 +62,5 @@ class MicroscopeDatas(Datas):
             "numericalAperture": self._numericalAperture,
             "emissionWavelength": self._emissionWavelength,
             "refractiveIndex": self._refractiveIndex,
+            "excitationWavelength": self._excitationWavelength
         }

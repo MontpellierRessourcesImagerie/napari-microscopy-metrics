@@ -57,6 +57,7 @@ class MicroscopeParametersWidget(BaseWidget):
             value="widefield",
         )
         options.addInt(name="Emission wavelength", value=450)
+        options.addInt(name="Excitation wavelength", value=225)
         options.addFloat(name="Refraction index", value=1.45)
         options.addFloat(name="Numerical aperture", value=1.0)
         options.load()
