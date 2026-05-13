@@ -8,11 +8,11 @@
     "generated/napari_microscopy_metrics._widget": 0.007,
     "how_to": 0.003,
     "index": 0.003,
-    "metrics": 0.004,
+    "metrics": 0.153,
     "results": 0.003,
     "usage": 0.008,
-    "widget": 0.117,
+    "widget": 0.11,
     "widget_acquisition": 0.046,
-    "widget_detection": 0.126,
-    "widget_metrics": 0.159
+    "widget_detection": 0.123,
+    "widget_metrics": 0.041
 }
