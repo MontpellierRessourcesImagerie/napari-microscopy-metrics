@@ -1,4 +1,5 @@
 import os
+import random
 import napari
 import webbrowser
 import numpy as np
@@ -18,10 +19,7 @@ from microscopy_metrics.metrics import Metrics
 from microscopy_metrics.detection import Detection
 from microscopy_metrics.report_generator import ReportGenerator
 from microscopy_metrics.thresholdTools.threshold_tool import Threshold
-from microscopy_metrics.scripts.evaluate_fitting import (
-    generateRandomBornoWolfPSF,
-    PSF_SIZE,
-)
+from microscopy_metrics.scripts.PSFGenerator.PSF import PSFGenerator,PSFWithComaticAberration,PSFWithAstigmatismAberration,PSFWithSphericalAberration
 
 from napari_microscopy_metrics._metrics_widget import Metricstoolpage
 from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
@@ -440,10 +438,25 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def generateRandomPSF(self):
         """Function to generate a random PSF and display it in the napari viewer"""
-        seed = np.random.randint(0, 1000000)
-        psf, _, _ = generateRandomBornoWolfPSF(seed=seed)
-        psf = psf.reshape((PSF_SIZE, PSF_SIZE, PSF_SIZE))
-        self.viewer.add_image(psf, name=f"Random PSF (seed: {seed})")
+        size = 100
+        dxy = self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size X")
+        dz = self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Z")
+        ni0 = self.acquisitionToolPage.microscopeWidget.options.value("Refraction index")
+        wvl = self.acquisitionToolPage.microscopeWidget.options.value("Emission wavelength") / 1000
+        NA = self.acquisitionToolPage.microscopeWidget.options.value("Numerical aperture")
+        aberrationType = random.choice([None,"comatic","astigmatism","spherical"])
+        if aberrationType == "comatic":
+            psf = PSFWithComaticAberration(size, dxy, dz, ni0, ni0, wvl, NA).psf
+        elif aberrationType == "astigmatism":
+            psf = PSFWithAstigmatismAberration(size, dxy, dz, ni0, ni0, wvl, NA).psf
+        elif aberrationType == "spherical":
+            psf = PSFWithSphericalAberration(size, dxy, dz, ni0, wvl, NA).psf
+        else:
+            psf = PSFGenerator(size, dxy, dz, ni0, ni0, wvl, NA).psf
+        psf = psf.reshape((size, size, size))
+        if aberrationType == None : 
+            aberrationType = "no"
+        self.viewer.add_image(psf, name=f"PSF with {aberrationType} aberration")
 
     def generateMesh(self):
         """Function to generate a 3D mesh corresponding to the contours of the PSF and display it in the napari viewer
