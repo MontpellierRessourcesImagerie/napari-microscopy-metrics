@@ -85,6 +85,12 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyGenerateReport">
+<span class="sig-name descname"><span class="pre">applyGenerateReport</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyGenerateReport" title="Link to this definition"></a></dt>
+<dd><p>Function to start a worker for report generation</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics">
 <span class="sig-name descname"><span class="pre">applyPrefittingMetrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics" title="Link to this definition"></a></dt>
 <dd><p>Function to update MetricTool with the image and parameters setup by user in the widget and start a worker for prefitting metrics calculation
@@ -96,6 +102,24 @@
 <span class="sig-name descname"><span class="pre">apply_detect_psf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf" title="Link to this definition"></a></dt>
 <dd><p>Function to update DetectionTool with the image and parameters setup by user in the widget and start a worker for bead detection
 :raises ValueError: Raised when there is a problem with the data of the image selected (missing data, incorrect format, etc.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createDetectionTools">
+<span class="sig-name descname"><span class="pre">createDetectionTools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createDetectionTools" title="Link to this definition"></a></dt>
+<dd><p>Function to create the tools for detection, metrics calculation, fitting and report generation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createFittingTools">
+<span class="sig-name descname"><span class="pre">createFittingTools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createFittingTools" title="Link to this definition"></a></dt>
+<dd><p>Function to create the tools for fitting and report generation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createMetricTools">
+<span class="sig-name descname"><span class="pre">createMetricTools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createMetricTools" title="Link to this definition"></a></dt>
+<dd><p>Function to create the tools for metrics calculation, fitting and report generation</p>
 </dd></dl>
 
 <dl class="py method">
@@ -116,6 +140,11 @@
 <span class="sig-name descname"><span class="pre">generateCentroidsPath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateCentroidsPath" title="Link to this definition"></a></dt>
 <dd><p>Function to generate the path of the folder corresponding to the centroids of the beads analyzed and create this folder if it doesn’t exist yet</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateFigures">
+<span class="sig-name descname"><span class="pre">generateFigures</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateFigures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateMesh">
@@ -163,10 +192,21 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished">
-<span class="sig-name descname"><span class="pre">onFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFinished" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.init_ui">
+<span class="sig-name descname"><span class="pre">init_ui</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.init_ui" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFittingFinished">
+<span class="sig-name descname"><span class="pre">onFittingFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFittingFinished" title="Link to this definition"></a></dt>
 <dd><p>Function to update result collection after fitting process and start report generation
 :raises ValueError: Raised when there is a problem with the data of the beads analyzed or the fitting results (missing data, incorrect format, etc.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMetricsFinished">
+<span class="sig-name descname"><span class="pre">onMetricsFinished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMetricsFinished" title="Link to this definition"></a></dt>
+<dd><p>Function to update result collection after final metrics calculation</p>
 </dd></dl>
 
 <dl class="py method">
@@ -208,6 +248,12 @@
 <span class="sig-name descname"><span class="pre">startProcessing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing" title="Link to this definition"></a></dt>
 <dd><p>Function to start the whole analysis process .
 :raises ValueError: Raised when there is a problem with the selection of the layer to analyze (missing layer, incorrect type, etc.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.stopProcessing">
+<span class="sig-name descname"><span class="pre">stopProcessing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.stopProcessing" title="Link to this definition"></a></dt>
+<dd><p>Function to stop the whole analysis process and reset the plugin interface</p>
 </dd></dl>
 
 <dl class="py method">

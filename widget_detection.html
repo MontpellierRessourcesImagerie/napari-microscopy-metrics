@@ -165,12 +165,6 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.createDatas">
-<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.createDatas" title="Link to this definition"></a></dt>
-<dd><p>A method to create a ROIDatas object with current region of interest parameters values.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.createLayout">
 <span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.createLayout" title="Link to this definition"></a></dt>
 <dd><p>A method used to create the layout with options setup to previous analysis.</p>
@@ -211,6 +205,12 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current region of interest parameters values.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateCropFactor">
 <span class="sig-name descname"><span class="pre">updateCropFactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateCropFactor" title="Link to this definition"></a></dt>
 <dd><p>Updates the label for crop factor and assign the value to optionSliders</p>
@@ -243,12 +243,6 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on validation to save optionSliders with current sliders value and update the view with thresholded image.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createDatas">
-<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createDatas" title="Link to this definition"></a></dt>
-<dd><p>A method to create a ThresholdDatas object with current threshold and parameters values.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -317,6 +311,12 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current threshold and parameters values.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.updateThreshold">
 <span class="sig-name descname"><span class="pre">updateThreshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.updateThreshold" title="Link to this definition"></a></dt>
 <dd><p>Update the label for relative threshold, assign the value in optionSliders and update the view with new thresholded image.</p>
@@ -338,12 +338,6 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 <dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply">
 <span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply" title="Link to this definition"></a></dt>
 <dd><p>Called on click button to save option sliders with actual sliders values.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createDatas">
-<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createDatas" title="Link to this definition"></a></dt>
-<dd><p>A method to create a DetectionToolDatas object with current detection tool and parameters values.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -395,6 +389,12 @@ It is used in DetectionToolTab widget to create a parameters window and send par
 <dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Index of the selection.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current detection tool and parameters values.</p>
 </dd></dl>
 
 <dl class="py method">

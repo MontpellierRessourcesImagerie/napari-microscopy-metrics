@@ -108,12 +108,6 @@ It contains a FittingOptionWidget for setting fitting parameters and a label to 
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></p>
 <p>A widget allowing user to setup fitting options for PSF detection and save them for next session.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createDatas">
-<span class="sig-name descname"><span class="pre">createDatas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createDatas" title="Link to this definition"></a></dt>
-<dd><p>A method to create a FittingDatas object with current fitting options values.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout">
 <span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout" title="Link to this definition"></a></dt>
 <dd><p>A method used to create the layout with options setup to previous analysis.</p>
@@ -155,6 +149,12 @@ It contains a FittingOptionWidget for setting fitting parameters and a label to 
 <dd><p>A method to display prominence slider if prominence is selected as fitting tool and hide it otherwise.
 :param value: Value of the fitting tool choice
 :type value: str</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current fitting options and sliders values.</p>
 </dd></dl>
 
 </dd></dl>
