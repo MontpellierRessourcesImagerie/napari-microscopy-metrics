@@ -16,7 +16,6 @@ from autooptions import Options
 from autooptions import OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.FittingDatas import FittingDatas
 from microscopy_metrics.fittingTools.fittingTool import FittingTool
 from microscopy_metrics.fittingTools import Prominence
 
@@ -182,11 +181,11 @@ class FittingOptionWidget(BaseWidget):
         optionsSliders.addInt(name="prominence", value=50)
         optionsSliders.load()
         return optionsSliders
-
-    def createDatas(self):
-        """A method to create a FittingDatas object with current fitting options values."""
-        return FittingDatas(
-            fitType=self.options.value("Fit type"),
-            thresholdRSquared=self.options.value("Threshold R2"),
-            prominenceRel=self.prominenceRel.value() / 100,
-        )
+    
+    def toDict(self):
+        """A method to create a dict with current fitting options and sliders values."""
+        return {
+            "fitType": self.options.value("Fit type"),
+            "thresholdRSquared": self.options.value("Threshold R2"),
+            "prominenceRel": self.prominenceRel.value() / 100,
+        }

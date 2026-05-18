@@ -20,6 +20,8 @@ from microscopy_metrics.detection import Detection
 from microscopy_metrics.report_generator import ReportGenerator
 from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 from microscopy_metrics.scripts.PSFGenerator.PSF import PSFGenerator,PSFWithComaticAberration,PSFWithAstigmatismAberration,PSFWithSphericalAberration
+from microscopy_metrics.detectionTools.detection_tool import DetectionTool
+from microscopy_metrics.resolutionTools.theoretical_resolution import TheoreticalResolution
 
 from napari_microscopy_metrics._metrics_widget import Metricstoolpage
 from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
@@ -42,8 +44,12 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.roisLayer = None
         self.workingLayer = None
         self.outputDir = None
-        self.meanSBR = 0
         self.selectedShape = 0
+        self.isRunning = False
+        self.worker = None
+        self.init_ui()
+
+    def init_ui(self):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.tab = QTabWidget()
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -104,6 +110,8 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.onMouseDoubleClick
         )
 
+
+
     def startProcessing(self):
         """Function to start the whole analysis process .
         Raises:
@@ -117,30 +125,67 @@ class Microscopy_Metrics_QWidget(QWidget):
             show_error("Please, select a valid layer of type Image")
             return
         self.detectionToolPage.erase_Layers()
-        self.runButton.setEnabled(False)
+        self.runButton.setText("Stop")
+        self.runButton.setStyleSheet("background-color : red")
+        self.runButton.pressed.disconnect(self.startProcessing)
+        self.runButton.pressed.connect(self.stopProcessing)
+        self.isRunning = True
         self.apply_detect_psf()
+
+    def stopProcessing(self):
+        """Function to stop the whole analysis process and reset the plugin interface"""
+        print("Process stopped by user.")
+        self.runButton.setText("Run analysis")
+        self.runButton.setStyleSheet("background-color : green")
+        self.runButton.pressed.disconnect(self.stopProcessing)
+        self.runButton.pressed.connect(self.startProcessing)
+        self.isRunning = False
+        if self.worker is not None:
+            self.worker.quit()
+
+    def createDetectionTools(self):
+        """Function to create the tools for detection, metrics calculation, fitting and report generation"""
+        self.DetectionTool = Detection()
+        self.MetricTool = Metrics()
+        self.FittingTool = Fitting()
+        self.reportGenerator = ReportGenerator()
+        if self.workingLayer is None or not isinstance(
+            self.workingLayer, napari.layers.Image
+        ):
+            raise ValueError("Please, select a valid layer of type Image")
+        image = self.workingLayer.data
+        parameterDetection = self.detectionToolPage.detectionParameters.detectionToolWidget
+        self.DetectionTool._image = image
+        self.DetectionTool._detectionTool = DetectionTool.getInstance(parameterDetection.options.value("Detection tool"))
+        if self.DetectionTool._detectionTool is not None:
+            if hasattr(self.DetectionTool._detectionTool, "_minDistance"):
+                self.DetectionTool._detectionTool._minDistance = parameterDetection.optionsSliders.value("Min dist")
+            if hasattr(self.DetectionTool._detectionTool, "_sigma"):
+                self.DetectionTool._detectionTool._sigma = parameterDetection.optionsSliders.value("Sigma")
+        parameterThreshold = self.detectionToolPage.detectionParameters.widgetThreshold
+        self.DetectionTool._detectionTool._thresholdTool = Threshold.getInstance(parameterThreshold.options.value("Threshold"))
+        if self.DetectionTool._detectionTool._thresholdTool is not None and hasattr(self.DetectionTool._detectionTool._thresholdTool, "_relThreshold"):
+            self.DetectionTool._detectionTool._relThreshold = parameterThreshold.optionsSliders.value("threshold") / 100
+        parameterROI = self.detectionToolPage.detectionParameters.widgetRejection
+        self.DetectionTool._beadSize = parameterROI.options.value("Theoretical bead size (µm)")
+        self.DetectionTool._rejectionDistance = parameterROI.options.value("Z axis rejection margin (µm)")
+        self.DetectionTool._cropFactor = parameterROI.optionsSliders.value("crop factor")
+        self.DetectionTool._thresholdIntensity = parameterROI.optionsSliders.value("threshold intensity") / 100
+        parameterPixelSize = self.acquisitionToolPage.pixelSizeWidget
+        self.DetectionTool._pixelSize = [
+            parameterPixelSize.options.value("Pixel size Z"),
+            parameterPixelSize.options.value("Pixel size Y"),
+            parameterPixelSize.options.value("Pixel size X"),
+        ]
 
     def apply_detect_psf(self):
         """Function to update DetectionTool with the image and parameters setup by user in the widget and start a worker for bead detection
         Raises:
             ValueError: Raised when there is a problem with the data of the image selected (missing data, incorrect format, etc.)
         """
-        image = self.workingLayer.data
-        parametersDetection = (
-            self.detectionToolPage.detectionParameters.detectionToolWidget.createDatas()
-        )
-        parametersDetection.sendDatas(self.DetectionTool)
-        self.DetectionTool._image = image
-        parametersThreshold = (
-            self.detectionToolPage.detectionParameters.widgetThreshold.createDatas()
-        )
-        parametersThreshold.sendDatas(self.DetectionTool._detectionTool)
-        parametersROI = (
-            self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
-        )
-        parametersROI.sendDatas(self.DetectionTool)
-        parametersPixelSize = self.acquisitionToolPage.pixelSizeWidget.createDatas()
-        parametersPixelSize.sendDatas(self.DetectionTool)
+        if not self.isRunning:
+            return
+        self.createDetectionTools()
         self.outputDir = os.path.expanduser("~/")
         if (
             self.workingLayer is not None
@@ -153,23 +198,25 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.outputDir, f"{self.workingLayer.name}_analysis"
             )
         args = [self.outputDir]
-        worker = create_worker(
+        self.worker = create_worker(
             self.DetectionTool.run,
             *args,
             _progress={"desc": "Detecting beads..."},
         )
-        worker.finished.connect(self.detectFinished)
-        worker.errored.connect(self.onReportFinished)
-        worker.yielded.connect(
-            lambda value: worker.pbar.set_description(value["desc"])
+        self.worker.finished.connect(self.detectFinished)
+        self.worker.errored.connect(self.onReportFinished)
+        self.worker.yielded.connect(
+            lambda value: self.worker.pbar.set_description(value["desc"])
         )
-        worker.start()
+        self.worker.start()
 
     def detectFinished(self):
         """Function to update result collection after bead detection and start prefitting metrics calculation
         Raises:
             ValueError: Raised when there is a problem with the data of the beads detected (missing data, incorrect format, etc.)
         """
+        if not self.isRunning:
+            return
         if (
             self.DetectionTool._imageAnalyzer is None
             or len(self.DetectionTool._imageAnalyzer._beadAnalyzer) == 0
@@ -181,102 +228,129 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.displayLayers()
         self.applyPrefittingMetrics()
 
+    def createMetricTools(self):
+        """Function to create the tools for metrics calculation, fitting and report generation"""
+        self.MetricTool = Metrics()
+        self.MetricTool._imageAnalyzer = self.imageAnalyzer
+        parameterROI = self.detectionToolPage.detectionParameters.widgetRejection
+        self.MetricTool._ringInnerDistance = parameterROI.options.value("Inner annulus distance to bead (µm)")
+        self.MetricTool._ringThickness = parameterROI.options.value("Annulus thickness (µm)")
+        parameterMicroscope = self.acquisitionToolPage.microscopeWidget
+        self.MetricTool._TheoreticalResolutionTool = TheoreticalResolution.getInstance(parameterMicroscope.options.value("Microscope type"))
+        self.MetricTool._TheoreticalResolutionTool._numericalAperture = parameterMicroscope.options.value("Numerical aperture")
+        self.MetricTool._TheoreticalResolutionTool._emissionWavelength = parameterMicroscope.options.value("Emission wavelength") / 1000
+        self.MetricTool._TheoreticalResolutionTool._refractiveIndex = parameterMicroscope.options.value("Refraction index")
+        self.MetricTool._TheoreticalResolutionTool._excitationWavelength = parameterMicroscope.options.value("Excitation wavelength") / 1000
+
     def applyPrefittingMetrics(self):
         """Function to update MetricTool with the image and parameters setup by user in the widget and start a worker for prefitting metrics calculation
         Raises:
             ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)
         """
-        self.MetricTool._imageAnalyzer = self.imageAnalyzer
-        parametersPixelSize = self.acquisitionToolPage.pixelSizeWidget.createDatas()
-        parametersPixelSize.sendDatas(self.MetricTool)
-        parametersROI = (
-            self.detectionToolPage.detectionParameters.widgetRejection.createDatas()
-        )
-        parametersROI.sendDatas(self.MetricTool)
-        parametersMicroscope = (
-            self.acquisitionToolPage.microscopeWidget.createDatas()
-        )
-        parametersMicroscope.sendDatas(self.MetricTool)
-        worker = create_worker(
+        if not self.isRunning:
+            return
+        self.createMetricTools()
+        self.worker = create_worker(
             self.MetricTool.runPrefittingMetrics,
             _progress={"desc": "Metrics calculation..."},
         )
-        worker.finished.connect(self.prefittingFinished)
-        worker.errored.connect(self.onReportFinished)
-        worker.start()
+        self.worker.finished.connect(self.prefittingFinished)
+        self.worker.errored.connect(self.onReportFinished)
+        self.worker.start()
 
     def prefittingFinished(self):
         """Function to update result collection after prefitting metrics calculation and start fitting process"""
+        if not self.isRunning:
+            return
         self.metricsToolPage.printResults(self.imageAnalyzer._meanSBR)
-        self.meanSBR = self.imageAnalyzer._meanSBR
         for bead in self.imageAnalyzer._beadAnalyzer:
             if bead._rejected == False and bead._roi is not None:
                 bead._metricTool.meshBuilder.saveMesh(os.path.join(self.getActivePath(bead._id), f"bead_{bead._id}_mesh.obj"))
         self.generateMesh()
         self.applyFitting()
 
+    def createFittingTools(self):
+        """Function to create the tools for fitting and report generation"""
+        self.FittingTool = Fitting()
+        self.FittingTool._imageAnalyzer = self.imageAnalyzer
+        parameterFitting = self.metricsToolPage.widgetFittingChoice
+        self.FittingTool.fitType = parameterFitting.options.value("Fit type")
+        self.FittingTool._prominenceRel = parameterFitting.optionsSliders.value("prominence") / 100
+        self.FittingTool._thresholdRSquared = parameterFitting.options.value("Threshold R2")
+        self.FittingTool._imageAnalyzer = self.imageAnalyzer
+
     def applyFitting(self):
         """Function to update FittingTool with the image and parameters setup by user in the widget and start a worker for fitting process
         Raises:
             ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)
         """
-        self.FittingTool._imageAnalyzer = self.imageAnalyzer
-        self.FittingTool.outputDir = self.outputDir
+        if not self.isRunning:
+            return
+        self.createFittingTools()
 
-        parametersFitting = (
-            self.metricsToolPage.widgetFittingChoice.createDatas()
-        )
-        parametersFitting.sendDatas(self.FittingTool)
-
-        worker = create_worker(
+        self.worker = create_worker(
             self.FittingTool.computeFitting,
             _progress={"desc": "Gaussian fitting..."},
         )
-        worker.finished.connect(self.onFinished)
-        worker.errored.connect(self.onReportFinished)
-        worker.start()
+        self.worker.finished.connect(self.onFittingFinished)
+        self.worker.errored.connect(self.onReportFinished)
+        self.worker.start()
 
-    def onFinished(self):
+    def onFittingFinished(self):
         """Function to update result collection after fitting process and start report generation
         Raises:
             ValueError: Raised when there is a problem with the data of the beads analyzed or the fitting results (missing data, incorrect format, etc.)
         """
+        if not self.isRunning:
+            return
         if (
             self.imageAnalyzer._beadAnalyzer is None
             or len(self.imageAnalyzer._beadAnalyzer) == 0
         ):
             raise ValueError("There are no bead analyzed !")
-        for bead in self.imageAnalyzer._beadAnalyzer:
-            if bead._rejected == False and bead._roi is not None:
-                FWHM = bead._fitTool.fwhms
-                bead._metricTool.lateralAsymmetryRatio(FWHM)
-                bead._metricTool.sphericity()
-                bead._metricTool.comaticity()
-                bead._metricTool.sphericalAberration()
-                bead._metricTool.astigmatism(bead._fitTool.getMu(), bead._fitTool.getSigma())
-                bead._fitTool.computeContrast()
-                bead._metricTool.ellipsRatio()
-                bead._metricTool.skeletonizePath()
+        self.worker = create_worker(
+            self.MetricTool.runMetrics, _progress={"desc": "Final metrics calculation..."}
+        )
+        self.worker.finished.connect(self.onMetricsFinished)
+        self.worker.errored.connect(self.onReportFinished)
+        self.worker.yielded.connect(
+            lambda value: self.worker.pbar.set_description(value["desc"])
+        )
+        self.worker.start()
+
+    def onMetricsFinished(self):
+        """Function to update result collection after final metrics calculation"""
+        if not self.isRunning:
+            return
         self.generatePaths()
         self.generateCentroidsPath()
-        self.imageAnalyzer._meanComaticity = np.mean([bead._metricTool._comaticity for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        self.imageAnalyzer._meanSphericalAberration = np.mean([bead._metricTool._sphericalAberration for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        self.imageAnalyzer._meanAstigmatism = np.mean([bead._metricTool._astigmatism for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        self.imageAnalyzer._meanContrast = np.mean([bead._fitTool.contrast for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        self.imageAnalyzer._meanEllipsRatio = np.mean([bead._metricTool._ellipsRatio for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        self.imageAnalyzer._meanOrientation = np.mean([bead._metricTool._orientation for bead in self.imageAnalyzer._beadAnalyzer if bead._rejected == False])
-        worker = create_worker(
+        self.applyGenerateReport()
+
+    def applyGenerateReport(self):
+        """Function to start a worker for report generation"""
+        if not self.isRunning:
+            return
+        self.worker = create_worker(
             self.generateReport, _progress={"desc": "Generating report..."}
         )
-        worker.finished.connect(self.onReportFinished)
-        worker.errored.connect(self.onReportFinished)
-        worker.yielded.connect(
-            lambda value: worker.pbar.set_description(value["desc"])
+        self.worker.finished.connect(self.onReportFinished)
+        self.worker.errored.connect(self.onReportFinished)
+        self.worker.yielded.connect(
+            lambda value: self.worker.pbar.set_description(value["desc"])
         )
-        worker.start()
+        self.worker.start()
+
+    def generateFigures(self):
+        self.DetectionTool.cropPsf(self.outputDir)
+        self.DetectionTool.GlobalCropPsf(self.outputDir)
+        self.MetricTool.GenerateHeatmap(self.outputDir)
+        self.FittingTool.displayFitting(self.outputDir)
 
     def generateReport(self):
         """Function to generate a PDF report with all the results of the analysis using ReportGenerator"""
+        if not self.isRunning:
+            return
+        self.generateFigures()
         listReports = self.reportToolPage.getListReports()
         for report in listReports:
             yield {"desc": f"Generating {report}..."}
@@ -284,19 +358,19 @@ class Microscopy_Metrics_QWidget(QWidget):
             PDFGenerator._inputDir = self.outputDir
             PDFGenerator._imageAnalyzer = self.imageAnalyzer
             PDFGenerator._detectionDatas = (
-                self.detectionToolPage.detectionParameters.detectionToolWidget.createDatas().toDict()
+                self.detectionToolPage.detectionParameters.detectionToolWidget.toDict()
             )
             PDFGenerator._thresholdDatas = (
-                self.detectionToolPage.detectionParameters.widgetThreshold.createDatas().toDict()
+                self.detectionToolPage.detectionParameters.widgetThreshold.toDict()
             )
             PDFGenerator._roiDatas = (
-                self.detectionToolPage.detectionParameters.widgetRejection.createDatas().toDict()
+                self.detectionToolPage.detectionParameters.widgetRejection.toDict()
             )
             PDFGenerator._fittingDatas = (
-                self.metricsToolPage.widgetFittingChoice.createDatas().toDict()
+                self.metricsToolPage.widgetFittingChoice.toDict()
             )
             PDFGenerator._microscopeDatas = (
-                self.acquisitionToolPage.microscopeWidget.createDatas().toDict()
+                self.acquisitionToolPage.microscopeWidget.toDict()
             )
             PDFGenerator.generateReport(self.outputDir)
 
@@ -305,7 +379,15 @@ class Microscopy_Metrics_QWidget(QWidget):
         show_info(
             "Report generation finished! You can find the report in the same folder as your image with the name <image_name>_analysis_result.pdf"
         )
-        self.runButton.setEnabled(True)
+        self.runButton.setText("Run analysis")
+        self.runButton.setStyleSheet("background-color : green")
+        try:
+            self.runButton.pressed.disconnect(self.stopProcessing)
+        except TypeError:
+            pass
+        self.runButton.pressed.connect(self.startProcessing)
+        self.isRunning = False
+        print(self.imageAnalyzer == self.DetectionTool._imageAnalyzer)
 
     def openBrowser(self):
         """Function to open the HTML report corresponding to the bead selected by user in napari viewer in a web browser"""
@@ -368,6 +450,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 for bead in self.imageAnalyzer._beadAnalyzer
                 if not bead._rejected
             ]
+            print(f"{len(beads)} bead(s) detected and not rejected.")
             if self.centroidsLayer is None:
                 self.centroidsLayer = self.viewer.add_points(
                     [
@@ -434,7 +517,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             scale (list): List of 3 values corresponding to pixel size in Z, Y and X of the image.
         """
         self.detectionToolPage.detectionTool._pixelSize = scale
-        self.metricsToolPage.spacing = scale
+        self.metricsToolPage.spacing = scale        
 
     def generateRandomPSF(self):
         """Function to generate a random PSF and display it in the napari viewer"""

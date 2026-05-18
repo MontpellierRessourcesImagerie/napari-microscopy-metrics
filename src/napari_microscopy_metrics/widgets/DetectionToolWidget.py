@@ -15,7 +15,6 @@ from autooptions import Options, OptionsWidget
 from microscopy_metrics.detectionTools.detection_tool import DetectionTool
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.DetectionDatas import DetectionDatas
 
 
 class DetectionToolWidget(BaseWidget):
@@ -157,11 +156,11 @@ class DetectionToolWidget(BaseWidget):
         """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#detection-parameters"
         webbrowser.open(documentationPath)
-
-    def createDatas(self):
-        """A method to create a DetectionToolDatas object with current detection tool and parameters values."""
-        return DetectionDatas(
-            detectionTool=self.options.value("Detection tool"),
-            minDist=self.optionsSliders.value("Min dist"),
-            sigma=self.optionsSliders.value("Sigma"),
-        )
+    
+    def toDict(self):
+        """A method to create a dict with current detection tool and parameters values."""
+        return {
+            "detectionTool": self.options.value("Detection tool"),
+            "minDist": self.optionsSliders.value("Min dist"),
+            "sigma": self.optionsSliders.value("Sigma"),
+        }

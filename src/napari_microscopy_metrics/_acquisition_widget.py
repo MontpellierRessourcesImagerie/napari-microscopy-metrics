@@ -6,7 +6,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QGroupBox,
     QSizePolicy,
-    QSpacerItem,
 )
 
 from napari_microscopy_metrics.widgets.ImageSizeWidget import ImageSizeWidget

@@ -7,11 +7,7 @@ from autooptions import Options, OptionsWidget
 from microscopy_metrics.resolutionTools.theoretical_resolution import (
     TheoreticalResolution,
 )
-
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.MicroscopeDatas import (
-    MicroscopeDatas,
-)
 
 
 class MicroscopeParametersWidget(BaseWidget):
@@ -67,12 +63,13 @@ class MicroscopeParametersWidget(BaseWidget):
         """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/acquisition.html#microscope-acquisition-parameters"
         webbrowser.open(documentationPath)
-
-    def createDatas(self):
-        """A method to create a MicroscopeDatas object with current microscope parameters values."""
-        return MicroscopeDatas(
-            microscopeType=self.options.value("Microscope type"),
-            emissionWavelength=self.options.value("Emission wavelength"),
-            refractiveIndex=self.options.value("Refraction index"),
-            numericalAperture=self.options.value("Numerical aperture"),
-        )
+    
+    def toDict(self):
+        """A method to create a dict with current microscope parameters values."""
+        return {
+            "microscopeType": self.options.value("Microscope type"),
+            "emissionWavelength": self.options.value("Emission wavelength"),
+            "refractiveIndex": self.options.value("Refraction index"),
+            "numericalAperture": self.options.value("Numerical aperture"),
+            "excitationWavelength": self.options.value("Excitation wavelength"),
+        }

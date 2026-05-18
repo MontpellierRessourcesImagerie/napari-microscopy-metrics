@@ -16,7 +16,6 @@ from autooptions import Options, OptionsWidget
 from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.ThresholdDatas import ThresholdDatas
 
 
 class ThresholdWidget(BaseWidget):
@@ -169,10 +168,10 @@ class ThresholdWidget(BaseWidget):
         """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#threshold-parameters"
         webbrowser.open(documentationPath)
-
-    def createDatas(self):
-        """A method to create a ThresholdDatas object with current threshold and parameters values."""
-        return ThresholdDatas(
-            thresholdTool=self.options.value("Threshold"),
-            thresholdRel=self.optionsSliders.value("threshold") / 100,
-        )
+    
+    def toDict(self):
+        """A method to create a dict with current threshold and parameters values."""
+        return {
+            "thresholdTool": self.options.value("Threshold"),
+            "thresholdRel": self.optionsSliders.value("threshold") / 100,
+        }

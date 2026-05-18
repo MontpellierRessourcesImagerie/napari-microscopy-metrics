@@ -7,8 +7,6 @@ from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton, QSlider, QLabe
 from autooptions import Options, OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.ROIDatas import ROIDatas
-
 
 class RoiWidget(BaseWidget):
     """A widget allowing user to setup region of interest parameters."""
@@ -115,19 +113,19 @@ class RoiWidget(BaseWidget):
         """A method to open the documentation webPage relative to this widget"""
         documentationPath = "https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/detection.html#region-of-interest-parameters"
         webbrowser.open(documentationPath)
-
-    def createDatas(self):
-        """A method to create a ROIDatas object with current region of interest parameters values."""
-        return ROIDatas(
-            beadSize=self.options.value("Theoretical bead size (µm)"),
-            rejectionDistance=self.options.value(
+    
+    def toDict(self):
+        """A method to create a dict with current region of interest parameters values."""
+        return {
+            "beadSize": self.options.value("Theoretical bead size (µm)"),
+            "rejectionDistance": self.options.value(
                 "Z axis rejection margin (µm)"
             ),
-            ringInnerDistance=self.options.value(
+            "ringInnerDistance": self.options.value(
                 "Inner annulus distance to bead (µm)"
             ),
-            ringThickness=self.options.value("Annulus thickness (µm)"),
-            cropFactor=self.optionsSliders.value("crop factor"),
-            thresholdIntensity=self.optionsSliders.value("threshold intensity")
+            "ringThickness": self.options.value("Annulus thickness (µm)"),
+            "cropFactor": self.optionsSliders.value("crop factor"),
+            "thresholdIntensity": self.optionsSliders.value("threshold intensity")
             / 100,
-        )
+        }

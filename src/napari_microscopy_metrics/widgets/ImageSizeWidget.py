@@ -6,7 +6,6 @@ from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton
 from autooptions import Options, OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
-from napari_microscopy_metrics.InputDatas.SizeDatas import SizeDatas
 
 
 class UpdateScaleSignal(QObject):
@@ -78,12 +77,4 @@ class ImageSizeWidget(BaseWidget):
                 self.options.value("Pixel size Y"),
                 self.options.value("Pixel size X"),
             ]
-        )
-
-    def createDatas(self):
-        """A method to create a SizeDatas object with current scale values."""
-        return SizeDatas(
-            sizeX=self.options.value("Pixel size X"),
-            sizeY=self.options.value("Pixel size Y"),
-            sizeZ=self.options.value("Pixel size Z"),
         )
