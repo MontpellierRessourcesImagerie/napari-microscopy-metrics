@@ -145,6 +145,8 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def createDetectionTools(self):
         """Function to create the tools for detection, metrics calculation, fitting and report generation"""
+        self.workingLayer = self.viewer.layers.selection.active
+        self.imageAnalyzer = None
         self.DetectionTool = Detection()
         self.MetricTool = Metrics()
         self.FittingTool = Fitting()
@@ -153,7 +155,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.workingLayer, napari.layers.Image
         ):
             raise ValueError("Please, select a valid layer of type Image")
-        image = self.workingLayer.data
+        image = np.copy(self.workingLayer.data)
         parameterDetection = self.detectionToolPage.detectionParameters.detectionToolWidget
         self.DetectionTool._image = image
         self.DetectionTool._detectionTool = DetectionTool.getInstance(parameterDetection.options.value("Detection tool"))
