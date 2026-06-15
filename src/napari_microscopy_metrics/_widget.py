@@ -28,7 +28,6 @@ from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
 from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
 from napari_microscopy_metrics._report_widget import ReportToolPage
 
-
 class Microscopy_Metrics_QWidget(QWidget):
     """A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports."""
 
@@ -266,7 +265,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             return
         self.metricsToolPage.printResults(self.imageAnalyzer._meanSBR)
         for bead in self.imageAnalyzer._beadAnalyzer:
-            if bead._rejected == False and bead._roi is not None:
+            if bead._rejected == False and bead._roi is not None and bead._metricTool.meshBuilder is not None:
                 bead._metricTool.meshBuilder.saveMesh(os.path.join(self.getActivePath(bead._id), f"bead_{bead._id}_mesh.obj"))
         self.generateMesh()
         self.applyFitting()
@@ -554,7 +553,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         all_values = []
         vertex_offset = 0
         for bead in self.imageAnalyzer._beadAnalyzer:
-            if bead._rejected == False and bead._roi is not None:
+            if bead._rejected == False and bead._roi is not None and bead._metricTool.meshBuilder is not None:
                 vertices = np.array(bead._metricTool.meshBuilder._vertices) 
                 faces = np.array(bead._metricTool.meshBuilder._faces)
                 vertices[:, 1] += bead._roi[0][1]
