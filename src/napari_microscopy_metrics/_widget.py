@@ -1,4 +1,5 @@
 import os
+import shutil
 import random
 import napari
 import webbrowser
@@ -198,6 +199,9 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.outputDir = os.path.join(
                 self.outputDir, f"{self.workingLayer.name}_analysis"
             )
+            if os.path.exists(self.outputDir):
+                shutil.rmtree(self.outputDir)
+            os.makedirs(self.outputDir)
         args = [self.outputDir]
         self.worker = create_worker(
             self.DetectionTool.run,
