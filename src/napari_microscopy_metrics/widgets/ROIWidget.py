@@ -7,16 +7,19 @@ from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton, QSlider, QLabe
 from autooptions import Options, OptionsWidget
 
 from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
+from microscopy_metrics.utils import umToPx
 
 class RoiWidget(BaseWidget):
     """A widget allowing user to setup region of interest parameters."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__(viewer)
+        self.cropFactorPreview = None
+        self.pixelSize = [1, 1, 1]
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer, self.options)
+        self.widget = OptionsWidget(self.viewer, self.options, client=self)
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.cropFactor = QSlider(Qt.Horizontal)
@@ -90,13 +93,30 @@ class RoiWidget(BaseWidget):
         self.optionsSliders.save()
 
     def updateCropFactor(self, value):
-        """Updates the label for crop factor and assign the value to optionSliders
-
-        Args:
-            value (int): Value of the crop factor.
-        """
         self.cropFactorLabel.setText("Crop factor: " + str(value))
         self.optionsSliders.items["crop factor"]["value"] = value
+
+        bead_size = self.options.value("Theoretical bead size (µm)")
+        pixel_size_xy = self.pixelSize[2]
+        roi_size = umToPx(float(value) * float(bead_size), pixel_size_xy)
+
+        if self.cropFactorPreview is None:
+            self.cropFactorPreview = self.viewer.add_shapes(
+                [],
+                shape_type="rectangle",
+                edge_color="red",
+                face_color="transparent",
+                name="Crop factor preview",
+            )
+
+        self.cropFactorPreview.data = [
+            [
+                [0, 0, 0],
+                [0, 0, roi_size],
+                [0, roi_size, roi_size],
+                [0, roi_size, 0],
+            ]
+        ]
 
     def updateThresholdIntensity(self, value):
         """Updates the label for threshold mean intensity and assign the value to optionSliders

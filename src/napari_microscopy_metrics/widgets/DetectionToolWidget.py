@@ -117,7 +117,6 @@ class DetectionToolWidget(BaseWidget):
 
     def selectedAction(self, value):
         """Update the display for selected tool.
-
         Args:
             value (int): Index of the selection.
         """

@@ -456,12 +456,11 @@ class Microscopy_Metrics_QWidget(QWidget):
                 if not bead._rejected
             ]
             print(f"{len(beads)} bead(s) detected and not rejected.")
-            if self.centroidsLayer is None:
+            if self.centroidsLayer is None or self.centroidsLayer not in self.viewer.layers:
                 self.centroidsLayer = self.viewer.add_points(
                     [
                         bead._centroid
                         for bead in self.imageAnalyzer._beadAnalyzer
-                        if not bead._rejected
                     ],
                     name="PSF detected",
                     face_color="red",
@@ -472,7 +471,6 @@ class Microscopy_Metrics_QWidget(QWidget):
                 self.centroidsLayer.data = [
                     bead._centroid
                     for bead in self.imageAnalyzer._beadAnalyzer
-                    if not bead._rejected
                 ]
             self.detectionToolPage.resultsLabel.setText(
                 f"Here are the results of the detection:\n- {len(self.imageAnalyzer._beadAnalyzer)} bead(s) detected\n- {len([bead for bead in self.imageAnalyzer._beadAnalyzer if not bead._rejected])} ROI(s) extracted"
@@ -488,7 +486,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 "size": 8,
                 "color": "green",
             }
-            if self.roisLayer is None:
+            if self.roisLayer is None or self.roisLayer not in self.viewer.layers:
                 self.roisLayer = self.viewer.add_shapes(
                     [bead._roi for bead in beads],
                     features=features,

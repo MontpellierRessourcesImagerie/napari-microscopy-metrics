@@ -16,6 +16,8 @@ from qtpy.QtWidgets import (
 )
 
 from microscopy_metrics.detection import Detection
+from microscopy_metrics.detectionTools.detection_tool import DetectionTool
+from microscopy_metrics.thresholdTools.threshold_tool import Threshold
 
 from napari_microscopy_metrics.widgets.DetectionToolWidget import (
     DetectionToolWidget,
@@ -142,6 +144,7 @@ class DetectionToolTab(QWidget):
             parametersLayout.addWidget(self.detectionParameters)
             self.parametersWindow.setLayout(parametersLayout)
             self.parametersWindow.show()
+            self.detectionParameters.widgetRejection.pixelSize = self.detectionTool._pixelSize
             self.countWindows += 1
 
     def onParametersWindowClosed(self, result):
@@ -159,6 +162,11 @@ class DetectionToolTab(QWidget):
             self.detectionParameters.widgetThreshold.layer.blending = (
                 "additive"
             )
+        if self.detectionParameters.widgetRejection.cropFactorPreview is not None:
+            self.viewer.layers.remove(
+                self.detectionParameters.widgetRejection.cropFactorPreview
+            )
+            self.detectionParameters.widgetRejection.cropFactorPreview = None
 
     def erase_Layers(self):
         """A method to delete all layers created by this widget"""
@@ -185,16 +193,17 @@ class DetectionToolTab(QWidget):
     def apply(self):
         """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview."""
         self.detectionTool.image = self.viewer.layers.selection.active.data
-        parametersDetection = (
-            self.detectionParameters.detectionToolWidget.createDatas()
-        )
-        parametersDetection.sendDatas(self.detectionTool)
-        parametersThreshold = (
-            self.detectionParameters.widgetThreshold.createDatas()
-        )
-        parametersThreshold.sendDatas(self.detectionTool._detectionTool)
-        parametersROI = self.detectionParameters.widgetRejection.createDatas()
-        parametersROI.sendDatas(self.detectionTool)
+        self.detectionTool._detectionTool = DetectionTool.getInstance(self.detectionParameters.detectionToolWidget.options.value("Detection tool"))
+        if hasattr(self.detectionTool._detectionTool, "_minDistance"):
+            self.detectionTool._detectionTool._minDistance = self.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
+        self.detectionTool._detectionTool._sigma = self.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        self.detectionTool._detectionTool._thresholdTool = Threshold.getInstance(self.detectionParameters.widgetThreshold.options.value("Threshold"))
+        if self.detectionParameters.widgetThreshold.options.value("Threshold") == "manual":
+            self.detectionTool._detectionTool._thresholdTool._relThreshold = self.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
+        self.detectionTool._cropFactor = self.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
+        self.detectionTool._thresholdIntensity = self.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity")
+        self.detectionTool._beadSize = self.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
+        self.detectionTool._rejectionDistance = self.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
         kwargs = {"cropPsf": False}
         worker = create_worker(
             self.detectionTool.run,
@@ -259,8 +268,8 @@ class DetectionToolTab(QWidget):
         else:
             show_warning("No PSF found or incorrect format.")
         self.detectionButton.setEnabled(True)
-        for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
-            self.viewer.layers[i].scale = self.detectionTool._pixelSize
+        for layer in self.viewer.layers:
+            layer.units = "µm"
+            layer.scale = self.detectionTool._pixelSize[-layer.ndim :]
         self.viewer.layers.selection.active = workingLayer
         self.viewer.reset_view()

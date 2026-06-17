@@ -3,7 +3,7 @@ import webbrowser
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QSizePolicy, QVBoxLayout, QPushButton
 from autooptions import Options, OptionsWidget
-
+from napari.utils.notifications import show_warning
 from microscopy_metrics.resolutionTools.theoretical_resolution import (
     TheoreticalResolution,
 )
@@ -15,11 +15,13 @@ class MicroscopeParametersWidget(BaseWidget):
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__(viewer)
+        self.backupNumericalAperture = self.options.value("Numerical aperture")
+        self.backupRefractionIndex = self.options.value("Refraction index")
 
     def createLayout(self):
         """A method used to create the layout with options setup to previous analysis."""
-        self.widget = OptionsWidget(self.viewer, self.options)
-        self.widget.addApplyButton(lambda: None)
+        self.widget = OptionsWidget(self.viewer, self.options, client=self)
+        self.widget.addApplyButton(self.apply)
         self.widget.getApplyButton().setText("Save microscope parameters")
         self.widget.getApplyButton().setToolTip(
             "Apply parameters for analysis and save them for next session"
@@ -58,6 +60,21 @@ class MicroscopeParametersWidget(BaseWidget):
         options.addFloat(name="Numerical aperture", value=1.0)
         options.load()
         return options
+    
+    def apply(self):
+        if self.options.value("Numerical aperture") >= self.options.value("Refraction index"):
+            show_warning("Numerical aperture should be lower than refraction index.")
+            self.options.setValue("Numerical aperture", self.backupNumericalAperture)
+            self.options.setValue("Refraction index", self.backupRefractionIndex)
+            print(self.options.value("Numerical aperture"), self.options.value("Refraction index"))
+            self.options.save()
+            self.options.load()
+            self.widget.widgets["Numerical aperture"][1].setText(str(self.options.value("Numerical aperture")))
+            self.widget.widgets["Refraction index"][1].setText(str(self.options.value("Refraction index")))
+        else:
+            self.backupNumericalAperture = self.options.value("Numerical aperture")
+            self.backupRefractionIndex = self.options.value("Refraction index")
+
 
     def openDocumentation(self):
         """A method to open the documentation webPage relative to this widget"""
