@@ -64,7 +64,7 @@ class ImageSizeWidget(BaseWidget):
     def apply(self):
         """Called on validation, resize layers of the view and emit signal to application for updating detection widget."""
         for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = [
                 self.options.value("Pixel size Z"),
                 self.options.value("Pixel size Y"),

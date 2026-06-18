@@ -98,25 +98,26 @@ class RoiWidget(BaseWidget):
 
         bead_size = self.options.value("Theoretical bead size (µm)")
         pixel_size_xy = self.pixelSize[2]
-        roi_size = umToPx(float(value) * float(bead_size), pixel_size_xy)
+        roi_size = umToPx(float(value) * float(bead_size), pixel_size_xy) / 2.0
 
-        if self.cropFactorPreview is None:
-            self.cropFactorPreview = self.viewer.add_shapes(
-                [],
-                shape_type="rectangle",
-                edge_color="red",
-                face_color="transparent",
-                name="Crop factor preview",
-            )
-
-        self.cropFactorPreview.data = [
-            [
-                [0, 0, 0],
-                [0, 0, roi_size],
-                [0, roi_size, roi_size],
-                [0, roi_size, 0],
+        if self.viewer.layers.selection.active is not None:
+            if self.cropFactorPreview is None :
+                self.cropFactorPreview = self.viewer.add_shapes(
+                    [],
+                    shape_type="rectangle",
+                    edge_color="red",
+                    face_color="transparent",
+                    name="Crop factor preview",
+                )
+            self.cropFactorPreview.data = [
+                [
+                    [0, self.viewer.dims.point[1] - roi_size, self.viewer.dims.point[2] - roi_size],
+                    [0, self.viewer.dims.point[1] - roi_size, self.viewer.dims.point[2] + roi_size],
+                    [0, self.viewer.dims.point[1] + roi_size, self.viewer.dims.point[2] + roi_size],
+                    [0, self.viewer.dims.point[1] + roi_size, self.viewer.dims.point[2] - roi_size],
+                ]
             ]
-        ]
+            self.cropFactorPreview.scale = self.pixelSize
 
     def updateThresholdIntensity(self, value):
         """Updates the label for threshold mean intensity and assign the value to optionSliders

@@ -510,7 +510,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 )
         self.viewer.layers.selection.active = self.workingLayer
         for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
 
@@ -581,7 +581,7 @@ class Microscopy_Metrics_QWidget(QWidget):
                 contrast_limits=(c_min, cmax),
             )
         for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
 
@@ -613,7 +613,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             name="PSF skeleton paths",
         )
         for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
 
@@ -636,7 +636,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             name="Centroids paths",
         )
         for i in range(len(self.viewer.layers)):
-            self.viewer.layers[i].units = "µm"
+            self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
                 

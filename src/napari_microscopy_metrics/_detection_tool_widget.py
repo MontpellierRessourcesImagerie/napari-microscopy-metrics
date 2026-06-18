@@ -4,6 +4,7 @@ from pathlib import Path
 from qtpy.QtGui import QIcon
 from napari.settings import get_settings
 from napari.qt.threading import create_worker
+from napari.layers import Image
 from qtpy.QtCore import QSize
 from napari.utils.notifications import show_warning
 from qtpy.QtWidgets import (
@@ -146,6 +147,13 @@ class DetectionToolTab(QWidget):
             self.parametersWindow.show()
             self.detectionParameters.widgetRejection.pixelSize = self.detectionTool._pixelSize
             self.countWindows += 1
+            if self.viewer.layers.selection.active is not None and isinstance(self.viewer.layers.selection.active, Image):
+                self.detectionParameters.widgetThreshold.thresholdRel.setRange(0, self.viewer.layers.selection.active.data.max())
+                self.detectionParameters.widgetThreshold.thresholdRelLabel.setText(
+                    "Relative threshold: " + str(round(self.detectionParameters.widgetThreshold.thresholdRel.value() / self.viewer.layers.selection.active.data.max(), 4))
+                )
+            self.detectionParameters.widgetRejection.updateCropFactor(self.detectionParameters.widgetRejection.optionsSliders.value("crop factor"))
+
 
     def onParametersWindowClosed(self, result):
         """Called when parameters window is closed to unlock the possibility to open another one and remove threshold preview.
@@ -269,7 +277,7 @@ class DetectionToolTab(QWidget):
             show_warning("No PSF found or incorrect format.")
         self.detectionButton.setEnabled(True)
         for layer in self.viewer.layers:
-            layer.units = "µm"
+            layer.units = "um"
             layer.scale = self.detectionTool._pixelSize[-layer.ndim :]
         self.viewer.layers.selection.active = workingLayer
         self.viewer.reset_view()

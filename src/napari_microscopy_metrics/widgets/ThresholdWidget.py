@@ -2,6 +2,7 @@ import napari
 import webbrowser
 import numpy as np
 
+from napari.layers import Image
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QVBoxLayout,
@@ -42,7 +43,7 @@ class ThresholdWidget(BaseWidget):
         self.thresholdRel.setRange(0, 100)
         self.thresholdRel.setValue(self.optionsSliders.value("threshold"))
         self.thresholdRelLabel = QLabel(
-            "Relative threshold: " + str(self.thresholdRel.value() / 100)
+            "Relative threshold: " + str(round(self.thresholdRel.value() / 100, 4))
         )
         self.thresholdRelLayout.addWidget(self.thresholdRelLabel)
         self.thresholdRelLayout.addWidget(self.thresholdRel)
@@ -120,11 +121,20 @@ class ThresholdWidget(BaseWidget):
         Args:
             value (int): The actual value of the slider.
         """
-        self.thresholdRelLabel.setText(
-            "Relative threshold: " + str(value / 100)
-        )
-        self.optionsSliders.items["threshold"]["value"] = value
-        self.displayThreshold("manual", value=value / 100)
+        if self.viewer.layers.selection.active is not None and isinstance(self.viewer.layers.selection.active, Image):
+            if self.thresholdRel.maximum() != self.viewer.layers.selection.active.data.max():
+                self.thresholdRel.setMaximum(self.viewer.layers.selection.active.data.max())
+            self.thresholdRelLabel.setText(
+                "Relative threshold: " + str(round(value / self.viewer.layers.selection.active.data.max(), 4))
+            )
+            self.optionsSliders.items["threshold"]["value"] = value
+            self.displayThreshold("manual", value=value / self.viewer.layers.selection.active.data.max())
+        else :
+            self.thresholdRelLabel.setText(
+                "Relative threshold: " + str(round(value / self.thresholdRel.maximum(), 4))
+            )
+            self.optionsSliders.items["threshold"]["value"] = value
+            self.displayThreshold("manual", value=value / self.thresholdRel.maximum())
 
     def displayThreshold(self, thresholdStr, value=0.5):
         """A method to change layer properties to display (or not) a render view of the thresholded image with actual properties.
