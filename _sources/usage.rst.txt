@@ -114,6 +114,7 @@ Dependencies
      - Exporting 3D models to STL format.
    * - ``microscopy-metrics``
      - Core microscopy metrics calculations and analysis.
+
 ---
 
 .. _optional_dependencies:
@@ -212,7 +213,7 @@ If you encounter any issues or have questions, feel free to:
 
 ---
 
-.. _license:
+.. _license_page:
 
 License
 -------
