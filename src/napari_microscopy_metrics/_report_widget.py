@@ -10,6 +10,13 @@ from napari_microscopy_metrics.widgets.ReportWidget import ReportWidget
 class ReportToolPage(QWidget):
     """A napari widget form for microscopy metrics parameters and results.
     It contains a FittingOptionWidget for setting fitting parameters and a label to display metrics results.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        count_windows (int): A counter to keep track of the number of windows created.
+        SBR (float): Signal to background ratio of the image.
+        FWHM (list): List of 3 values corresponding to FWHM in Z, Y and X of the image.
+        spacing (list): List of 3 values corresponding to the spacing in Z, Y and X of the image.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):

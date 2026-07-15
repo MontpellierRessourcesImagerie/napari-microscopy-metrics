@@ -18,7 +18,11 @@ from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 
 
 class DetectionToolWidget(BaseWidget):
-    """A widget allowing user to choose the detection tool he wants to use with related parameters."""
+    """A widget allowing user to choose the detection tool he wants to use with related parameters.
+    
+    Attributes:
+        paramsStack (QStackedWidget): A stacked widget to display parameters for the selected detection tool.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         self.paramsStack = None
@@ -86,10 +90,10 @@ class DetectionToolWidget(BaseWidget):
         self.blobSigmaSlider.valueChanged.connect(self.updateSigma)
 
     def getOptions(self):
-        """A class method which create entries for detection tool informations and load previous analysis informations if exists.
+        """A class method which creates entries for detection tool informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options(
             "Detection Parameters", "Set parameters for detection tool"
@@ -104,10 +108,10 @@ class DetectionToolWidget(BaseWidget):
         return options
 
     def getSliders(self):
-        """A method which create entries for detection tool sliders informations and load previous analysis informations if exists.
+        """A method which creates entries for detection tool sliders informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            optionsSliders (Options): The object that contains every widget informations.
         """
         optionsSliders = Options("Sliders value", "Store value of sliders")
         optionsSliders.addInt(name="Min dist", value=1)
@@ -116,7 +120,8 @@ class DetectionToolWidget(BaseWidget):
         return optionsSliders
 
     def selectedAction(self, value):
-        """Update the display for selected tool.
+        """Updates the display for selected tool.
+        
         Args:
             value (int): Index of the selection.
         """
@@ -134,7 +139,7 @@ class DetectionToolWidget(BaseWidget):
         self.optionsSliders.save()
 
     def updateMinDistance(self, value):
-        """Update the label for minimal distance and assign the value in optionSliders
+        """Updates the label for minimal distance and assign the value in optionSliders
 
         Args:
             value (int): Minimal distance value
@@ -143,7 +148,7 @@ class DetectionToolWidget(BaseWidget):
         self.optionsSliders.items["Min dist"]["value"] = value
 
     def updateSigma(self, value):
-        """Update the label for sigma and assign the value in optionSliders
+        """Updates the label for sigma and assign the value in optionSliders
 
         Args:
             value (int): Sigma value
@@ -161,5 +166,5 @@ class DetectionToolWidget(BaseWidget):
         return {
             "detectionTool": self.options.value("Detection tool"),
             "minDist": self.optionsSliders.value("Min dist"),
-            "sigma": self.optionsSliders.value("Sigma"),
+            "sigma": self.optionsSliders.value("Sigma")
         }

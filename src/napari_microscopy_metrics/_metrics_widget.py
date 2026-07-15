@@ -12,6 +12,13 @@ from napari_microscopy_metrics.widgets.FittingOptionWidget import (
 class Metricstoolpage(QWidget):
     """A napari widget form for microscopy metrics parameters and results.
     It contains a FittingOptionWidget for setting fitting parameters and a label to display metrics results.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        count_windows (int): A counter to keep track of the number of windows created.
+        SBR (float): Signal to background ratio of the image.
+        FWHM (list): List of 3 values corresponding to FWHM in Z, Y and X of the image.
+        spacing (list): List of 3 values corresponding to the spacing in Z, Y and X of the image.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -51,6 +58,7 @@ class Metricstoolpage(QWidget):
 
     def printResults(self, SBR):
         """A method to update plugin interface with the SBR of the image analyzed.
+        
         Args:
             SBR (float): Signal to background ratio of the image.
         """
@@ -63,6 +71,7 @@ class Metricstoolpage(QWidget):
 
     def printFWHM(self, FWHM):
         """A method to update plugin interface with the FWHM of the image analyzed.
+        
         Args:
             FWHM (list): List of 3 values corresponding to FWHM in Z, Y and X of the image.
         """

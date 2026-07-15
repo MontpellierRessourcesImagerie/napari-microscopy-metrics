@@ -50,10 +50,8 @@ class ReportWidget(BaseWidget):
         options.load()
         return options
 
-    def getSliders(self):
-        pass
-
     def apply(self):
+        """A method to apply report parameters and save them for next session."""
         self.options.setValue("Export report as PDF", self.PDFCheckbox.isChecked())
         self.options.setValue("Export report as CSV", self.CSVCheckbox.isChecked())
         self.options.setValue("Export report as HTML", self.HTMLCheckbox.isChecked())

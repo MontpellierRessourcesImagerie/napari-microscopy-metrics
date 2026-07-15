@@ -4,7 +4,7 @@ name: tests
 
 on:
   release:
-    types: [released]
+    types: ["released"]
   pull_request:
     branches:
       - main
@@ -24,28 +24,30 @@ jobs:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup python
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           activate-environment: "true"
+
       - name: Install Windows OpenGL
         uses: pyvista/setup-headless-display-action@v4.2
         with:
           qt: true
           wm: herbstluftwm
 
+      - name: Clean up before build
+        run: |
+          find . -type d -name "__pycache__" -exec rm -r {} + || true
+          find . -type f -name "*.pyc" -delete || true
 
-      # note: if you need dependencies from conda, considering using
-      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
-      # and
-      # tox-conda: https://github.com/tox-dev/tox-conda
-      # this runs the platform-specific tests declared in tox.ini
       - name: Test with tox
         run: uvx --with tox-gh-actions tox
         env:
@@ -59,18 +61,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Clean up before build
+        run: |
+          find . -type d -name "__pycache__" -exec rm -r {} + || true
+          find . -type f -name "*.pyc" -delete || true
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools-scm build
+
       - uses: hynek/build-and-inspect-python-package@v2
 
   deploy:
-    # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your
-    # github secrets (see readme for details)
     needs: [test, build-and-inspect-package]
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'tags')
+    if: github.ref_type == 'tag'
     permissions:
       id-token: write
+      contents: write
     steps:
       - name: Download built artifact to dist/
         uses: actions/download-artifact@v5

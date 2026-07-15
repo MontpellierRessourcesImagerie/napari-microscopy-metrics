@@ -31,6 +31,12 @@ class DetectionParametersWidget(QWidget):
     """A napari widget form for PSF detection parameters.
     It contains a DetectionToolWidget for setting detection parameters, a ThresholdWidget for setting threshold parameters and a RoiWidget for setting region of interest parameters.
     It is used in DetectionToolTab widget to create a parameters window and send parameters to the detection tool when applying detection.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        detectionToolWidget (DetectionToolWidget): A widget for setting detection parameters.
+        widgetThreshold (ThresholdWidget): A widget for setting threshold parameters.
+        widgetRejection (RoiWidget): A widget for setting region of interest parameters.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -79,6 +85,17 @@ class DetectionToolTab(QWidget):
     """A napari widget form for PSF detection.
     It contains a button to open the parameters window and a button to apply detection with current parameters
     It also manage the display of detection results with new layers in napari viewer.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        countWindows (int): A counter to keep track of the number of windows created.
+        detectionTool (Detection): An instance of the Detection class to perform PSF detection.
+        detectionParameters (DetectionParametersWidget): A widget for setting detection parameters.
+        detectedBeadsLayer (napari.layers.Points): The layer displaying detected beads in the napari viewer.
+        ROILayer (napari.layers.Shapes): The layer displaying regions of interest in the napari viewer.
+        parametersButton (QPushButton): A button to open the parameters window.
+        detectionButton (QPushButton): A button to apply detection with current parameters.
+        resultsLabel (QLabel): A label to display the results of the detection.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -201,6 +218,7 @@ class DetectionToolTab(QWidget):
     def apply(self):
         """Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview."""
         self.detectionTool.image = self.viewer.layers.selection.active.data
+        self.detectionTool._pixelSize = self.viewer.layers.selection.active.scale
         self.detectionTool._detectionTool = DetectionTool.getInstance(self.detectionParameters.detectionToolWidget.options.value("Detection tool"))
         if hasattr(self.detectionTool._detectionTool, "_minDistance"):
             self.detectionTool._detectionTool._minDistance = self.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
@@ -209,9 +227,10 @@ class DetectionToolTab(QWidget):
         if self.detectionParameters.widgetThreshold.options.value("Threshold") == "manual":
             self.detectionTool._detectionTool._thresholdTool._relThreshold = self.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
         self.detectionTool._cropFactor = self.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
-        self.detectionTool._thresholdIntensity = self.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity")
+        self.detectionTool._thresholdIntensity = self.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity") / 100
         self.detectionTool._beadSize = self.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
         self.detectionTool._rejectionDistance = self.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
+        self.detectionTool._prominenceRel = self.detectionParameters.widgetRejection.optionsSliders.value("ProminenceRel Double Pass") / 100
         kwargs = {"cropPsf": False}
         worker = create_worker(
             self.detectionTool.run,

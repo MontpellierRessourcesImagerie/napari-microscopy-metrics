@@ -9,13 +9,21 @@ from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 
 
 class UpdateScaleSignal(QObject):
-    """A class used to create a signal for updating scale informations in detection widget when changing layer or applying new scale."""
+    """A class used to create a signal for updating scale informations in detection widget when changing layer or applying new scale.
+    
+    Attributes:
+        scaleUpdate (Signal): A signal that emits a list of scale values when the scale is updated.
+    """
 
     scaleUpdate = Signal(list)
 
 
 class ImageSizeWidget(BaseWidget):
-    """A widget allowing user to setup scale informations for the view and save them for next session."""
+    """A widget allowing user to setup scale informations for the view and save them for next session.
+    
+    Attributes:
+        signal (UpdateScaleSignal): An instance of UpdateScaleSignal to emit scale update signals.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__(viewer)
@@ -50,9 +58,10 @@ class ImageSizeWidget(BaseWidget):
 
     @classmethod
     def getOptions(cls):
-        """A class method which create entries for scale informations and load previous analysis informations if exists.
+        """A class method which creates entries for scale informations and load previous analysis informations if exists.
+        
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options("Pixel size", "set image scale")
         options.addFloat(name="Pixel size X", value=0.069)

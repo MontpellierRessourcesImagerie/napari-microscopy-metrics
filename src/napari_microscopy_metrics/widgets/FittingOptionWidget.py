@@ -21,11 +21,15 @@ from microscopy_metrics.fittingTools import Prominence
 
 
 class FittingOptionWidget(BaseWidget):
-    """A widget allowing user to setup fitting options for PSF detection and save them for next session."""
+    """A widget allowing user to setup fitting options for PSF detection and save them for next session.
+    
+    Attributes:
+        paramsStack (QStackedWidget): A stacked widget to display parameters for the selected fitting tool.
+        parent (QWidget): The parent widget that contains this widget, used to update FWHM values in the parent widget.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent):
         self.paramsStack = None
-        self.viewer = viewer
         self.parent = parent
         super().__init__(viewer)
 
@@ -79,6 +83,7 @@ class FittingOptionWidget(BaseWidget):
 
     def selectedAction(self, value):
         """A method to display prominence slider if prominence is selected as fitting tool and hide it otherwise.
+        
         Args:
             value (str): Value of the fitting tool choice
         """
@@ -91,6 +96,7 @@ class FittingOptionWidget(BaseWidget):
 
     def displayFWHM(self, value):
         """A method to display mean FWHM of detected PSF with prominence fitting tool and update it when changing prominence slider value.
+        
         Args:
             value (int): Value of the prominence slider
         """
@@ -127,7 +133,7 @@ class FittingOptionWidget(BaseWidget):
             prominence._roi = roi
             prominence._centroid = centroids[index_min_distance]
             prominence._prominenceRel = value / 100
-            prominence._spacing = self.parent.spacing
+            prominence._spacing = self.viewer.layers.selection.active.scale
             prominence.processSingleFit(0)
             result = [0, prominence.fwhms, prominence.parameters]
             if result is None:
@@ -150,9 +156,10 @@ class FittingOptionWidget(BaseWidget):
         self.parent.printFWHM(meanFWHM)
 
     def getOptions(self):
-        """A class method which create entries for fitting options and load previous analysis informations if exists.
+        """A class method which creates entries for fitting options and load previous analysis informations if exists.
+        
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options("Fitting option", "set fitting option")
         options.addChoice(
@@ -173,9 +180,10 @@ class FittingOptionWidget(BaseWidget):
 
     @classmethod
     def getSliders(cls):
-        """A class method which create entries for sliders values and load previous analysis informations if exists.
+        """A class method which creates entries for sliders values and load previous analysis informations if exists.
+        
         Returns:
-            Options: The object that contains every widget informations.
+            optionsSliders (Options): The object that contains every widget informations.
         """
         optionsSliders = Options("Sliders value", "Store value of sliders")
         optionsSliders.addInt(name="prominence", value=50)

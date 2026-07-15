@@ -20,7 +20,13 @@ from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 
 
 class ThresholdWidget(BaseWidget):
-    """A widget allowing user to choose the Threshold he wants to apply to the image for analysis."""
+    """A widget allowing user to choose the Threshold he wants to apply to the image for analysis.
+    
+    Attributes:
+        paramsStack (QStackedWidget): A stacked widget to display parameters for the selected threshold.
+        layer (napari.layers.Image): The currently selected image layer in the viewer.
+        oldContrastLimits (list): A list to store the original contrast limits of the image layer before applying the threshold.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         self.paramsStack = None
@@ -69,10 +75,10 @@ class ThresholdWidget(BaseWidget):
         self.thresholdRel.valueChanged.connect(self.updateThreshold)
 
     def getOptions(self):
-        """A method which create entries for threshold informations and load previous analysis informations if exists.
+        """A method which creates entries for threshold informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options(
             "Threshold parameters", "Set parameters for threshold"
@@ -87,10 +93,10 @@ class ThresholdWidget(BaseWidget):
         return options
 
     def getSliders(self):
-        """A method which create entries for threshold sliders informations and load previous analysis informations if exists.
+        """A method which creates entries for threshold sliders informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            optionsSliders (Options): The object that contains every widget informations.
         """
         optionsSliders = Options("Sliders value", "Store value of sliders")
         optionsSliders.addInt(name="threshold", value=50)
@@ -98,7 +104,7 @@ class ThresholdWidget(BaseWidget):
         return optionsSliders
 
     def selectedAction(self, value):
-        """Update the display for selected threshold.
+        """Updates the display for selected threshold.
 
         Args:
             value (string): label of the selection.
@@ -116,7 +122,7 @@ class ThresholdWidget(BaseWidget):
             self.displayThreshold(self.toolChoiceWidget.currentText())
 
     def updateThreshold(self, value):
-        """Update the label for relative threshold, assign the value in optionSliders and update the view with new thresholded image.
+        """Updates the label for relative threshold, assign the value in optionSliders and update the view with new thresholded image.
 
         Args:
             value (int): The actual value of the slider.

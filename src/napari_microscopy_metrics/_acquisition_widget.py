@@ -18,8 +18,11 @@ class AcquisitionToolPage(QWidget):
     """A napari widget form for microscope acquisition parameters.
     It contains an ImageSizeWidget for setting scale informations and a MicroscopeParametersWidget for setting microscope informations.
     It also update scale informations in detection widget and napari viewer when applying a new scale.
-    Args:
-        viewer (napari.viewer.Viewer): The environment where the widget will be displayed
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        countWindows (int): A counter to keep track of the number of windows created.
+        labelShape (QLabel): A label to display the shape of the currently selected image layer
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
@@ -62,7 +65,7 @@ class AcquisitionToolPage(QWidget):
 
     def onLayerChanged(self):
         """A method called when changing active layer.
-        It update scale informations in detection widget if the new active layer is an image and update label with the shape of the new active image.
+        It updates scale informations in detection widget if the new active layer is an image and updates label with the shape of the new active image.
         """
         currentLayer = self.viewer.layers.selection.active
         if currentLayer is None or not isinstance(

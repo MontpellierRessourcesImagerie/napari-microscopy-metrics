@@ -10,7 +10,11 @@ from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 from microscopy_metrics.utils import umToPx
 
 class RoiWidget(BaseWidget):
-    """A widget allowing user to setup region of interest parameters."""
+    """A widget allowing user to setup region of interest parameters.
+    
+    Attributes:
+        cropFactorPreview (napari.layers.Shapes): A preview of the crop factor rectangle in the viewer.
+        pixelSize (list): A list containing the pixel size in each dimension (Z, Y, X)."""
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__(viewer)
@@ -40,6 +44,14 @@ class RoiWidget(BaseWidget):
         self.widget.mainLayout.addWidget(self.cropFactor)
         self.widget.mainLayout.addWidget(self.thresholdIntensityLabel)
         self.widget.mainLayout.addWidget(self.thresholdIntensity)
+        self.prominenceSlider = QSlider(Qt.Horizontal)
+        self.prominenceSlider.setRange(1, 100)
+        self.prominenceSlider.setValue(self.optionsSliders.value("ProminenceRel Double Pass"))
+        self.prominenceLabel = QLabel(
+            "Prominence relative double pass: "+ str(self.prominenceSlider.value() / 100)
+        )
+        self.widget.mainLayout.addWidget(self.prominenceLabel)
+        self.widget.mainLayout.addWidget(self.prominenceSlider)
         self.widget.addApplyButton(self.apply)
         self.widget.setToolTip(
             "Parameters for ROI extraction and bead's rejecting criterions"
@@ -56,13 +68,15 @@ class RoiWidget(BaseWidget):
         self.thresholdIntensity.valueChanged.connect(
             self.updateThresholdIntensity
         )
+        self.prominenceSlider.valueChanged.connect(self.updateProminenceRel)
+    
 
     @classmethod
     def getOptions(cls):
-        """A class method which create entries for region of interest informations and load previous analysis informations if exists.
+        """A class method which creates entries for region of interest informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options(
             "Extraction parameters", "Set parameters for extraction"
@@ -75,16 +89,17 @@ class RoiWidget(BaseWidget):
         return options
 
     def getSliders(self):
-        """A method which create entries for region of interest sliders informations and load previous analysis informations if exists.
+        """A method which creates entries for region of interest sliders informations and load previous analysis informations if exists.
 
         Returns:
-            Options: The object that contains every widget informations.
+            optionsSliders (Options): The object that contains every widget informations.
         """
         optionsSliders = Options(
             "Crop factor value", "Store value of crop factor"
         )
         optionsSliders.addInt(name="crop factor", value=5)
         optionsSliders.addInt(name="threshold intensity", value=95)
+        optionsSliders.addInt(name="ProminenceRel Double Pass", value=50)
         optionsSliders.load()
         return optionsSliders
 
@@ -129,6 +144,17 @@ class RoiWidget(BaseWidget):
             "Threshold mean intensity: " + str(value)
         )
         self.optionsSliders.items["threshold intensity"]["value"] = value
+
+    def updateProminenceRel(self, value):
+        """Updates the label for prominence relative double pass and assign the value to optionSliders
+
+        Args:
+            value (int): Value of the prominence relative double pass.
+        """
+        self.prominenceLabel.setText(
+            "Prominence relative double pass: " + str(value / 100)
+        )
+        self.optionsSliders.items["ProminenceRel Double Pass"]["value"] = value
 
     def openDocumentation(self):
         """A method to open the documentation webPage relative to this widget"""

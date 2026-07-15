@@ -4,7 +4,15 @@ from autooptions import Options
 
 
 class BaseWidget(QWidget):
-    """A generic base widget for options-based widgets."""
+    """A generic base widget for options-based widgets.
+    
+    Attributes:
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        options (Options): The options object for storing and loading widget parameters.
+        optionsSliders (Options): The options object for storing and loading slider parameters.
+        widget (QWidget): The main widget containing the layout and controls.
+        btnDoc (QPushButton): A button to open the documentation web page.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer", *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,7 +37,7 @@ class BaseWidget(QWidget):
     def getSliders(self) -> Options:
         """
         Create and load sliders options.
-        Must be implemented by subclasses.
+        Must be implemented by subclasses if slider functionality is needed.
         """
         pass
 

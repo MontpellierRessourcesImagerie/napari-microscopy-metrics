@@ -30,7 +30,22 @@ from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
 from napari_microscopy_metrics._report_widget import ReportToolPage
 
 class Microscopy_Metrics_QWidget(QWidget):
-    """A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports."""
+    """A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports.
+    
+    Attributes:
+        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.
+        DetectionTool (Detection): An instance of the Detection class for PSF detection.
+        MetricTool (Metrics): An instance of the Metrics class for metrics calculation.
+        FittingTool (Fitting): An instance of the Fitting class for fitting process.
+        reportGenerator (ReportGenerator): An instance of the ReportGenerator class for generating reports.
+        centroidsLayer (napari.layers.Points): A napari layer to display detected centroids.
+        roisLayer (napari.layers.Shapes): A napari layer to display regions of interest.
+        workingLayer (napari.layers.Image): The currently selected image layer in the viewer.
+        outputDir (str): The directory where the analysis results will be saved.
+        selectedShape (int): The index of the currently selected shape in the roisLayer.
+        isRunning (bool): A flag indicating whether the analysis is currently running.
+        worker (napari.qt.threading.Worker): A worker for running the analysis in a separate thread.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
@@ -50,6 +65,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """A method to initialize the widget interface."""
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.tab = QTabWidget()
         self.tab.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -114,6 +130,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def startProcessing(self):
         """Function to start the whole analysis process .
+        
         Raises:
             ValueError: Raised when there is a problem with the selection of the layer to analyze (missing layer, incorrect type, etc.)
         """
@@ -182,6 +199,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def apply_detect_psf(self):
         """Function to update DetectionTool with the image and parameters setup by user in the widget and start a worker for bead detection
+        
         Raises:
             ValueError: Raised when there is a problem with the data of the image selected (missing data, incorrect format, etc.)
         """
@@ -217,6 +235,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def detectFinished(self):
         """Function to update result collection after bead detection and start prefitting metrics calculation
+        
         Raises:
             ValueError: Raised when there is a problem with the data of the beads detected (missing data, incorrect format, etc.)
         """
@@ -249,6 +268,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def applyPrefittingMetrics(self):
         """Function to update MetricTool with the image and parameters setup by user in the widget and start a worker for prefitting metrics calculation
+        
         Raises:
             ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)
         """
@@ -286,6 +306,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def applyFitting(self):
         """Function to update FittingTool with the image and parameters setup by user in the widget and start a worker for fitting process
+        
         Raises:
             ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)
         """
@@ -303,6 +324,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def onFittingFinished(self):
         """Function to update result collection after fitting process and start report generation
+        
         Raises:
             ValueError: Raised when there is a problem with the data of the beads analyzed or the fitting results (missing data, incorrect format, etc.)
         """
@@ -346,6 +368,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         self.worker.start()
 
     def generateFigures(self):
+        """Function to generate figures for each bead analyzed and save them in the corresponding bead folder"""
         self.DetectionTool.cropPsf(self.outputDir)
         self.DetectionTool.GlobalCropPsf(self.outputDir)
         self.MetricTool.GenerateHeatmap(self.outputDir)
@@ -407,6 +430,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def onMouseDoubleClick(self, layer, event):
         """Function to open the HTML report corresponding to the bead selected by user in napari viewer when user double click on a ROI shape in napari viewer
+        
         Args:
             layer (napari.layers.Layer): The layer on which the double click event happened
             event (napari.utils.events.Event): The double click event
@@ -437,8 +461,10 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def getActivePath(self, index):
         """Function to get the path of the folder corresponding to the bead selected by user in napari viewer
+        
         Args:
             index (int): The index of the bead selected corresponding to the index of the ROI shape in napari viewer
+        
         Returns:
             str: The path of the folder corresponding to the bead selected by user in napari viewer
         """
@@ -516,6 +542,7 @@ class Microscopy_Metrics_QWidget(QWidget):
 
     def updateScaleDetection(self, scale):
         """A method to update the scale of the detection and metrics tools when user update pixel size in acquisitionToolPage.
+        
         Args:
             scale (list): List of 3 values corresponding to pixel size in Z, Y and X of the image.
         """
@@ -609,6 +636,7 @@ class Microscopy_Metrics_QWidget(QWidget):
             shape_type="path",
             properties = combinedTables,
             edge_color='random_path_id',
+            edge_width=0.5,
             edge_colormap='tab10',
             name="PSF skeleton paths",
         )

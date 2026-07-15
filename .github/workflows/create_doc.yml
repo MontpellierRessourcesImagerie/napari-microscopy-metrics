@@ -1,4 +1,4 @@
-name: "Sphinx: Render docs"
+name: "Sphinx: Render and Deploy docs"
 
 on:
   push:
@@ -10,11 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository 
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,20 +27,23 @@ jobs:
       - name: Install package + docs deps
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .
-          python -m pip install sphinx sphinx-rtd-theme sphinx-tabs "napari[pyqt5]"
-          python -m pip install --upgrade git+https://github.com/MontpellierRessourcesImagerie/microscopy-metrics.git
-          python -m pip install --upgrade git+https://github.com/MontpellierRessourcesImagerie/auto-options-python.git
-
+          python -m pip install -e .[dev]
+          python -m pip install "napari[pyqt5]"
+      
       - name: Build HTML
         working-directory: documentation
         env:
           QT_QPA_PLATFORM: offscreen
-        run: make html
+          MPLBACKEND: Agg
+        run: |
+          mkdir -p _static
+          make clean
+          make html
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: documentation/build/html
+          keep_files: false

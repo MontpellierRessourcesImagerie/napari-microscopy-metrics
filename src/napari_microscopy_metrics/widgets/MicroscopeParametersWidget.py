@@ -11,7 +11,12 @@ from napari_microscopy_metrics.widgets.BaseWidget import BaseWidget
 
 
 class MicroscopeParametersWidget(BaseWidget):
-    """A widget allowing user to setup microscope parameters."""
+    """A widget allowing user to setup microscope parameters.
+    
+    Attributes:
+        backupNumericalAperture (float): A backup value for the numerical aperture to restore in case of invalid input.
+        backupRefractionIndex (float): A backup value for the refraction index to restore in case of invalid input.
+    """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__(viewer)
@@ -40,9 +45,10 @@ class MicroscopeParametersWidget(BaseWidget):
 
     @classmethod
     def getOptions(cls):
-        """A class method which create entries for microscope parameters and load previous analysis informations if exists.
+        """A class method which creates entries for microscope parameters and load previous analysis informations if exists.
+        
         Returns:
-            Options: The object that contains every widget informations.
+            options (Options): The object that contains every widget informations.
         """
         options = Options(
             "Microscope parameters", "register microscope parameters"
@@ -62,6 +68,7 @@ class MicroscopeParametersWidget(BaseWidget):
         return options
     
     def apply(self):
+        """A method to apply microscope parameters and save them for next session. Also checks if the numerical aperture is lower than the refraction index and restore previous values if not."""
         if self.options.value("Numerical aperture") >= self.options.value("Refraction index"):
             show_warning("Numerical aperture should be lower than refraction index.")
             self.options.setValue("Numerical aperture", self.backupNumericalAperture)
