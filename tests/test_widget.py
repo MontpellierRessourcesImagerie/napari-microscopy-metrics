@@ -1,7 +1,6 @@
 import pytest
 from qtpy.QtWidgets import QApplication
 from napari_microscopy_metrics._widget import *
-from napari_microscopy_metrics.json_utils import *
 from unittest.mock import Mock,MagicMock,patch
 
 def test_widget_initialize(qapp):

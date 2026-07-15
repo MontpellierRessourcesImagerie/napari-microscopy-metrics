@@ -1,8 +1,7 @@
 import pytest
 from qtpy.QtWidgets import QApplication
 from napari_microscopy_metrics._detection_tool_widget import *
-from napari_microscopy_metrics.json_utils import *
-from unittest.mock import Mock,MagicMock,patch
+from unittest.mock import Mock,MagicMock
 
 @pytest.fixture
 def qapp():
