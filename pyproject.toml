@@ -35,7 +35,6 @@ dependencies = [
     "magicgui",
     "qtpy",
     "scikit-image",
-    "reportlab",
     "auto-options-python",
     "napari-stl-exporter",
     "microscopy-metrics",
