@@ -789,6 +789,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">all_paths</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">combinedTables</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_tables</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">combinedTables</span><span class="p">[</span><span class="s1">&#39;random_path_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">combinedTables</span><span class="p">[</span><span class="s1">&#39;random_path_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
             <span class="n">all_paths</span><span class="p">,</span>
             <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
