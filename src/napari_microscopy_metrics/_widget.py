@@ -631,6 +631,7 @@ class Microscopy_Metrics_QWidget(QWidget):
         if not all_paths:
             return
         combinedTables = pd.concat(all_tables, ignore_index=True)
+        combinedTables['random_path_id'] = combinedTables['random_path_id'].astype(float)
         self.viewer.add_shapes(
             all_paths,
             shape_type="path",
