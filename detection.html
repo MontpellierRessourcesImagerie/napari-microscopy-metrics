@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -42,20 +42,31 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How To</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Detection Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#detection-parameters">Detection Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#threshold-parameters">Threshold Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#region-of-interest-parameters">Region Of Interest Parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="how_to.html#purpose-of-this-section">Purpose of This Section</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Detection Widget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#detection-parameters">Detection Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#threshold-parameters">Threshold Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#region-of-interest-parameters">Region of Interest Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="results.html">Outputs</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -73,7 +84,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="how_to.html">How To</a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">User Guide</a></li>
       <li class="breadcrumb-item active">Detection Widget</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/detection.rst.txt" rel="nofollow"> View page source</a>
@@ -85,35 +96,53 @@
            <div itemprop="articleBody">
              
   <section id="detection-widget">
-<h1>Detection Widget<a class="headerlink" href="#detection-widget" title="Link to this heading"></a></h1>
-<p id="detection">The Detection Widget is a form concerning informations about beads detection et extraction for analysis.</p>
+<span id="detection"></span><h1>Detection Widget<a class="headerlink" href="#detection-widget" title="Link to this heading"></a></h1>
+<p>The <strong>Detection Widget</strong> allows users to configure parameters for <strong>bead detection and extraction</strong> during the analysis process.
+This step is crucial for ensuring accurate and reliable results in the PSF (Point Spread Function) analysis.</p>
 <section id="detection-parameters">
 <h2>Detection Parameters<a class="headerlink" href="#detection-parameters" title="Link to this heading"></a></h2>
-<p>This section concerns the choice of tool used for beads detection. Actually, we have four of them :
-* <strong>Peak local maxima</strong> : fastest but also the less accurate of the list.
-* <strong>Laplacian of Gaussian</strong> : the most accurate and also the slowest.
-* <strong>Difference of Gaussian</strong> : A faster alternative of the LoG, also a little bit less accurate.
-* <strong>Centroids</strong> : Faster and more accurate than peak local maxima.</p>
-<a class="reference internal image-reference" href="_images/detection_tool.png"><img alt="DetectionParameters" class="align-center" src="_images/detection_tool.png" style="width: 500px;" />
+<p>This section allows users to select the <strong>detection method</strong> for identifying beads in the image.
+Four detection tools are available, each with its own trade-offs between speed and accuracy:</p>
+<ul class="simple">
+<li><p><strong>Peak Local Maxima</strong>: The fastest method, but the least accurate. Suitable for quick previews or low-noise images.</p></li>
+<li><p><strong>Laplacian of Gaussian (LoG)</strong>: The most accurate method, but also the slowest. Ideal for high-precision analysis.</p></li>
+<li><p><strong>Difference of Gaussian (DoG)</strong>: A faster alternative to LoG with slightly lower accuracy. A good balance between speed and precision.</p></li>
+<li><p><strong>Centroids</strong>: Faster and more accurate than Peak Local Maxima. Recommended for most use cases.</p></li>
+</ul>
+<a class="reference internal image-reference" href="_images/detection_tool.png"><img alt="Detection Parameters Widget" class="align-center" src="_images/detection_tool.png" style="width: 500px;" />
 </a>
 </section>
 <section id="threshold-parameters">
 <h2>Threshold Parameters<a class="headerlink" href="#threshold-parameters" title="Link to this heading"></a></h2>
-<p>This interactive widget allows user to select the most accurate threshold to segment the image. To make it easier, the user can push apply button to see the result of the selected threshold. In the case he selected “manual” threshold, he will have access to a slider and a real-time render.
-There are many threshold available, but, the default one is otsu which is really polyvalent. The legacy threshold is used for SBR calculation and is also really accurate. Please, check on the microscopy-metrics documentation for more details.</p>
-<a class="reference internal image-reference" href="_images/threshold_tool.png"><img alt="MicroscopeParametersWidget" class="align-center" src="_images/threshold_tool.png" style="width: 500px;" />
+<p>This interactive widget allows users to <strong>select the threshold</strong> for image segmentation.
+To assist in this process, users can click the <strong>“Apply”</strong> button to preview the segmentation result in real-time.</p>
+<ul class="simple">
+<li><p>For <strong>manual thresholding</strong>, a slider is available for dynamic adjustment, with immediate visual feedback.</p></li>
+<li><p>Multiple thresholding algorithms are supported. By default, the <strong>“Legacy”</strong> method is used, as it is versatile and works well in most scenarios.
+The Legacy threshold is also used for <strong>Signal-to-Background Ratio (SBR)</strong> calculations.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For more details on thresholding methods, refer to the <a class="reference external" href="https://github.com/MontpellierRessourcesImagerie/microscopy-metrics">microscopy-metrics</a> documentation.</p>
+</div>
+<a class="reference internal image-reference" href="_images/threshold_tool.png"><img alt="Threshold Parameters Widget" class="align-center" src="_images/threshold_tool.png" style="width: 500px;" />
 </a>
 </section>
 <section id="region-of-interest-parameters">
-<h2>Region Of Interest Parameters<a class="headerlink" href="#region-of-interest-parameters" title="Link to this heading"></a></h2>
-<p>A section relative to beads extraction and signal to background calculation. It is one of the most important step of the analysis, it can entirely make it wrong, so user have to take care of the values he enters :</p>
-<ul class="simple">
-<li><p><strong>Theoretical bead size (µm)</strong> : Corresponds to the theoretical size of the bead, in other words, it is the size of the beads user wanted them to be when he make the slide.</p></li>
+<h2>Region of Interest Parameters<a class="headerlink" href="#region-of-interest-parameters" title="Link to this heading"></a></h2>
+<p>This section is <strong>critical</strong> for bead extraction and Signal-to-Background Ratio (SBR) calculation.
+Incorrect values here can significantly impact the accuracy of the analysis. Users are advised to carefully configure the following parameters:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Theoretical bead size (µm)</strong> : Corresponds to the theoretical size of the bead, in other words, it is the size of the beads user wanted them to be when he made the slide.</p></li>
 <li><p><strong>Z axis rejection margin (µm)</strong> : When extracting ROIs, we have to pay attention to exclude beads too near to top/bottom, because they would produce a bad fit and impact the accuracy of analysis.</p></li>
 <li><p><strong>Inner annulus distance to bead (µm)</strong> : To compute signal to background ratio, we use a ring of pixels around the detected bead as “background”. This value represents the distance between inner annulus and border of the bead.</p></li>
 <li><p><strong>Annulus thickness (µm)</strong> : The thickness of the ring, or the distance to inner annulus where pixels are “background”.</p></li>
 <li><p><strong>Crop factor</strong> : The size of the ROI is estimated by : Theoretical bead size x crop factor. This crop factor is an abritrary value to make ROI bigger or smaller. Usually set to 5.</p></li>
+<li><p><strong>Threshold mean intensity</strong> : The intensity of a bead must be in a margin of the mean intensity of all detected beads, otherwise it is considered as a false positive and rejected. This value is a percentage of the mean intensity, usually set to 50%.</p></li>
+<li><p><strong>Prominence relative double pass</strong> : A peak detection is realized using a prominence value. This value is a percentage of the maximum intensity of the image, and is used to detect if two beads are in the same ROI. If the prominence of a peak is greater than this value, it is considered as a false positive and rejected.</p></li>
 </ul>
+</div></blockquote>
 <a class="reference internal image-reference" href="_images/ROI_parameters.png"><img alt="ROIParametersWidget" class="align-center" src="_images/ROI_parameters.png" style="width: 500px;" />
 </a>
 </section>

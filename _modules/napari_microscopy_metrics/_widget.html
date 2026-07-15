@@ -1,0 +1,863 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>napari_microscopy_metrics._widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Getting started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">napari_microscopy_metrics._widget</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for napari_microscopy_metrics._widget</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">napari</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">webbrowser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.qt.threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_worker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qtpy.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QWidget</span><span class="p">,</span>
+    <span class="n">QVBoxLayout</span><span class="p">,</span>
+    <span class="n">QPushButton</span><span class="p">,</span>
+    <span class="n">QSizePolicy</span><span class="p">,</span>
+    <span class="n">QTabWidget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.utils.notifications</span><span class="w"> </span><span class="kn">import</span> <span class="n">show_info</span><span class="p">,</span> <span class="n">show_warning</span><span class="p">,</span> <span class="n">show_error</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fitting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metrics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.detection</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.report_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReportGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.thresholdTools.threshold_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">Threshold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.scripts.PSFGenerator.PSF</span><span class="w"> </span><span class="kn">import</span> <span class="n">PSFGenerator</span><span class="p">,</span><span class="n">PSFWithComaticAberration</span><span class="p">,</span><span class="n">PSFWithAstigmatismAberration</span><span class="p">,</span><span class="n">PSFWithSphericalAberration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.detectionTools.detection_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectionTool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.resolutionTools.theoretical_resolution</span><span class="w"> </span><span class="kn">import</span> <span class="n">TheoreticalResolution</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._metrics_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metricstoolpage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._detection_tool_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectionToolTab</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._acquisition_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">AcquisitionToolPage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._report_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReportToolPage</span>
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Microscopy_Metrics_QWidget</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.</span>
+<span class="sd">        DetectionTool (Detection): An instance of the Detection class for PSF detection.</span>
+<span class="sd">        MetricTool (Metrics): An instance of the Metrics class for metrics calculation.</span>
+<span class="sd">        FittingTool (Fitting): An instance of the Fitting class for fitting process.</span>
+<span class="sd">        reportGenerator (ReportGenerator): An instance of the ReportGenerator class for generating reports.</span>
+<span class="sd">        centroidsLayer (napari.layers.Points): A napari layer to display detected centroids.</span>
+<span class="sd">        roisLayer (napari.layers.Shapes): A napari layer to display regions of interest.</span>
+<span class="sd">        workingLayer (napari.layers.Image): The currently selected image layer in the viewer.</span>
+<span class="sd">        outputDir (str): The directory where the analysis results will be saved.</span>
+<span class="sd">        selectedShape (int): The index of the currently selected shape in the roisLayer.</span>
+<span class="sd">        isRunning (bool): A flag indicating whether the analysis is currently running.</span>
+<span class="sd">        worker (napari.qt.threading.Worker): A worker for running the analysis in a separate thread.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="s2">&quot;napari.viewer.Viewer&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="n">viewer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span> <span class="o">=</span> <span class="n">Fitting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reportGenerator</span> <span class="o">=</span> <span class="n">ReportGenerator</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroidsLayer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectedShape</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_ui</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.init_ui">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.init_ui">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_ui</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to initialize the widget interface.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Preferred</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Preferred</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span> <span class="o">=</span> <span class="n">QTabWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">setDocumentMode</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span> <span class="o">=</span> <span class="n">AcquisitionToolPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">scaleUpdate</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">updateScaleDetection</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span>
+            <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="p">,</span> <span class="s2">&quot;Acquisition parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span> <span class="o">=</span> <span class="n">DetectionToolTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_pixelSize</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Z&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Y&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span>
+            <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="p">,</span> <span class="s2">&quot;Detection parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span> <span class="o">=</span> <span class="n">Metricstoolpage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span>
+            <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Z&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Y&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="p">,</span> <span class="s2">&quot;Metrics parameters&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span> <span class="o">=</span> <span class="n">ReportToolPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span>
+            <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="p">,</span> <span class="s2">&quot;Report parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Run analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : green&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Documentation&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : blue&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Generate random PSF&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">QVBoxLayout</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">genButton</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">openDocumentation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generateRandomPSF</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">mouse_double_click_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">onMouseDoubleClick</span>
+        <span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.startProcessing">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.startProcessing">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">startProcessing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to start the whole analysis process .</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the selection of the layer to analyze (missing layer, incorrect type, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="p">,</span> <span class="n">napari</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Image</span>
+        <span class="p">):</span>
+            <span class="n">show_error</span><span class="p">(</span><span class="s2">&quot;Please, select a valid layer of type Image&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">erase_Layers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Stop&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : red&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stopProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_detect_psf</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.stopProcessing">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.stopProcessing">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stopProcessing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to stop the whole analysis process and reset the plugin interface&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Process stopped by user.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Run analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : green&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stopProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.createDetectionTools">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createDetectionTools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">createDetectionTools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to create the tools for detection, metrics calculation, fitting and report generation&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span> <span class="o">=</span> <span class="n">Fitting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reportGenerator</span> <span class="o">=</span> <span class="n">ReportGenerator</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="p">,</span> <span class="n">napari</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Image</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please, select a valid layer of type Image&quot;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">parameterDetection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span> <span class="o">=</span> <span class="n">DetectionTool</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="n">parameterDetection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Detection tool&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="p">,</span> <span class="s2">&quot;_minDistance&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_minDistance</span> <span class="o">=</span> <span class="n">parameterDetection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Min dist&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="p">,</span> <span class="s2">&quot;_sigma&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">parameterDetection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Sigma&quot;</span><span class="p">)</span>
+        <span class="n">parameterThreshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_thresholdTool</span> <span class="o">=</span> <span class="n">Threshold</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="n">parameterThreshold</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_thresholdTool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_thresholdTool</span><span class="p">,</span> <span class="s2">&quot;_relThreshold&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_relThreshold</span> <span class="o">=</span> <span class="n">parameterThreshold</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">parameterROI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_beadSize</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Theoretical bead size (µm)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_rejectionDistance</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Z axis rejection margin (µm)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_cropFactor</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;crop factor&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_thresholdIntensity</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold intensity&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">parameterPixelSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_pixelSize</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">parameterPixelSize</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Z&quot;</span><span class="p">),</span>
+            <span class="n">parameterPixelSize</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Y&quot;</span><span class="p">),</span>
+            <span class="n">parameterPixelSize</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">),</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.apply_detect_psf">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.apply_detect_psf">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_detect_psf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update DetectionTool with the image and parameters setup by user in the widget and start a worker for bead detection</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the data of the image selected (missing data, incorrect format, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createDetectionTools</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">path</span>
+        <span class="p">):</span>
+            <span class="n">imagePath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">path</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">imagePath</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_analysis&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">):</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Detecting beads...&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">yielded</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.detectFinished">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.detectFinished">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detectFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update result collection after bead detection and start prefitting metrics calculation</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the data of the beads detected (missing data, incorrect format, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There are no bead detected !&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">displayLayers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applyPrefittingMetrics</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.createMetricTools">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createMetricTools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">createMetricTools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to create the tools for metrics calculation, fitting and report generation&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span>
+        <span class="n">parameterROI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_ringInnerDistance</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Inner annulus distance to bead (µm)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_ringThickness</span> <span class="o">=</span> <span class="n">parameterROI</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Annulus thickness (µm)&quot;</span><span class="p">)</span>
+        <span class="n">parameterMicroscope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_TheoreticalResolutionTool</span> <span class="o">=</span> <span class="n">TheoreticalResolution</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="n">parameterMicroscope</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Microscope type&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_TheoreticalResolutionTool</span><span class="o">.</span><span class="n">_numericalAperture</span> <span class="o">=</span> <span class="n">parameterMicroscope</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Numerical aperture&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_TheoreticalResolutionTool</span><span class="o">.</span><span class="n">_emissionWavelength</span> <span class="o">=</span> <span class="n">parameterMicroscope</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Emission wavelength&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_TheoreticalResolutionTool</span><span class="o">.</span><span class="n">_refractiveIndex</span> <span class="o">=</span> <span class="n">parameterMicroscope</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Refraction index&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">_TheoreticalResolutionTool</span><span class="o">.</span><span class="n">_excitationWavelength</span> <span class="o">=</span> <span class="n">parameterMicroscope</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Excitation wavelength&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.applyPrefittingMetrics">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyPrefittingMetrics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">applyPrefittingMetrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update MetricTool with the image and parameters setup by user in the widget and start a worker for prefitting metrics calculation</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createMetricTools</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">runPrefittingMetrics</span><span class="p">,</span>
+            <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Metrics calculation...&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefittingFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.prefittingFinished">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.prefittingFinished">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prefittingFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update result collection after prefitting metrics calculation and start fitting process&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">printResults</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_meanSBR</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span><span class="o">.</span><span class="n">saveMesh</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getActivePath</span><span class="p">(</span><span class="n">bead</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;bead_</span><span class="si">{</span><span class="n">bead</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">_mesh.obj&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generateMesh</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applyFitting</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.createFittingTools">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.createFittingTools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">createFittingTools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to create the tools for fitting and report generation&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span> <span class="o">=</span> <span class="n">Fitting</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span>
+        <span class="n">parameterFitting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">widgetFittingChoice</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">fitType</span> <span class="o">=</span> <span class="n">parameterFitting</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Fit type&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">_prominenceRel</span> <span class="o">=</span> <span class="n">parameterFitting</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;prominence&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">_thresholdRSquared</span> <span class="o">=</span> <span class="n">parameterFitting</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold R2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.applyFitting">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyFitting">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">applyFitting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update FittingTool with the image and parameters setup by user in the widget and start a worker for fitting process</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the data of the image analyzed (missing data, incorrect format, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createFittingTools</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">computeFitting</span><span class="p">,</span>
+            <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Gaussian fitting...&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onFittingFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.onFittingFinished">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onFittingFinished">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onFittingFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update result collection after fitting process and start report generation</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised when there is a problem with the data of the beads analyzed or the fitting results (missing data, incorrect format, etc.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There are no bead analyzed !&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">runMetrics</span><span class="p">,</span> <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Final metrics calculation...&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onMetricsFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">yielded</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.onMetricsFinished">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMetricsFinished">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onMetricsFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update result collection after final metrics calculation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generatePaths</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generateCentroidsPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applyGenerateReport</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.applyGenerateReport">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.applyGenerateReport">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">applyGenerateReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to start a worker for report generation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generateReport</span><span class="p">,</span> <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Generating report...&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onReportFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">yielded</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateFigures">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateFigures">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateFigures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate figures for each bead analyzed and save them in the corresponding bead folder&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">cropPsf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">GlobalCropPsf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MetricTool</span><span class="o">.</span><span class="n">GenerateHeatmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FittingTool</span><span class="o">.</span><span class="n">displayFitting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateReport">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateReport">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateReport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate a PDF report with all the results of the analysis using ReportGenerator&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generateFigures</span><span class="p">()</span>
+        <span class="n">listReports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="o">.</span><span class="n">getListReports</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">report</span> <span class="ow">in</span> <span class="n">listReports</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Generating </span><span class="si">{</span><span class="n">report</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">}</span>
+            <span class="n">PDFGenerator</span> <span class="o">=</span> <span class="n">ReportGenerator</span><span class="p">()</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_inputDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_imageAnalyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_detectionDatas</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_thresholdDatas</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_roiDatas</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_fittingDatas</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">widgetFittingChoice</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">_microscopeDatas</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">PDFGenerator</span><span class="o">.</span><span class="n">generateReport</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.onReportFinished">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onReportFinished">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onReportFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to update plugin interface after report generation and open the HTML report in a web browser&quot;&quot;&quot;</span>
+        <span class="n">show_info</span><span class="p">(</span>
+            <span class="s2">&quot;Report generation finished! You can find the report in the same folder as your image with the name &lt;image_name&gt;_analysis_result.pdf&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Run analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : green&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stopProcessing</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startProcessing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isRunning</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.openBrowser">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openBrowser">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">openBrowser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to open the HTML report corresponding to the bead selected by user in napari viewer in a web browser&quot;&quot;&quot;</span>
+        <span class="n">activePath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getActivePath</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selectedShape</span><span class="p">)</span>
+        <span class="n">activePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">activePath</span><span class="p">,</span> <span class="s2">&quot;report.html&quot;</span><span class="p">)</span>
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">activePath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.openDocumentation">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.openDocumentation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">openDocumentation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to open the documentation webPage in a web browser&quot;&quot;&quot;</span>
+        <span class="n">documentationPath</span> <span class="o">=</span> <span class="s2">&quot;https://montpellierressourcesimagerie.github.io/napari-microscopy-metrics/index.html&quot;</span>
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">documentationPath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.onMouseDoubleClick">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.onMouseDoubleClick">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onMouseDoubleClick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to open the HTML report corresponding to the bead selected by user in napari viewer when user double click on a ROI shape in napari viewer</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            layer (napari.layers.Layer): The layer on which the double click event happened</span>
+<span class="sd">            event (napari.utils.events.Event): The double click event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clickPos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span><span class="o">.</span><span class="n">scale</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">beads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="n">beads</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">shape</span> <span class="o">=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span>
+                <span class="n">yCoords</span> <span class="o">=</span> <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">]</span>
+                <span class="n">xCoords</span> <span class="o">=</span> <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">]</span>
+                <span class="n">xMin</span><span class="p">,</span> <span class="n">xMax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">xCoords</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">xCoords</span><span class="p">)</span>
+                <span class="n">yMin</span><span class="p">,</span> <span class="n">yMax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">yCoords</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">yCoords</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">clickPos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">yMin</span>
+                    <span class="ow">and</span> <span class="n">clickPos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">yMax</span>
+                    <span class="ow">and</span> <span class="n">clickPos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">xMin</span>
+                    <span class="ow">and</span> <span class="n">clickPos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">xMax</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">selectedShape</span> <span class="o">=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_id</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">openBrowser</span><span class="p">()</span>
+                    <span class="n">event</span><span class="o">.</span><span class="n">handled</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.getActivePath">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.getActivePath">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getActivePath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to get the path of the folder corresponding to the bead selected by user in napari viewer</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): The index of the bead selected corresponding to the index of the ROI shape in napari viewer</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The path of the folder corresponding to the bead selected by user in napari viewer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">activePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outputDir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;bead_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">activePath</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">activePath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">activePath</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.displayLayers">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.displayLayers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">displayLayers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to display the layers corresponding to the beads detected and the ROIs extracted in napari viewer after detection and update the scale of all layers according to the pixel size setup by user in acquisitionToolPage&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">beads</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">bead</span>
+                <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span>
+            <span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">beads</span><span class="p">)</span><span class="si">}</span><span class="s2"> bead(s) detected and not rejected.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroidsLayer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroidsLayer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">centroidsLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_points</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">bead</span><span class="o">.</span><span class="n">_centroid</span>
+                        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                    <span class="p">],</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PSF detected&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                    <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">centroidsLayer</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">bead</span><span class="o">.</span><span class="n">_centroid</span>
+                    <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">resultsLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Here are the results of the detection:</span><span class="se">\n</span><span class="s2">- </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span><span class="si">}</span><span class="s2"> bead(s) detected</span><span class="se">\n</span><span class="s2">- </span><span class="si">{</span><span class="nb">len</span><span class="p">([</span><span class="n">bead</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">bead</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span><span class="p">])</span><span class="si">}</span><span class="s2"> ROI(s) extracted&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">show_warning</span><span class="p">(</span><span class="s2">&quot;No PSF found or incorrect format.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">beads</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">features</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;bead_</span><span class="si">{</span><span class="n">bead</span><span class="o">.</span><span class="n">_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="n">beads</span><span class="p">]}</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;string&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{label}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;anchor&quot;</span><span class="p">:</span> <span class="s2">&quot;upper_left&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;translation&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+                <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+                <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="n">beads</span><span class="p">],</span>
+                    <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                    <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                    <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;rectangle&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ROI&quot;</span><span class="p">,</span>
+                    <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;transparent&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">roisLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="n">beads</span><span class="p">],</span>
+                    <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                    <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+                    <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;rectangle&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ROI&quot;</span><span class="p">,</span>
+                    <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;transparent&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workingLayer</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">pixelSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.updateScaleDetection">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.updateScaleDetection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">updateScaleDetection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to update the scale of the detection and metrics tools when user update pixel size in acquisitionToolPage.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            scale (list): List of 3 values corresponding to pixel size in Z, Y and X of the image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_pixelSize</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">spacing</span> <span class="o">=</span> <span class="n">scale</span>        </div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateRandomPSF">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateRandomPSF">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateRandomPSF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate a random PSF and display it in the napari viewer&quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">dxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">)</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Z&quot;</span><span class="p">)</span>
+        <span class="n">ni0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Refraction index&quot;</span><span class="p">)</span>
+        <span class="n">wvl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Emission wavelength&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+        <span class="n">NA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Numerical aperture&quot;</span><span class="p">)</span>
+        <span class="n">aberrationType</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span><span class="s2">&quot;comatic&quot;</span><span class="p">,</span><span class="s2">&quot;astigmatism&quot;</span><span class="p">,</span><span class="s2">&quot;spherical&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">aberrationType</span> <span class="o">==</span> <span class="s2">&quot;comatic&quot;</span><span class="p">:</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">PSFWithComaticAberration</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">wvl</span><span class="p">,</span> <span class="n">NA</span><span class="p">)</span><span class="o">.</span><span class="n">psf</span>
+        <span class="k">elif</span> <span class="n">aberrationType</span> <span class="o">==</span> <span class="s2">&quot;astigmatism&quot;</span><span class="p">:</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">PSFWithAstigmatismAberration</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">wvl</span><span class="p">,</span> <span class="n">NA</span><span class="p">)</span><span class="o">.</span><span class="n">psf</span>
+        <span class="k">elif</span> <span class="n">aberrationType</span> <span class="o">==</span> <span class="s2">&quot;spherical&quot;</span><span class="p">:</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">PSFWithSphericalAberration</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">wvl</span><span class="p">,</span> <span class="n">NA</span><span class="p">)</span><span class="o">.</span><span class="n">psf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">PSFGenerator</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">ni0</span><span class="p">,</span> <span class="n">wvl</span><span class="p">,</span> <span class="n">NA</span><span class="p">)</span><span class="o">.</span><span class="n">psf</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">psf</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">aberrationType</span> <span class="o">==</span> <span class="kc">None</span> <span class="p">:</span> 
+            <span class="n">aberrationType</span> <span class="o">=</span> <span class="s2">&quot;no&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;PSF with </span><span class="si">{</span><span class="n">aberrationType</span><span class="si">}</span><span class="s2"> aberration&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateMesh">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateMesh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateMesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate a 3D mesh corresponding to the contours of the PSF and display it in the napari viewer</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            psf (np.ndarray, optional): The PSF for which to generate a mesh. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_vertices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_faces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">vertex_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span><span class="o">.</span><span class="n">_vertices</span><span class="p">)</span> 
+                <span class="n">faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span><span class="o">.</span><span class="n">_faces</span><span class="p">)</span>
+                <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">offset_faces</span> <span class="o">=</span> <span class="n">faces</span> <span class="o">+</span> <span class="n">vertex_offset</span>
+                <span class="n">all_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+                <span class="n">all_faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset_faces</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vertices</span><span class="p">)):</span>
+                    <span class="n">all_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">meshBuilder</span><span class="o">.</span><span class="n">_curvature</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">vertex_offset</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">all_vertices</span><span class="p">:</span>
+            <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">all_vertices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">faces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">all_faces</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">all_values</span><span class="p">)</span>
+            <span class="n">maxVal</span> <span class="o">=</span> <span class="mf">5.0</span>
+            <span class="n">c_min</span><span class="p">,</span> <span class="n">cmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">maxVal</span><span class="p">,</span> <span class="n">maxVal</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_surface</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">values</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;PSF_Isosurfaces.obj&quot;</span><span class="p">,</span>
+                <span class="n">colormap</span><span class="o">=</span><span class="s2">&quot;coolwarm&quot;</span><span class="p">,</span>
+                <span class="n">opacity</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                <span class="n">contrast_limits</span><span class="o">=</span><span class="p">(</span><span class="n">c_min</span><span class="p">,</span> <span class="n">cmax</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">pixelSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generatePaths">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generatePaths">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generatePaths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate the paths of the folders corresponding to each bead analyzed and create these folders if they don&#39;t exist yet&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+        <span class="n">all_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">skeleton</span> <span class="o">=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">_pathSkeleton</span>
+                <span class="k">if</span> <span class="n">skeleton</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">skeleton</span><span class="o">.</span><span class="n">n_paths</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]])</span>
+                    <span class="n">shifted_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">skeleton</span><span class="o">.</span><span class="n">path_coordinates</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">skeleton</span><span class="o">.</span><span class="n">n_paths</span><span class="p">)]</span>
+                    <span class="n">all_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shifted_paths</span><span class="p">)</span>
+                    <span class="n">paths_table</span> <span class="o">=</span> <span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">_summary</span>
+                    <span class="n">paths_table</span><span class="p">[</span><span class="s1">&#39;path_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">skeleton</span><span class="o">.</span><span class="n">n_paths</span><span class="p">)</span>
+                    <span class="n">paths_table</span><span class="p">[</span><span class="s1">&#39;random_path_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">skeleton</span><span class="o">.</span><span class="n">n_paths</span><span class="p">)</span>
+                    <span class="n">all_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">paths_table</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_paths</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">combinedTables</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_tables</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+            <span class="n">all_paths</span><span class="p">,</span>
+            <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="n">combinedTables</span><span class="p">,</span>
+            <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;random_path_id&#39;</span><span class="p">,</span>
+            <span class="n">edge_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">edge_colormap</span><span class="o">=</span><span class="s1">&#39;tab10&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PSF skeleton paths&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">pixelSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateCentroidsPath">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateCentroidsPath">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateCentroidsPath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to generate the path of the folder corresponding to the centroids of the beads analyzed and create this folder if it doesn&#39;t exist yet&quot;&quot;&quot;</span>
+        <span class="n">centroids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">beadPath</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">z</span><span class="p">,</span><span class="n">centroid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bead</span><span class="o">.</span><span class="n">_metricTool</span><span class="o">.</span><span class="n">_centroids</span><span class="p">):</span>
+                    <span class="n">beadPath</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">centroid</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">centroid</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">centroid</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+                <span class="k">if</span> <span class="n">beadPath</span><span class="p">:</span>
+                    <span class="n">centroids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">beadPath</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">centroids</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+            <span class="n">centroids</span><span class="p">,</span>
+            <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
+            <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Centroids paths&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">pixelSize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+</div>
+
+                
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, CNRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

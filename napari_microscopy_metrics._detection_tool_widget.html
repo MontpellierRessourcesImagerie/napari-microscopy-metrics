@@ -1,0 +1,768 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detection widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Metrics widget" href="napari_microscopy_metrics._metrics_widget.html" />
+    <link rel="prev" title="Acquisition widget" href="napari_microscopy_metrics._acquisition_widget.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._widget.html">Main widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._acquisition_widget.html">Acquisition widget</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Detection widget</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.viewer"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.viewer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.countWindows"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.countWindows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionTool"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.detectionTool</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionParameters"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.detectionParameters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectedBeadsLayer"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.detectedBeadsLayer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.ROILayer"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.ROILayer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.parametersButton"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.parametersButton</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionButton"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.detectionButton</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.resultsLabel"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.resultsLabel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.apply"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.displayResult"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.displayResult()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.erase_Layers"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.erase_Layers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.getLogoPath"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.getLogoPath()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onLayerRemoved"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.onLayerRemoved()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onParametersWindowClosed"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.onParametersWindowClosed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.openParametersWindow"><code class="docutils literal notranslate"><span class="pre">DetectionToolTab.openParametersWindow()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget"><code class="docutils literal notranslate"><span class="pre">DetectionParametersWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.viewer"><code class="docutils literal notranslate"><span class="pre">DetectionParametersWidget.viewer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.detectionToolWidget"><code class="docutils literal notranslate"><span class="pre">DetectionParametersWidget.detectionToolWidget</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetThreshold"><code class="docutils literal notranslate"><span class="pre">DetectionParametersWidget.widgetThreshold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetRejection"><code class="docutils literal notranslate"><span class="pre">DetectionParametersWidget.widgetRejection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget"><code class="docutils literal notranslate"><span class="pre">RoiWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.cropFactorPreview"><code class="docutils literal notranslate"><span class="pre">RoiWidget.cropFactorPreview</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.pixelSize"><code class="docutils literal notranslate"><span class="pre">RoiWidget.pixelSize</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.apply"><code class="docutils literal notranslate"><span class="pre">RoiWidget.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.createLayout"><code class="docutils literal notranslate"><span class="pre">RoiWidget.createLayout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.getOptions"><code class="docutils literal notranslate"><span class="pre">RoiWidget.getOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.getSliders"><code class="docutils literal notranslate"><span class="pre">RoiWidget.getSliders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.openDocumentation"><code class="docutils literal notranslate"><span class="pre">RoiWidget.openDocumentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.toDict"><code class="docutils literal notranslate"><span class="pre">RoiWidget.toDict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateCropFactor"><code class="docutils literal notranslate"><span class="pre">RoiWidget.updateCropFactor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateProminenceRel"><code class="docutils literal notranslate"><span class="pre">RoiWidget.updateProminenceRel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateThresholdIntensity"><code class="docutils literal notranslate"><span class="pre">RoiWidget.updateThresholdIntensity()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.paramsStack"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.paramsStack</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.layer"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.layer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.oldContrastLimits"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.oldContrastLimits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createLayout"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.createLayout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.displayThreshold"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.displayThreshold()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getOptions"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.getOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getSliders"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.getSliders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.openDocumentation"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.openDocumentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.selectedAction"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.selectedAction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.toDict"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.toDict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.updateThreshold"><code class="docutils literal notranslate"><span class="pre">ThresholdWidget.updateThreshold()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.paramsStack"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.paramsStack</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.apply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createLayout"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.createLayout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getOptions"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.getOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getSliders"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.getSliders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.openDocumentation"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.openDocumentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.selectedAction"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.selectedAction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.toDict"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.toDict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateMinDistance"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.updateMinDistance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateSigma"><code class="docutils literal notranslate"><span class="pre">DetectionToolWidget.updateSigma()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._metrics_widget.html">Metrics widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._report_widget.html">Report Widget</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">Detection widget</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/napari_microscopy_metrics._detection_tool_widget.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="detection-widget">
+<h1>Detection widget<a class="headerlink" href="#detection-widget" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">DetectionToolTab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>A napari widget form for PSF detection.
+It contains a button to open the parameters window and a button to apply detection with current parameters
+It also manage the display of detection results with new layers in napari viewer.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.viewer">
+<span class="sig-name descname"><span class="pre">viewer</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.viewer" title="Link to this definition"></a></dt>
+<dd><p>The environment where the widget will be displayed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.countWindows">
+<span class="sig-name descname"><span class="pre">countWindows</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.countWindows" title="Link to this definition"></a></dt>
+<dd><p>A counter to keep track of the number of windows created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionTool">
+<span class="sig-name descname"><span class="pre">detectionTool</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionTool" title="Link to this definition"></a></dt>
+<dd><p>An instance of the Detection class to perform PSF detection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Detection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionParameters">
+<span class="sig-name descname"><span class="pre">detectionParameters</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionParameters" title="Link to this definition"></a></dt>
+<dd><p>A widget for setting detection parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget" title="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget">DetectionParametersWidget</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectedBeadsLayer">
+<span class="sig-name descname"><span class="pre">detectedBeadsLayer</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectedBeadsLayer" title="Link to this definition"></a></dt>
+<dd><p>The layer displaying detected beads in the napari viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.layers.Points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.ROILayer">
+<span class="sig-name descname"><span class="pre">ROILayer</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.ROILayer" title="Link to this definition"></a></dt>
+<dd><p>The layer displaying regions of interest in the napari viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.layers.Shapes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.parametersButton">
+<span class="sig-name descname"><span class="pre">parametersButton</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.parametersButton" title="Link to this definition"></a></dt>
+<dd><p>A button to open the parameters window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QPushButton</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionButton">
+<span class="sig-name descname"><span class="pre">detectionButton</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.detectionButton" title="Link to this definition"></a></dt>
+<dd><p>A button to apply detection with current parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QPushButton</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.resultsLabel">
+<span class="sig-name descname"><span class="pre">resultsLabel</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.resultsLabel" title="Link to this definition"></a></dt>
+<dd><p>A label to display the results of the detection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QLabel</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.apply" title="Link to this definition"></a></dt>
+<dd><p>Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.displayResult">
+<span class="sig-name descname"><span class="pre">displayResult</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.displayResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.displayResult" title="Link to this definition"></a></dt>
+<dd><p>A method to display detected centroids and region of interest with new layers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.erase_Layers">
+<span class="sig-name descname"><span class="pre">erase_Layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.erase_Layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.erase_Layers" title="Link to this definition"></a></dt>
+<dd><p>A method to delete all layers created by this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.getLogoPath">
+<span class="sig-name descname"><span class="pre">getLogoPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theme</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.getLogoPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.getLogoPath" title="Link to this definition"></a></dt>
+<dd><p>A method to automatically return the logo corresponding to the application theme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theme</strong> (<em>napari.theme</em>) – The actual theme of the napari application.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>path to the logo corresponding to the theme.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onLayerRemoved">
+<span class="sig-name descname"><span class="pre">onLayerRemoved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.onLayerRemoved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onLayerRemoved" title="Link to this definition"></a></dt>
+<dd><p>Manage the suppression of ROI and _centroids layers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> (<em>QEvent</em>) – Informations about the triggering event</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onParametersWindowClosed">
+<span class="sig-name descname"><span class="pre">onParametersWindowClosed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.onParametersWindowClosed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onParametersWindowClosed" title="Link to this definition"></a></dt>
+<dd><p>Called when parameters window is closed to unlock the possibility to open another one and remove threshold preview.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> – Parameter sent by the window when closed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.openParametersWindow">
+<span class="sig-name descname"><span class="pre">openParametersWindow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionToolTab.openParametersWindow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.openParametersWindow" title="Link to this definition"></a></dt>
+<dd><p>A method to create parameters window and limit the maximum window number to one.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">DetectionParametersWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_detection_tool_widget.html#DetectionParametersWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>A napari widget form for PSF detection parameters.
+It contains a DetectionToolWidget for setting detection parameters, a ThresholdWidget for setting threshold parameters and a RoiWidget for setting region of interest parameters.
+It is used in DetectionToolTab widget to create a parameters window and send parameters to the detection tool when applying detection.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.viewer">
+<span class="sig-name descname"><span class="pre">viewer</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.viewer" title="Link to this definition"></a></dt>
+<dd><p>The environment where the widget will be displayed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.detectionToolWidget">
+<span class="sig-name descname"><span class="pre">detectionToolWidget</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.detectionToolWidget" title="Link to this definition"></a></dt>
+<dd><p>A widget for setting detection parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget" title="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget">DetectionToolWidget</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetThreshold">
+<span class="sig-name descname"><span class="pre">widgetThreshold</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetThreshold" title="Link to this definition"></a></dt>
+<dd><p>A widget for setting threshold parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget" title="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget">ThresholdWidget</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetRejection">
+<span class="sig-name descname"><span class="pre">widgetRejection</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget.widgetRejection" title="Link to this definition"></a></dt>
+<dd><p>A widget for setting region of interest parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget" title="napari_microscopy_metrics._detection_tool_widget.RoiWidget">RoiWidget</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">RoiWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="napari_microscopy_metrics._widget.html#napari_microscopy_metrics.widgets.BaseWidget.BaseWidget" title="napari_microscopy_metrics.widgets.BaseWidget.BaseWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></a></p>
+<p>A widget allowing user to setup region of interest parameters.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.cropFactorPreview">
+<span class="sig-name descname"><span class="pre">cropFactorPreview</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.cropFactorPreview" title="Link to this definition"></a></dt>
+<dd><p>A preview of the crop factor rectangle in the viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.layers.Shapes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.pixelSize">
+<span class="sig-name descname"><span class="pre">pixelSize</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.pixelSize" title="Link to this definition"></a></dt>
+<dd><p>A list containing the pixel size in each dimension (Z, Y, X).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.apply" title="Link to this definition"></a></dt>
+<dd><p>Called on validation to save optionSliders with current sliders value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.createLayout">
+<span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.createLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.createLayout" title="Link to this definition"></a></dt>
+<dd><p>A method used to create the layout with options setup to previous analysis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.getOptions">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.getOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.getOptions" title="Link to this definition"></a></dt>
+<dd><p>A class method which creates entries for region of interest informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>options (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.getSliders">
+<span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.getSliders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.getSliders" title="Link to this definition"></a></dt>
+<dd><p>A method which creates entries for region of interest sliders informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>optionsSliders (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.openDocumentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>A method to open the documentation webPage relative to this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.toDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current region of interest parameters values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateCropFactor">
+<span class="sig-name descname"><span class="pre">updateCropFactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.updateCropFactor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateCropFactor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateProminenceRel">
+<span class="sig-name descname"><span class="pre">updateProminenceRel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.updateProminenceRel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateProminenceRel" title="Link to this definition"></a></dt>
+<dd><p>Updates the label for prominence relative double pass and assign the value to optionSliders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Value of the prominence relative double pass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateThresholdIntensity">
+<span class="sig-name descname"><span class="pre">updateThresholdIntensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ROIWidget.html#RoiWidget.updateThresholdIntensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.RoiWidget.updateThresholdIntensity" title="Link to this definition"></a></dt>
+<dd><p>Updates the label for threshold mean intensity and assign the value to optionSliders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Value of the mean intensity threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">ThresholdWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="napari_microscopy_metrics._widget.html#napari_microscopy_metrics.widgets.BaseWidget.BaseWidget" title="napari_microscopy_metrics.widgets.BaseWidget.BaseWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></a></p>
+<p>A widget allowing user to choose the Threshold he wants to apply to the image for analysis.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.paramsStack">
+<span class="sig-name descname"><span class="pre">paramsStack</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.paramsStack" title="Link to this definition"></a></dt>
+<dd><p>A stacked widget to display parameters for the selected threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QStackedWidget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.layer">
+<span class="sig-name descname"><span class="pre">layer</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.layer" title="Link to this definition"></a></dt>
+<dd><p>The currently selected image layer in the viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.layers.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.oldContrastLimits">
+<span class="sig-name descname"><span class="pre">oldContrastLimits</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.oldContrastLimits" title="Link to this definition"></a></dt>
+<dd><p>A list to store the original contrast limits of the image layer before applying the threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.apply" title="Link to this definition"></a></dt>
+<dd><p>Called on validation to save optionSliders with current sliders value and update the view with thresholded image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createLayout">
+<span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.createLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.createLayout" title="Link to this definition"></a></dt>
+<dd><p>A method used to create the layout with options setup to previous analysis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.displayThreshold">
+<span class="sig-name descname"><span class="pre">displayThreshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thresholdStr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.displayThreshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.displayThreshold" title="Link to this definition"></a></dt>
+<dd><p>A method to change layer properties to display (or not) a render view of the thresholded image with actual properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thresholdStr</strong> (<em>Str</em>) – The label of the selected threshold.</p></li>
+<li><p><strong>value</strong> (<em>float</em><em>, </em><em>optional</em>) – Relative value of the threshold. Defaults to 0.5.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getOptions">
+<span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.getOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getOptions" title="Link to this definition"></a></dt>
+<dd><p>A method which creates entries for threshold informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>options (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getSliders">
+<span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.getSliders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.getSliders" title="Link to this definition"></a></dt>
+<dd><p>A method which creates entries for threshold sliders informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>optionsSliders (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.openDocumentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>A method to open the documentation webPage relative to this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.selectedAction">
+<span class="sig-name descname"><span class="pre">selectedAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.selectedAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.selectedAction" title="Link to this definition"></a></dt>
+<dd><p>Updates the display for selected threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>string</em>) – label of the selection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.toDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current threshold and parameters values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.updateThreshold">
+<span class="sig-name descname"><span class="pre">updateThreshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/ThresholdWidget.html#ThresholdWidget.updateThreshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.ThresholdWidget.updateThreshold" title="Link to this definition"></a></dt>
+<dd><p>Updates the label for relative threshold, assign the value in optionSliders and update the view with new thresholded image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – The actual value of the slider.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._detection_tool_widget.</span></span><span class="sig-name descname"><span class="pre">DetectionToolWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="napari_microscopy_metrics._widget.html#napari_microscopy_metrics.widgets.BaseWidget.BaseWidget" title="napari_microscopy_metrics.widgets.BaseWidget.BaseWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></a></p>
+<p>A widget allowing user to choose the detection tool he wants to use with related parameters.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.paramsStack">
+<span class="sig-name descname"><span class="pre">paramsStack</span></span><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.paramsStack" title="Link to this definition"></a></dt>
+<dd><p>A stacked widget to display parameters for the selected detection tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QStackedWidget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.apply" title="Link to this definition"></a></dt>
+<dd><p>Called on click button to save option sliders with actual sliders values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createLayout">
+<span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.createLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.createLayout" title="Link to this definition"></a></dt>
+<dd><p>A method used to create the layout with options setup to previous analysis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getOptions">
+<span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.getOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getOptions" title="Link to this definition"></a></dt>
+<dd><p>A class method which creates entries for detection tool informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>options (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getSliders">
+<span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.getSliders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.getSliders" title="Link to this definition"></a></dt>
+<dd><p>A method which creates entries for detection tool sliders informations and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>optionsSliders (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.openDocumentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>A method to open the documentation webPage relative to this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.selectedAction">
+<span class="sig-name descname"><span class="pre">selectedAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.selectedAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.selectedAction" title="Link to this definition"></a></dt>
+<dd><p>Updates the display for selected tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Index of the selection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.toDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current detection tool and parameters values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateMinDistance">
+<span class="sig-name descname"><span class="pre">updateMinDistance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.updateMinDistance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateMinDistance" title="Link to this definition"></a></dt>
+<dd><p>Updates the label for minimal distance and assign the value in optionSliders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Minimal distance value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateSigma">
+<span class="sig-name descname"><span class="pre">updateSigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/DetectionToolWidget.html#DetectionToolWidget.updateSigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._detection_tool_widget.DetectionToolWidget.updateSigma" title="Link to this definition"></a></dt>
+<dd><p>Updates the label for sigma and assign the value in optionSliders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Sigma value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="napari_microscopy_metrics._acquisition_widget.html" class="btn btn-neutral float-left" title="Acquisition widget" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="napari_microscopy_metrics._metrics_widget.html" class="btn btn-neutral float-right" title="Metrics widget" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, CNRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

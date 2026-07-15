@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>How To &mdash; Napari microscopy metrics  documentation</title>
+  <title>User Guide &mdash; Napari microscopy metrics  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -42,15 +42,26 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How To</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html">Detection Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#purpose-of-this-section">Purpose of This Section</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detection.html">Detection Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="results.html">Outputs</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -68,7 +79,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">How To</li>
+      <li class="breadcrumb-item active">User Guide</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/how_to.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -78,17 +89,29 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="how-to">
-<h1>How To<a class="headerlink" href="#how-to" title="Link to this heading"></a></h1>
-<p id="id1">This plugin is used to run full analysis of the PSF. This analysis is composed with :</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="acquisition.html#acquisition"><span class="std std-ref">Acquisition</span></a> phase : The user have to enter parameters of the acquisition, those will be used massively, so it is a really important step.</p></li>
-<li><p><a class="reference internal" href="detection.html#detection"><span class="std std-ref">Detection</span></a> phase : The program will detect beads in image and extract region of interest by filtering beads to close from each other.</p></li>
-<li><p><a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a> phase : It uses extracted beads to compute a gaussian fit to estimation full-width half maximum. Then calculates every metrics for analysis.</p></li>
-<li><p><a class="reference internal" href="results.html#results"><span class="std std-ref">Outputs</span></a> : It then produces many medias about analysis result to help user make his conclusions.</p></li>
-</ul>
-<p>This section will explain the meaning and using of the widgets and parameters of the plugin.</p>
+  <section id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
+<p id="how-to">This plugin is designed to perform the <strong>analysis of the Point Spread Function (PSF)</strong>. The analysis workflow is structured into four key phases, each playing a critical role in ensuring accurate and meaningful results.</p>
+<section id="analysis-workflow">
+<h2>Analysis Workflow<a class="headerlink" href="#analysis-workflow" title="Link to this heading"></a></h2>
+<p>The plugin follows a <strong>sequential workflow</strong> to process PSF data:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="acquisition.html#acquisition"><span class="std std-ref">Acquisition</span></a>:
+The user must input the <strong>acquisition parameters</strong>, which are essential for the entire analysis process. These parameters are used extensively throughout the subsequent phases, making this step crucial for accurate results.</p></li>
+<li><p><a class="reference internal" href="detection.html#detection"><span class="std std-ref">Detection</span></a>:
+The program <strong>automatically detects beads</strong> in the image and extracts <strong>regions of interest (ROIs)</strong>. It filters out beads that are too close to each other to avoid overlapping or interference, ensuring that only high-quality ROIs are retained for further analysis.</p></li>
+<li><p><a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a>:
+Using the extracted beads, the plugin performs a <strong>Gaussian fit</strong> to estimate the <strong>Full Width at Half Maximum (FWHM)</strong>. It then calculates a comprehensive set of metrics to provide a detailed analysis of the PSF.</p></li>
+<li><p><a class="reference internal" href="results.html#results"><span class="std std-ref">Outputs</span></a>:
+Finally, the plugin generates <strong>various outputs</strong>, including visualizations, reports, and other media, to help users interpret the results and draw meaningful conclusions.</p></li>
+</ol>
+<p>—</p>
+</section>
+<section id="purpose-of-this-section">
+<h2>Purpose of This Section<a class="headerlink" href="#purpose-of-this-section" title="Link to this heading"></a></h2>
+<p>This section provides a <strong>detailed explanation</strong> of the purpose and usage of each widget and parameter available in the plugin. It aims to guide users through the analysis process, ensuring they understand how to configure and utilize the plugin effectively.</p>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Workflow Steps</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="acquisition.html">Acquisition Widget</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="acquisition.html#image-scaling-parameters">Image Scaling Parameters</a></li>
@@ -98,7 +121,7 @@
 <li class="toctree-l1"><a class="reference internal" href="detection.html">Detection Widget</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="detection.html#detection-parameters">Detection Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="detection.html#threshold-parameters">Threshold Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html#region-of-interest-parameters">Region Of Interest Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detection.html#region-of-interest-parameters">Region of Interest Parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics Widget</a><ul>
@@ -106,14 +129,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Outputs</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="results.html#napari-viewer">Napari viewer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html#html-file">HTML file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html#pdf-file">PDF file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html#csv-file">CSV file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="results.html#napari-viewer">Napari Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="results.html#html-file">HTML File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="results.html#pdf-file">PDF File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="results.html#csv-file">CSV File</a></li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
 </section>
 
 

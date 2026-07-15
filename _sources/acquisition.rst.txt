@@ -1,49 +1,60 @@
-Acquisition Widget
-==================
 .. _acquisition:
 
-The Acquisition Widget is a form concerning informations about image scaling and microscope acquisition parameters.
+=====================
+Acquisition Widget
+=====================
 
+The **Acquisition Widget** is designed to collect **essential information** about the **image scaling** and **microscope acquisition parameters**. These parameters are critical for ensuring accurate and meaningful analysis of the Point Spread Function (PSF).
+
+---
+
+------------------------
 Image Scaling Parameters
 ------------------------
 
-This widget allows user to enter the scaling of the image for each axis. The scaling's unit is µm/px because the value is defined as the metric size (in micrometer) represented by each pixel.
+The **Image Scaling Parameters** section allows users to define the **physical size** represented by each pixel in the image. This scaling is specified in **µm/px** (micrometers per pixel), which means it describes the real-world distance corresponding to a single pixel in the image.
 
-The button "Apply and save scale" confirm entries for the next analysis, and save them for the future. It also change the scaling of the napari viewer to enhance the represented image.
-
+**Key Features:**
+  - **Axis-Specific Scaling**: Users can enter scaling values for each axis (X, Y, Z) independently.
+  - **Apply and Save**: The **"Apply and Save Scale"** button confirms the entered values for subsequent analyses and saves them for future use. It also **updates the scaling in the Napari viewer**, ensuring that the displayed image reflects the correct physical dimensions.
 
 .. image:: _static/image_size_widget.png
     :width: 500px
-    :alt: ImageSizeWidget
+    :alt: Image Scaling Widget
     :align: center
+    :class: only-light
 
+---
 
+---------------------------------
 Microscope Acquisition Parameters
 ---------------------------------
 
-This widget concerns parameters about microscope acquisition:
+The **Microscope Acquisition Parameters** section allows users to specify the **technical details** of the microscope used for image acquisition. These parameters directly influence the **theoretical resolution** and the quality of the analysis.
 
-* **Microscope type**
-  The formula of **theoretical resolution** is not the same for all microscopes.
-  Implemented types: **widefield**, **confocal**, **multiphoton**, and **spinning disk**.
+**Parameters:**
 
-* **Emission wavelength**
-  In **nanometers (nm)**, this is the wavelength of photons captured by the microscope.
-  It directly impacts the resolution and image quality.
+.. list-table:: Microscope Acquisition Parameters
+   :widths: 25 75
+   :header-rows: 1
 
-* **Refraction index**
-  Represents how light is refracted when changing from one medium to another.
-  Values range from **1.0 (air)** to **1.5 (oil)**.
-
-* **Numerical aperture (NA)**
-  Represents the **light-gathering ability** of a microscope objective.
-  A high NA allows more rays to enter the objective, producing **highly resolved images**.
-  Formula: **NA = Refraction index × sin(θ)**.
-
+   * - **Parameter**
+     - **Description**
+   * - **Microscope Type**
+     - The type of microscope used. The **theoretical resolution formula** varies depending on the microscope type. Supported types: **Widefield**, **Confocal**, **Multiphoton**, and **Spinning Disk**.
+   * - **Emission Wavelength**
+     - The wavelength of the photons **emitted by the sample**, measured in **nanometers (nm)**. This parameter directly impacts the resolution and image quality.
+   * - **Excitation Wavelength**
+     - The wavelength of the photons used to **excite the sample**, measured in **nanometers (nm)**. It influences the emission wavelength and overall imaging performance.
+   * - **Refractive Index**
+     - Describes how light is refracted when transitioning between different media (e.g., air, oil). Typical values range from **1.0 (air)** to **1.5 (oil)**.
+   * - **Numerical Aperture (NA)**
+     - Represents the **light-gathering ability** of the microscope objective. A higher NA allows more light rays to enter the objective, resulting in **higher resolution images**. It is calculated using the formula: **NA = Refractive Index × sin(θ)**, where θ is the half-angle of the cone of light that can enter the objective.
 
 .. image:: _static/Microscope_parameters_widget.png
     :width: 500px
-    :alt: MicroscopeParametersWidget
+    :alt: Microscope Parameters Widget
     :align: center
+    :class: only-light
 
-
+---

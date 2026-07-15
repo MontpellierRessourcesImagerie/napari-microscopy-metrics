@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>napari_microscopy_metrics._detection_tool_widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Getting started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">napari_microscopy_metrics._detection_tool_widget</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for napari_microscopy_metrics._detection_tool_widget</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">napari</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">qtpy.QtGui</span><span class="w"> </span><span class="kn">import</span> <span class="n">QIcon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.qt.threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_worker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.layers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qtpy.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">QSize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari.utils.notifications</span><span class="w"> </span><span class="kn">import</span> <span class="n">show_warning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qtpy.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QWidget</span><span class="p">,</span>
+    <span class="n">QVBoxLayout</span><span class="p">,</span>
+    <span class="n">QPushButton</span><span class="p">,</span>
+    <span class="n">QLabel</span><span class="p">,</span>
+    <span class="n">QDialog</span><span class="p">,</span>
+    <span class="n">QGroupBox</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.detection</span><span class="w"> </span><span class="kn">import</span> <span class="n">Detection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.detectionTools.detection_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectionTool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.thresholdTools.threshold_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">Threshold</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics.widgets.DetectionToolWidget</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectionToolWidget</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics.widgets.ThresholdWidget</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThresholdWidget</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics.widgets.ROIWidget</span><span class="w"> </span><span class="kn">import</span> <span class="n">RoiWidget</span>
+
+
+<div class="viewcode-block" id="DetectionParametersWidget">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionParametersWidget">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectionParametersWidget</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A napari widget form for PSF detection parameters.</span>
+<span class="sd">    It contains a DetectionToolWidget for setting detection parameters, a ThresholdWidget for setting threshold parameters and a RoiWidget for setting region of interest parameters.</span>
+<span class="sd">    It is used in DetectionToolTab widget to create a parameters window and send parameters to the detection tool when applying detection.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.</span>
+<span class="sd">        detectionToolWidget (DetectionToolWidget): A widget for setting detection parameters.</span>
+<span class="sd">        widgetThreshold (ThresholdWidget): A widget for setting threshold parameters.</span>
+<span class="sd">        widgetRejection (RoiWidget): A widget for setting region of interest parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="s2">&quot;napari.viewer.Viewer&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="n">viewer</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionGroup</span> <span class="o">=</span> <span class="n">QGroupBox</span><span class="p">(</span><span class="s2">&quot;Detection parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionGroup</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groupLayout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolWidget</span> <span class="o">=</span> <span class="n">DetectionToolWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolLayout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupLayout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionToolLayout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldContrastLimits</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresholdGroup</span> <span class="o">=</span> <span class="n">QGroupBox</span><span class="p">(</span><span class="s2">&quot;Threshold parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupThresholdLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresholdGroup</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groupThresholdLayout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresholdToolLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widgetThreshold</span> <span class="o">=</span> <span class="n">ThresholdWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresholdToolLayout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupThresholdLayout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thresholdToolLayout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROIGroup</span> <span class="o">=</span> <span class="n">QGroupBox</span><span class="p">(</span><span class="s2">&quot;ROI parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupROILayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROIGroup</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groupROILayout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROIToolLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">widgetRejection</span> <span class="o">=</span> <span class="n">RoiWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROIToolLayout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widgetRejection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupROILayout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROIToolLayout</span><span class="p">)</span>
+
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionGroup</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thresholdGroup</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROIGroup</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DetectionToolTab">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectionToolTab</span><span class="p">(</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A napari widget form for PSF detection.</span>
+<span class="sd">    It contains a button to open the parameters window and a button to apply detection with current parameters</span>
+<span class="sd">    It also manage the display of detection results with new layers in napari viewer.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        viewer (napari.viewer.Viewer): The environment where the widget will be displayed.</span>
+<span class="sd">        countWindows (int): A counter to keep track of the number of windows created.</span>
+<span class="sd">        detectionTool (Detection): An instance of the Detection class to perform PSF detection.</span>
+<span class="sd">        detectionParameters (DetectionParametersWidget): A widget for setting detection parameters.</span>
+<span class="sd">        detectedBeadsLayer (napari.layers.Points): The layer displaying detected beads in the napari viewer.</span>
+<span class="sd">        ROILayer (napari.layers.Shapes): The layer displaying regions of interest in the napari viewer.</span>
+<span class="sd">        parametersButton (QPushButton): A button to open the parameters window.</span>
+<span class="sd">        detectionButton (QPushButton): A button to apply detection with current parameters.</span>
+<span class="sd">        resultsLabel (QLabel): A label to display the results of the detection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viewer</span><span class="p">:</span> <span class="s2">&quot;napari.viewer.Viewer&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span> <span class="o">=</span> <span class="n">viewer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countWindows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span> <span class="o">=</span> <span class="n">DetectionParametersWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">openParametersWindow</span><span class="p">)</span>
+        <span class="n">iconPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLogoPath</span><span class="p">(</span><span class="n">get_settings</span><span class="p">()</span><span class="o">.</span><span class="n">appearance</span><span class="o">.</span><span class="n">theme</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="n">QIcon</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">iconPath</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="o">.</span><span class="n">setIconSize</span><span class="p">(</span><span class="n">QSize</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="o">.</span><span class="n">setFixedSize</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s2">&quot;Open detection configurator&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Visualize beads detection&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span>
+            <span class="s2">&quot;Get a preview of detection with current parameters&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resultsLabel</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">()</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parametersButton</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultsLabel</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">removed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onLayerRemoved</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetectionToolTab.onLayerRemoved">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onLayerRemoved">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onLayerRemoved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Manage the suppression of ROI and _centroids layers</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event (QEvent): Informations about the triggering event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;detectedBeadsLayer&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span> <span class="o">==</span> <span class="n">event</span><span class="o">.</span><span class="n">value</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;ROILayer&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="o">==</span> <span class="n">event</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DetectionToolTab.openParametersWindow">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.openParametersWindow">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">openParametersWindow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to create parameters window and limit the maximum window number to one.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countWindows</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span> <span class="o">=</span> <span class="n">QDialog</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">&quot;Detection parameters&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span><span class="o">.</span><span class="n">setModal</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">onParametersWindowClosed</span>
+            <span class="p">)</span>
+            <span class="n">parametersLayout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+            <span class="n">parametersLayout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">parametersLayout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parametersWindow</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">pixelSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_pixelSize</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">countWindows</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">Image</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">thresholdRel</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">thresholdRelLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+                    <span class="s2">&quot;Relative threshold: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">thresholdRel</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">updateCropFactor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;crop factor&quot;</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="DetectionToolTab.onParametersWindowClosed">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.onParametersWindowClosed">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onParametersWindowClosed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called when parameters window is closed to unlock the possibility to open another one and remove threshold preview.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            result : Parameter sent by the window when closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countWindows</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">contrast_limits</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">oldContrastLimits</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">colormap</span> <span class="o">=</span> <span class="s2">&quot;gray&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">blending</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;additive&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">cropFactorPreview</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">cropFactorPreview</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">cropFactorPreview</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DetectionToolTab.erase_Layers">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.erase_Layers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">erase_Layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to delete all layers created by this widget&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectionToolTab.getLogoPath">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.getLogoPath">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">getLogoPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to automatically return the logo corresponding to the application theme.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            theme (napari.theme): The actual theme of the napari application.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path: path to the logo corresponding to the theme.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logoDirectory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;res&quot;</span> <span class="o">/</span> <span class="s2">&quot;drawable&quot;</span>
+        <span class="k">if</span> <span class="n">theme</span> <span class="o">==</span> <span class="s2">&quot;dark&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logoDirectory</span> <span class="o">/</span> <span class="s2">&quot;logo_dark.png&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logoDirectory</span> <span class="o">/</span> <span class="s2">&quot;logo_light.png&quot;</span></div>
+
+
+<div class="viewcode-block" id="DetectionToolTab.apply">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called when validating to launch beads detection and extraction with current parameters. It is not an analysis, only a detection preview.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_pixelSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span><span class="o">.</span><span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span> <span class="o">=</span> <span class="n">DetectionTool</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Detection tool&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="p">,</span> <span class="s2">&quot;_minDistance&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_minDistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Min dist&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Sigma&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_thresholdTool</span> <span class="o">=</span> <span class="n">Threshold</span><span class="o">.</span><span class="n">getInstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;manual&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_detectionTool</span><span class="o">.</span><span class="n">_thresholdTool</span><span class="o">.</span><span class="n">_relThreshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_cropFactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;crop factor&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_thresholdIntensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold intensity&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_beadSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Theoretical bead size (µm)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_rejectionDistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Z axis rejection margin (µm)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_prominenceRel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;ProminenceRel Double Pass&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cropPsf&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">create_worker</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">_progress</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;Detecting beads...&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayResult</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">errored</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DetectionToolTab.displayResult">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._detection_tool_widget.html#napari_microscopy_metrics._detection_tool_widget.DetectionToolTab.displayResult">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">displayResult</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A method to display detected centroids and region of interest with new layers.&quot;&quot;&quot;</span>
+        <span class="n">workingLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span>
+                        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span>
+                    <span class="p">],</span>
+                    <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;rectangle&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ROI&quot;</span><span class="p">,</span>
+                    <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;transparent&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ROILayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_shapes</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">bead</span><span class="o">.</span><span class="n">_roi</span>
+                        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span>
+                    <span class="p">],</span>
+                    <span class="n">shape_type</span><span class="o">=</span><span class="s2">&quot;rectangle&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ROI&quot;</span><span class="p">,</span>
+                    <span class="n">edge_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;transparent&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">add_points</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">bead</span><span class="o">.</span><span class="n">_centroid</span>
+                        <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span>
+                    <span class="p">],</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PSF detected&quot;</span><span class="p">,</span>
+                    <span class="n">face_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                    <span class="n">opacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detectedBeadsLayer</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">bead</span><span class="o">.</span><span class="n">_centroid</span>
+                    <span class="k">for</span> <span class="n">bead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span>
+                <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resultsLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Here are the results of the detection:</span><span class="se">\n</span><span class="s2">- </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="p">)</span><span class="si">}</span><span class="s2"> bead(s) detected</span><span class="se">\n</span><span class="s2">- </span><span class="si">{</span><span class="nb">len</span><span class="p">([</span><span class="n">bead</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">bead</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_imageAnalyzer</span><span class="o">.</span><span class="n">_beadAnalyzer</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">bead</span><span class="o">.</span><span class="n">_rejected</span><span class="p">])</span><span class="si">}</span><span class="s2"> ROI(s) extracted&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">show_warning</span><span class="p">(</span><span class="s2">&quot;No PSF found or incorrect format.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detectionButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionTool</span><span class="o">.</span><span class="n">_pixelSize</span><span class="p">[</span><span class="o">-</span><span class="n">layer</span><span class="o">.</span><span class="n">ndim</span> <span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">selection</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="n">workingLayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, CNRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

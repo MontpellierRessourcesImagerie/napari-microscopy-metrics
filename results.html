@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -42,21 +42,32 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How To</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html">Detection Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Outputs</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#napari-viewer">Napari viewer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#html-file">HTML file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pdf-file">PDF file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#csv-file">CSV file</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="how_to.html#purpose-of-this-section">Purpose of This Section</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detection.html">Detection Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari-viewer">Napari Viewer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#html-file">HTML File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pdf-file">PDF File</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#csv-file">CSV File</a></li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -74,7 +85,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="how_to.html">How To</a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">User Guide</a></li>
       <li class="breadcrumb-item active">Outputs</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/results.rst.txt" rel="nofollow"> View page source</a>
@@ -86,28 +97,60 @@
            <div itemprop="articleBody">
              
   <section id="outputs">
-<h1>Outputs<a class="headerlink" href="#outputs" title="Link to this heading"></a></h1>
-<p id="results">At the end of analysis, the plugin will produce many visual support to help use understand and evaluate results.</p>
+<span id="results"></span><h1>Outputs<a class="headerlink" href="#outputs" title="Link to this heading"></a></h1>
+<p>At the end of the analysis, the plugin generates <strong>multiple visual and data outputs</strong> to help users <strong>understand, evaluate, and interpret the results</strong>.
+These outputs provide comprehensive insights into the <strong>Point Spread Function (PSF)</strong> analysis and facilitate further data processing.</p>
 <section id="napari-viewer">
-<h2>Napari viewer<a class="headerlink" href="#napari-viewer" title="Link to this heading"></a></h2>
-<p>The napari interface is updated to display many informations about data used and produced by analysis.
-First of all, the user will see all the detected beads and extacted ROIs. Then, when metrics are computed, they are displayed in the “Metrics parameters” widget.</p>
+<h2>Napari Viewer<a class="headerlink" href="#napari-viewer" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>The <strong>Napari interface</strong> is dynamically updated to display <strong>real-time visualizations</strong> of the analysis results:</dt><dd><ul class="simple">
+<li><p><strong>Detected Beads and ROIs</strong>: All detected beads and their corresponding <strong>Regions of Interest (ROIs)</strong> are visualized directly in the Napari viewer.</p></li>
+<li><p><strong>Fitting Display</strong>: Computed fitting results are displayed in the <strong>“Metrics Parameters” widget</strong>, enabling interactive exploration.</p></li>
+<li><dl class="simple">
+<dt><strong>3D Visualizations</strong>:</dt><dd><ul>
+<li><p><strong>Mesh Representation</strong>: 3D mesh of the bead to visualize its shape and structure.</p></li>
+<li><p><strong>Skeleton Representation</strong>: Simplified view of the PSF structure for easier analysis.</p></li>
+<li><p><strong>Curvature Visualization</strong>: Assessment of the skeleton’s curvature.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="_images/outputs.png"><img alt="Napari Viewer with Detected Beads and ROIs" class="align-center" src="_images/outputs.png" style="width: 700px;" />
+</a>
 </section>
 <section id="html-file">
-<h2>HTML file<a class="headerlink" href="#html-file" title="Link to this heading"></a></h2>
-<p>To make a better interaction and understanding of results, users are able to double click on a detected ROI and see a web page open with a full report concerning this bead.
-This report contains the position of the bead (coordinates and representation in image), fit curves, views from all axis, metrics found.</p>
+<h2>HTML File<a class="headerlink" href="#html-file" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>For <strong>enhanced interaction</strong>, users can <strong>double-click on a detected ROI</strong> in the Napari viewer to open a <strong>detailed web report</strong> for the selected bead, including:</dt><dd><ul class="simple">
+<li><p><strong>Bead Position</strong>: Coordinates and visual representation in the image.</p></li>
+<li><p><strong>Fit Curves</strong>: Graphical representation of the fitting results.</p></li>
+<li><p><strong>Multi-Axis Views</strong>: Visualization from all axes (X, Y, Z).</p></li>
+<li><p><strong>Calculated Metrics</strong>: All derived analysis metrics.</p></li>
+<li><p><strong>Heatmaps</strong>: Visual representation of bead properties.</p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="pdf-file">
-<h2>PDF file<a class="headerlink" href="#pdf-file" title="Link to this heading"></a></h2>
-<p>A PDF file containing global resultats and results for each bead is also available, it contains same informations as HTML file, but for every beads.</p>
+<h2>PDF File<a class="headerlink" href="#pdf-file" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>A <strong>comprehensive PDF report</strong> is generated, containing:</dt><dd><ul class="simple">
+<li><p><strong>Global Analysis Summary</strong>: Overview of the entire analysis.</p></li>
+<li><p><strong>Individual Bead Reports</strong>: Detailed results for each bead, including all elements from the HTML report (position, fit curves, multi-axis views, metrics, and heatmaps).</p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="csv-file">
-<h2>CSV file<a class="headerlink" href="#csv-file" title="Link to this heading"></a></h2>
-<p>A CSV file only containing calculated value for each bead is also available.</p>
+<h2>CSV File<a class="headerlink" href="#csv-file" title="Link to this heading"></a></h2>
+<p>A <strong>CSV file</strong> is generated, containing <strong>only the numerical metrics</strong> for each bead.
+This file is ideal for <strong>further data processing or statistical analysis</strong> in tools like Excel, Python, or R.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Outputs are still under active development.</p>
+<p>The CSV format allows for easy integration with data analysis workflows and custom visualization tools.</p>
 </div>
 </section>
 </section>

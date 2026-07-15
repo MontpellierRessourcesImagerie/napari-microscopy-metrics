@@ -15,13 +15,13 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/tabs.js?v=3030b3cb"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="How To" href="how_to.html" />
+    <link rel="next" title="User Guide" href="how_to.html" />
     <link rel="prev" title="Napari microscopy metrics documentation" href="index.html" /> 
 </head>
 
@@ -44,13 +44,26 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#run">Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-source">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-plugin">Running the Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#support">Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="how_to.html">How To</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -79,61 +92,192 @@
            <div itemprop="articleBody">
              
   <section id="getting-started">
-<h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<span id="id1"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<p>This guide will help you install and use <strong>Napari Microscopy Metrics</strong>, a Napari plugin for <strong>quality control of Point Spread Functions (PSF)</strong> in microscopy.</p>
+<p>—</p>
 <section id="installation">
-<span id="id1"></span><h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<span id="id2"></span><h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>To use <cite>napari microscopy metrics</cite>, Python 3.12 is required</p>
-<p>It is strongly recommended to create a Python virtual environment to avoid conflicts with other packages.
+<p>It is <strong>strongly recommended</strong> to create a Python <strong>virtual environment</strong> to avoid conflicts with other packages.
 You can choose between <strong>venv</strong> (built-in Python module) or <strong>conda</strong> (Anaconda/Miniconda).</p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Using venv</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Using conda</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a virtual environment</span>
-python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>myenv
-
-<span class="c1"># Activate the environment</span>
-<span class="c1"># On Linux/MacOS:</span>
-<span class="nb">source</span><span class="w"> </span>myenv/bin/activate
-<span class="c1"># On Windows:</span>
-myenv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Using venv</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Using conda</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p><strong>1. Create a virtual environment:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>napari_microscopy_metrics_env
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a conda environment</span>
-conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>myenv<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12
-
-<span class="c1"># Activate the environment</span>
-conda<span class="w"> </span>activate<span class="w"> </span>myenv
+<p><strong>2. Activate the virtual environment:</strong></p>
+<ul>
+<li><p><strong>On Windows:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>napari_microscopy_metrics_env<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
 </pre></div>
 </div>
-</div></div>
-<p>You can install <cite>napari-microscopy-metrics</cite> via [pip]:</p>
+</li>
+<li><p><strong>On macOS and Linux:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>napari_microscopy_metrics_env/bin/activate
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>3. Install the package and its dependencies:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metrics
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><p><strong>1. Create a conda environment:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>napari_microscopy_metrics_env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12
+</pre></div>
+</div>
+<p><strong>2. Activate the conda environment:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>napari_microscopy_metrics_env
+</pre></div>
+</div>
+<p><strong>3. Install the package:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metrics
 </pre></div>
 </div>
-<p>If napari is not already installed, you can install <cite>napari-microscopy-metrics</cite> with napari and Qt via:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;napari-microscopy-metrics[all]&quot;</span>
-</pre></div>
-</div>
-<p>To install latest development version :</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics.git
-</pre></div>
-</div>
-<p>You will also need to install <cite>microscopy-metrics</cite> and <cite>auto-options</cite> from MRI github :</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>git+https://github.com/MontpellierRessourcesImagerie/microscopy-metrics.git
-</pre></div>
-</div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>git+https://github.com/MontpellierRessourcesImagerie/auto-options-python.git
-</pre></div>
-</div>
+</div></div>
+<p>—</p>
 </section>
-<section id="run">
-<span id="id2"></span><h2>Run<a class="headerlink" href="#run" title="Link to this heading"></a></h2>
-<p>Napari microscopy metrics is a napari plugin, so you first have to run a napari application in your python virtual environment :</p>
+<section id="install-from-source">
+<span id="id3"></span><h2>Install from Source<a class="headerlink" href="#install-from-source" title="Link to this heading"></a></h2>
+<p>If you want to use the latest development version, you can install <strong>Napari Microscopy Metrics</strong> directly from the GitHub repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics.git
+<span class="nb">cd</span><span class="w"> </span>napari-microscopy-metrics
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-e</span></code> flag installs the package in <strong>editable mode</strong>, allowing you to modify the code and see changes immediately.</p>
+</div>
+<p>—</p>
+</section>
+<section id="dependencies">
+<span id="id4"></span><h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<p><strong>Napari Microscopy Metrics</strong> relies on several Python packages for its functionality. The main dependencies include:</p>
+<table class="docutils align-default" id="id9">
+<caption><span class="caption-text">Core Dependencies</span><a class="headerlink" href="#id9" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Package</strong></p></th>
+<th class="head"><p><strong>Purpose</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code></p></td>
+<td><p>Numerical computations and array operations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">scikit-image</span></code></p></td>
+<td><p>Image processing (e.g., filtering, segmentation).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">magicgui</span></code></p></td>
+<td><p>GUI creation and management.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">qtpy</span></code></p></td>
+<td><p>Qt abstraction layer for GUI compatibility.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">napari-stl-exporter</span></code></p></td>
+<td><p>Exporting 3D models to STL format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">microscopy-metrics</span></code></p></td>
+<td><p>Core microscopy metrics calculations and analysis.</p></td>
+</tr>
+</tbody>
+</table>
+<p>—</p>
+</section>
+<section id="optional-dependencies">
+<span id="id5"></span><h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading"></a></h2>
+<p>For <strong>development and testing</strong>, you can install the following optional dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metrics<span class="o">[</span>dev<span class="o">]</span>
+</pre></div>
+</div>
+<p>This will install:</p>
+<table class="docutils align-default" id="id10">
+<caption><span class="caption-text">Optional Dependencies</span><a class="headerlink" href="#id10" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Package</strong></p></th>
+<th class="head"><p><strong>Purpose</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></td>
+<td><p>Testing framework.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pytest-cov</span></code></p></td>
+<td><p>Coverage reporting for tests.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">coverage</span></code></p></td>
+<td><p>Code coverage analysis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sphinx</span></code></p></td>
+<td><p>Documentation generation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sphinx-rtd-theme</span></code></p></td>
+<td><p>Theme for Sphinx documentation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sphinx-tabs</span></code></p></td>
+<td><p>Tab support in Sphinx documentation.</p></td>
+</tr>
+</tbody>
+</table>
+<p>—</p>
+</section>
+<section id="running-the-plugin">
+<span id="run"></span><h2>Running the Plugin<a class="headerlink" href="#running-the-plugin" title="Link to this heading"></a></h2>
+<p><strong>Napari microscopy metrics</strong> is a <strong>Napari plugin</strong>, so you first have to run a napari application in your python virtual environment :</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>napari
 </pre></div>
 </div>
-<p>You now have access to the napari interface. To open the microscopy-metrics plugin, you just have to enable the option at _Plugins &gt; Microscopy Metrics (Microscopy Metrics)</p>
+<p>You now have access to the napari interface. To open the <strong>Napari microscopy metrics</strong> plugin, you just have to enable the option at <strong>Plugins &gt; Microscopy Metrics (Microscopy Metrics)</strong></p>
 <a class="reference internal image-reference" href="_images/open_plugin.png"><img alt="Open plugin example" class="align-center" src="_images/open_plugin.png" style="width: 700px;" />
 </a>
-<p>A new widget is supposed to be created at the right side of the application. To use the plugin you can follow this <a class="reference internal" href="how_to.html#id1"><span class="std std-ref">tutorial</span></a></p>
+<p>A new widget is supposed to be created at the right side of the application. To use the plugin you can follow this <a class="reference internal" href="how_to.html#how-to"><span class="std std-ref">tutorial</span></a></p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h2>
+<p>We welcome contributions! Here’s how you can help:</p>
+<ol class="arabic">
+<li><p><strong>Fork the repository</strong> on GitHub.</p></li>
+<li><p><strong>Create a new branch</strong> for your feature or bug fix:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/your-feature-name
+</pre></div>
+</div>
+</li>
+<li><p><strong>Commit your changes</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add your feature or fix&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Push to your branch</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/your-feature-name
+</pre></div>
+</div>
+</li>
+<li><p><strong>Open a Pull Request</strong> on GitHub.</p></li>
+</ol>
+<p>For bug reports or feature requests, please open an <strong>issue</strong> on the <a class="reference external" href="https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics/issues">GitHub repository</a>.</p>
+<p>—</p>
+</section>
+<section id="support">
+<span id="id6"></span><h2>Support<a class="headerlink" href="#support" title="Link to this heading"></a></h2>
+<p>If you encounter any issues or have questions, feel free to:</p>
+<ul class="simple">
+<li><p>Open an <strong>issue</strong> on <a class="reference external" href="https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics/issues">GitHub</a>.</p></li>
+<li><p>Contact the development team at <strong>mri-cia&#64;mri.cnrs.fr</strong>.</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="license">
+<span id="id7"></span><h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>This project is licensed under the <strong>CECILL-B</strong> license. See the <a class="reference external" href="https://cecill.info/licences/Licence_CeCILL-B_V1-fr.html">LICENSE</a> file for details.</p>
 </section>
 </section>
 
@@ -142,7 +286,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>myenv
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Napari microscopy metrics documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="how_to.html" class="btn btn-neutral float-right" title="How To" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="how_to.html" class="btn btn-neutral float-right" title="User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

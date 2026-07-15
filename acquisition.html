@@ -14,13 +14,13 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Detection Widget" href="detection.html" />
-    <link rel="prev" title="How To" href="how_to.html" /> 
+    <link rel="prev" title="User Guide" href="how_to.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,19 +42,30 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How To</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Acquisition Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#image-scaling-parameters">Image Scaling Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#microscope-acquisition-parameters">Microscope Acquisition Parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="how_to.html#purpose-of-this-section">Purpose of This Section</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Acquisition Widget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#image-scaling-parameters">Image Scaling Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#microscope-acquisition-parameters">Microscope Acquisition Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html">Detection Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detection.html">Detection Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="metrics.html">Metrics Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="results.html">Outputs</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -72,7 +83,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="how_to.html">How To</a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">User Guide</a></li>
       <li class="breadcrumb-item active">Acquisition Widget</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/acquisition.rst.txt" rel="nofollow"> View page source</a>
@@ -84,35 +95,59 @@
            <div itemprop="articleBody">
              
   <section id="acquisition-widget">
-<h1>Acquisition Widget<a class="headerlink" href="#acquisition-widget" title="Link to this heading"></a></h1>
-<p id="acquisition">The Acquisition Widget is a form concerning informations about image scaling and microscope acquisition parameters.</p>
+<span id="acquisition"></span><h1>Acquisition Widget<a class="headerlink" href="#acquisition-widget" title="Link to this heading"></a></h1>
+<p>The <strong>Acquisition Widget</strong> is designed to collect <strong>essential information</strong> about the <strong>image scaling</strong> and <strong>microscope acquisition parameters</strong>. These parameters are critical for ensuring accurate and meaningful analysis of the Point Spread Function (PSF).</p>
+<p>—</p>
 <section id="image-scaling-parameters">
 <h2>Image Scaling Parameters<a class="headerlink" href="#image-scaling-parameters" title="Link to this heading"></a></h2>
-<p>This widget allows user to enter the scaling of the image for each axis. The scaling’s unit is µm/px because the value is defined as the metric size (in micrometer) represented by each pixel.</p>
-<p>The button “Apply and save scale” confirm entries for the next analysis, and save them for the future. It also change the scaling of the napari viewer to enhance the represented image.</p>
-<a class="reference internal image-reference" href="_images/image_size_widget.png"><img alt="ImageSizeWidget" class="align-center" src="_images/image_size_widget.png" style="width: 500px;" />
+<p>The <strong>Image Scaling Parameters</strong> section allows users to define the <strong>physical size</strong> represented by each pixel in the image. This scaling is specified in <strong>µm/px</strong> (micrometers per pixel), which means it describes the real-world distance corresponding to a single pixel in the image.</p>
+<dl class="simple">
+<dt><strong>Key Features:</strong></dt><dd><ul class="simple">
+<li><p><strong>Axis-Specific Scaling</strong>: Users can enter scaling values for each axis (X, Y, Z) independently.</p></li>
+<li><p><strong>Apply and Save</strong>: The <strong>“Apply and Save Scale”</strong> button confirms the entered values for subsequent analyses and saves them for future use. It also <strong>updates the scaling in the Napari viewer</strong>, ensuring that the displayed image reflects the correct physical dimensions.</p></li>
+</ul>
+</dd>
+</dl>
+<a class="only-light reference internal image-reference" href="_images/image_size_widget.png"><img alt="Image Scaling Widget" class="only-light align-center" src="_images/image_size_widget.png" style="width: 500px;" />
 </a>
+<p>—</p>
 </section>
 <section id="microscope-acquisition-parameters">
 <h2>Microscope Acquisition Parameters<a class="headerlink" href="#microscope-acquisition-parameters" title="Link to this heading"></a></h2>
-<p>This widget concerns parameters about microscope acquisition:</p>
-<ul class="simple">
-<li><p><strong>Microscope type</strong>
-The formula of <strong>theoretical resolution</strong> is not the same for all microscopes.
-Implemented types: <strong>widefield</strong>, <strong>confocal</strong>, <strong>multiphoton</strong>, and <strong>spinning disk</strong>.</p></li>
-<li><p><strong>Emission wavelength</strong>
-In <strong>nanometers (nm)</strong>, this is the wavelength of photons captured by the microscope.
-It directly impacts the resolution and image quality.</p></li>
-<li><p><strong>Refraction index</strong>
-Represents how light is refracted when changing from one medium to another.
-Values range from <strong>1.0 (air)</strong> to <strong>1.5 (oil)</strong>.</p></li>
-<li><p><strong>Numerical aperture (NA)</strong>
-Represents the <strong>light-gathering ability</strong> of a microscope objective.
-A high NA allows more rays to enter the objective, producing <strong>highly resolved images</strong>.
-Formula: <strong>NA = Refraction index × sin(θ)</strong>.</p></li>
-</ul>
-<a class="reference internal image-reference" href="_images/Microscope_parameters_widget.png"><img alt="MicroscopeParametersWidget" class="align-center" src="_images/Microscope_parameters_widget.png" style="width: 500px;" />
+<p>The <strong>Microscope Acquisition Parameters</strong> section allows users to specify the <strong>technical details</strong> of the microscope used for image acquisition. These parameters directly influence the <strong>theoretical resolution</strong> and the quality of the analysis.</p>
+<p><strong>Parameters:</strong></p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Microscope Acquisition Parameters</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Parameter</strong></p></th>
+<th class="head"><p><strong>Description</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Microscope Type</strong></p></td>
+<td><p>The type of microscope used. The <strong>theoretical resolution formula</strong> varies depending on the microscope type. Supported types: <strong>Widefield</strong>, <strong>Confocal</strong>, <strong>Multiphoton</strong>, and <strong>Spinning Disk</strong>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Emission Wavelength</strong></p></td>
+<td><p>The wavelength of the photons <strong>emitted by the sample</strong>, measured in <strong>nanometers (nm)</strong>. This parameter directly impacts the resolution and image quality.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Excitation Wavelength</strong></p></td>
+<td><p>The wavelength of the photons used to <strong>excite the sample</strong>, measured in <strong>nanometers (nm)</strong>. It influences the emission wavelength and overall imaging performance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Refractive Index</strong></p></td>
+<td><p>Describes how light is refracted when transitioning between different media (e.g., air, oil). Typical values range from <strong>1.0 (air)</strong> to <strong>1.5 (oil)</strong>.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Numerical Aperture (NA)</strong></p></td>
+<td><p>Represents the <strong>light-gathering ability</strong> of the microscope objective. A higher NA allows more light rays to enter the objective, resulting in <strong>higher resolution images</strong>. It is calculated using the formula: <strong>NA = Refractive Index × sin(θ)</strong>, where θ is the half-angle of the cone of light that can enter the objective.</p></td>
+</tr>
+</tbody>
+</table>
+<a class="only-light reference internal image-reference" href="_images/Microscope_parameters_widget.png"><img alt="Microscope Parameters Widget" class="only-light align-center" src="_images/Microscope_parameters_widget.png" style="width: 500px;" />
 </a>
+<p>—</p>
 </section>
 </section>
 
@@ -120,7 +155,7 @@ Formula: <strong>NA = Refraction index × sin(θ)</strong>.</p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="how_to.html" class="btn btn-neutral float-left" title="How To" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="how_to.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="detection.html" class="btn btn-neutral float-right" title="Detection Widget" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -6,3 +6,11 @@ Main widget
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+.. currentmodule:: napari_microscopy_metrics.widgets.BaseWidget
+
+.. autoclass:: BaseWidget
+    :members:
+    :undoc-members:
+    :show-inheritance:

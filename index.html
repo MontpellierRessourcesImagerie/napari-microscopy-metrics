@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -41,9 +41,16 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how_to.html">How To</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -73,56 +80,63 @@
              
   <section id="napari-microscopy-metrics-documentation">
 <h1>Napari microscopy metrics documentation<a class="headerlink" href="#napari-microscopy-metrics-documentation" title="Link to this heading"></a></h1>
-<p><strong>Napari microscopy metrics</strong> is a Python plugin for napari that gives tools to do microscopes quality control using point spread function.</p>
-<p>Check out the <a class="reference internal" href="usage.html"><span class="doc">Getting started</span></a> section for further information, including how to <a class="reference internal" href="usage.html#installation"><span class="std std-ref">install</span></a> and <a class="reference internal" href="usage.html#run"><span class="std std-ref">run</span></a> the project.</p>
+<a class="reference external image-reference" href="https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics/releases"><img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/MontpellierRessourcesImagerie/napari-microscopy-metrics" />
+</a>
+<p><strong>Napari microscopy metrics</strong> is a <strong>Python plugin for Napari</strong> that gives tools to do the metrology of microscopic images using <strong>Point spread function (PSF)</strong>.
+This plugin enables you to <strong>characterize optical aberrations</strong>, <strong>evaluate system resolution</strong>, and <strong>generate detailed reports</strong> for quality control in microscopy.</p>
+<p>Whether you’re a researcher, engineer, or developer, Napari Microscopy Metrics allows you to <strong>analyze, visualize, and optimize</strong> your microscopy data on Napari.</p>
+<p>—</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This project is under active development.</p>
+<p><strong>This project is under active development.</strong>
+The current version is a work in progress and may not be fully stable.
+We encourage users to <strong>report issues</strong> or <strong>provide feedback</strong> to help improve the project.
+For the latest updates, check out our <a class="reference external" href="https://github.com/MontpellierRessourcesImagerie/napari-microscopy-metrics">GitHub repository</a>.</p>
 </div>
+<p>—</p>
+</section>
 <section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
-<div class="toctree-wrapper compound">
+<h1>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound" id="getting-started-toc">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#run">Run</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="how_to.html">How To</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="acquisition.html#image-scaling-parameters">Image Scaling Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="acquisition.html#microscope-acquisition-parameters">Microscope Acquisition Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html">Detection Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="detection.html#detection-parameters">Detection Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="detection.html#threshold-parameters">Threshold Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="detection.html#region-of-interest-parameters">Region Of Interest Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="metrics.html">Metrics Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="metrics.html#metrics-parameters">Metrics Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="results.html#napari-viewer">Napari viewer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="results.html#html-file">HTML file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="results.html#pdf-file">PDF file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="results.html#csv-file">CSV file</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/napari_microscopy_metrics._widget.html">napari_microscopy_metrics._widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/napari_microscopy_metrics._acquisition_widget.html">napari_microscopy_metrics._acquisition_widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/napari_microscopy_metrics._detection_tool_widget.html">napari_microscopy_metrics._detection_tool_widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/napari_microscopy_metrics._metrics_widget.html">napari_microscopy_metrics._metrics_widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#install-from-source">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#optional-dependencies">Optional Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#running-the-plugin">Running the Plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#support">Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#license">License</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</section>
+<div class="toctree-wrapper compound" id="user-guide-toc">
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#purpose-of-this-section">Purpose of This Section</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound" id="api-toc">
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._widget.html">Main widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._acquisition_widget.html">Acquisition widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._detection_tool_widget.html">Detection widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._metrics_widget.html">Metrics widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._report_widget.html">Report Widget</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>—</p>
 </section>
 
 

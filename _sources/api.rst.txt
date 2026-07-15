@@ -1,14 +1,17 @@
 API
 ===
-.. currentmodule:: napari_microscopy_metrics
 
-.. autosummary::
-    :toctree: generated
-    :recursive:
+This section describes the API of the `napari-microscopy-metrics` package, including its classes, methods, and attributes.
 
-    _widget
-    _acquisition_widget
-    _detection_tool_widget
-    _metrics_widget
+.. toctree::
+   :maxdepth: 2
+
+   napari_microscopy_metrics._widget
+   napari_microscopy_metrics._acquisition_widget
+   napari_microscopy_metrics._detection_tool_widget
+   napari_microscopy_metrics._metrics_widget
+   napari_microscopy_metrics._report_widget
+
+
     
 

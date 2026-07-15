@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metrics widget &mdash; Napari microscopy metrics  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Report Widget" href="napari_microscopy_metrics._report_widget.html" />
+    <link rel="prev" title="Detection widget" href="napari_microscopy_metrics._detection_tool_widget.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Napari microscopy metrics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how_to.html">User Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._widget.html">Main widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._acquisition_widget.html">Acquisition widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._detection_tool_widget.html">Detection widget</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Metrics widget</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.viewer"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.viewer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.count_windows"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.count_windows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.SBR"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.SBR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.FWHM"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.FWHM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.spacing"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.spacing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.openDocumentation"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.openDocumentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printFWHM"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.printFWHM()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printResults"><code class="docutils literal notranslate"><span class="pre">Metricstoolpage.printResults()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.paramsStack"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.paramsStack</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.parent"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.parent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.createLayout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.displayFWHM"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.displayFWHM()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getOptions"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.getOptions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.getSliders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.openDocumentation"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.openDocumentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.selectedAction"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.selectedAction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.toDict"><code class="docutils literal notranslate"><span class="pre">FittingOptionWidget.toDict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="napari_microscopy_metrics._report_widget.html">Report Widget</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Napari microscopy metrics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">API</a></li>
+      <li class="breadcrumb-item active">Metrics widget</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/napari_microscopy_metrics._metrics_widget.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="metrics-widget">
+<h1>Metrics widget<a class="headerlink" href="#metrics-widget" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._metrics_widget.</span></span><span class="sig-name descname"><span class="pre">Metricstoolpage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_metrics_widget.html#Metricstoolpage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>A napari widget form for microscopy metrics parameters and results.
+It contains a FittingOptionWidget for setting fitting parameters and a label to display metrics results.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.viewer">
+<span class="sig-name descname"><span class="pre">viewer</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.viewer" title="Link to this definition"></a></dt>
+<dd><p>The environment where the widget will be displayed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>napari.viewer.Viewer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.count_windows">
+<span class="sig-name descname"><span class="pre">count_windows</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.count_windows" title="Link to this definition"></a></dt>
+<dd><p>A counter to keep track of the number of windows created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.SBR">
+<span class="sig-name descname"><span class="pre">SBR</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.SBR" title="Link to this definition"></a></dt>
+<dd><p>Signal to background ratio of the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.FWHM">
+<span class="sig-name descname"><span class="pre">FWHM</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.FWHM" title="Link to this definition"></a></dt>
+<dd><p>List of 3 values corresponding to FWHM in Z, Y and X of the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.spacing">
+<span class="sig-name descname"><span class="pre">spacing</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.spacing" title="Link to this definition"></a></dt>
+<dd><p>List of 3 values corresponding to the spacing in Z, Y and X of the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_metrics_widget.html#Metricstoolpage.openDocumentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>A method to open the documentation webPage relative to this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.printFWHM">
+<span class="sig-name descname"><span class="pre">printFWHM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">FWHM</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_metrics_widget.html#Metricstoolpage.printFWHM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printFWHM" title="Link to this definition"></a></dt>
+<dd><p>A method to update plugin interface with the FWHM of the image analyzed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>FWHM</strong> (<em>list</em>) – List of 3 values corresponding to FWHM in Z, Y and X of the image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.Metricstoolpage.printResults">
+<span class="sig-name descname"><span class="pre">printResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SBR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/_metrics_widget.html#Metricstoolpage.printResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.Metricstoolpage.printResults" title="Link to this definition"></a></dt>
+<dd><p>A method to update plugin interface with the SBR of the image analyzed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>SBR</strong> (<em>float</em>) – Signal to background ratio of the image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">napari_microscopy_metrics._metrics_widget.</span></span><span class="sig-name descname"><span class="pre">FittingOptionWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="napari_microscopy_metrics._widget.html#napari_microscopy_metrics.widgets.BaseWidget.BaseWidget" title="napari_microscopy_metrics.widgets.BaseWidget.BaseWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseWidget</span></code></a></p>
+<p>A widget allowing user to setup fitting options for PSF detection and save them for next session.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.paramsStack">
+<span class="sig-name descname"><span class="pre">paramsStack</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.paramsStack" title="Link to this definition"></a></dt>
+<dd><p>A stacked widget to display parameters for the selected fitting tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QStackedWidget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.parent" title="Link to this definition"></a></dt>
+<dd><p>The parent widget that contains this widget, used to update FWHM values in the parent widget.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>QWidget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout">
+<span class="sig-name descname"><span class="pre">createLayout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.createLayout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.createLayout" title="Link to this definition"></a></dt>
+<dd><p>A method used to create the layout with options setup to previous analysis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.displayFWHM">
+<span class="sig-name descname"><span class="pre">displayFWHM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.displayFWHM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.displayFWHM" title="Link to this definition"></a></dt>
+<dd><p>A method to display mean FWHM of detected PSF with prominence fitting tool and update it when changing prominence slider value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>int</em>) – Value of the prominence slider</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getOptions">
+<span class="sig-name descname"><span class="pre">getOptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.getOptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getOptions" title="Link to this definition"></a></dt>
+<dd><p>A class method which creates entries for fitting options and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>options (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">getSliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.getSliders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.getSliders" title="Link to this definition"></a></dt>
+<dd><p>A class method which creates entries for sliders values and load previous analysis informations if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object that contains every widget informations.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>optionsSliders (Options)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.openDocumentation">
+<span class="sig-name descname"><span class="pre">openDocumentation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.openDocumentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.openDocumentation" title="Link to this definition"></a></dt>
+<dd><p>A method to open the documentation webPage relative to this widget</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.selectedAction">
+<span class="sig-name descname"><span class="pre">selectedAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.selectedAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.selectedAction" title="Link to this definition"></a></dt>
+<dd><p>A method to display prominence slider if prominence is selected as fitting tool and hide it otherwise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – Value of the fitting tool choice</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="napari_microscopy_metrics._metrics_widget.FittingOptionWidget.toDict">
+<span class="sig-name descname"><span class="pre">toDict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/napari_microscopy_metrics/widgets/FittingOptionWidget.html#FittingOptionWidget.toDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#napari_microscopy_metrics._metrics_widget.FittingOptionWidget.toDict" title="Link to this definition"></a></dt>
+<dd><p>A method to create a dict with current fitting options and sliders values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="napari_microscopy_metrics._detection_tool_widget.html" class="btn btn-neutral float-left" title="Detection widget" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="napari_microscopy_metrics._report_widget.html" class="btn btn-neutral float-right" title="Report Widget" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, CNRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

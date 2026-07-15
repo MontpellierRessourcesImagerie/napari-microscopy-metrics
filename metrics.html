@@ -14,8 +14,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -42,18 +42,29 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How To</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
-<li class="toctree-l2"><a class="reference internal" href="detection.html">Detection Widget</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Metrics Widget</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#metrics-parameters">Metrics Parameters</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to.html#analysis-workflow">Analysis Workflow</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="how_to.html#purpose-of-this-section">Purpose of This Section</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="acquisition.html">Acquisition Widget</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detection.html">Detection Widget</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Metrics Widget</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#metrics-parameters">Metrics Parameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="results.html">Outputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="results.html">Outputs</a></li>
 </ul>
 </li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
@@ -71,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="how_to.html">How To</a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">User Guide</a></li>
       <li class="breadcrumb-item active">Metrics Widget</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/metrics.rst.txt" rel="nofollow"> View page source</a>
@@ -83,16 +94,23 @@
            <div itemprop="articleBody">
              
   <section id="metrics-widget">
-<h1>Metrics Widget<a class="headerlink" href="#metrics-widget" title="Link to this heading"></a></h1>
-<p id="metrics">The Metrics Widget display calculated metrics and also let user choose 1D, 2D or 3D fitting</p>
+<span id="metrics"></span><h1>Metrics Widget<a class="headerlink" href="#metrics-widget" title="Link to this heading"></a></h1>
+<p>The <strong>Metrics Widget</strong> displays <strong>calculated metrics</strong> and allows users to select the <strong>fitting method</strong> for their analysis.
+The choice of fitting method significantly impacts the accuracy and performance of the PSF (Point Spread Function) analysis.</p>
 <section id="metrics-parameters">
 <h2>Metrics Parameters<a class="headerlink" href="#metrics-parameters" title="Link to this heading"></a></h2>
-<p>This section concerns the choice of fit :</p>
-<ul class="simple">
+<dl class="simple">
+<dt>This section allows users to select the <strong>type of fit</strong> for their analysis. Each method has its own advantages and limitations:</dt><dd><ul class="simple">
 <li><p><strong>1D</strong> : fastest kind of fit, but most of aberration informations are lost.</p></li>
-<li><p><strong>2D</strong> : Based on 1D parameters to make a 2D fit, better representation of the views at centroids, but bad fit at profiles.</p></li>
+<li><p><strong>2D</strong> : Based on 1D parameters to make a 2D fit, good fitting, but no information about the orientation (tilt aberration) of the PSF.</p></li>
+<li><p><strong>2D Ellips</strong> : Based on PSFj’s 2D fit, better representation of the orientation (tilt aberration) of the PSF, but less stable than 2D fit.</p></li>
+<li><p><strong>2D Rotation</strong> : Based on 2D fit, but with a rotation of the PSF to fit the orientation of the PSF, better representation of the orientation (tilt aberration) of the PSF.</p></li>
 <li><p><strong>3D</strong> : Slowest method, but fit all of the ROI despite of a bad fit at profiles.</p></li>
+<li><p><strong>3D Rotation</strong> : Based on 3D fit, but with a rotation of the PSF to fit the orientation of the PSF, better representation of the orientation (tilt aberration) of the PSF.</p></li>
+<li><p><strong>Prominence</strong> : Based on Bead Analyzer’s method, not a fit, but a good estimation of the FWHM in a fast way, but not enough accurate FWHM estimation.</p></li>
 </ul>
+</dd>
+</dl>
 <a class="reference internal image-reference" href="_images/metrics_parameters.png"><img alt="MetricsParameters" class="align-center" src="_images/metrics_parameters.png" style="width: 500px;" />
 </a>
 </section>
