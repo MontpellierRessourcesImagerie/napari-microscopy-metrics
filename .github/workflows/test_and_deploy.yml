@@ -3,8 +3,13 @@
 name: tests
 
 on:
+  push:
+    tags: ["*"]
+    branches:
+      - main
+      - npe2
   release:
-    types: ["released"]
+    types: [released]
   pull_request:
     branches:
       - main
