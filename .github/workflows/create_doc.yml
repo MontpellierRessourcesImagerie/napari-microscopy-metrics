@@ -29,6 +29,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .[dev]
           python -m pip install "napari[pyqt5]"
+          python -m pip install sphinx==8.2.3 sphinx-rtd-theme sphinxcontrib-napoleon sphinx-tabs
       
       - name: Build HTML
         working-directory: documentation
