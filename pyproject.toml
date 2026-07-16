@@ -31,20 +31,19 @@ requires-python = ">=3.10"
 # or any other Qt bindings directly (e.g. PyQt5, PySide2).
 # See best practices: https://napari.org/stable/plugins/building_a_plugin/best_practices.html
 dependencies = [
-    "napari",
     "numpy",
     "magicgui",
     "qtpy",
     "scikit-image",
-    "auto-options-python",
-    "napari-stl-exporter",
-    "microscopy-metrics",
+    "auto-options-python==0.1.7",
+    "napari-stl-exporter==0.1.5",
+    "microscopy-metrics>=1.0.0",
 ]
 
 [project.optional-dependencies]
 # Allow easily installation with the full, default napari installation
 # (including Qt backend) using napari-microscopy-metrics[all].
-all = ["napari[all]"]
+all = ["napari[all]==0.6.6"]
 
 [dependency-groups]
 dev = [
@@ -54,7 +53,7 @@ dev = [
     "coverage",
     "pytest-qt",  # https://pytest-qt.readthedocs.io/en/latest/
     "napari[qt]",  # test with napari's default Qt bindings
-    "sphinx==8.2.3",  # https://www.sphinx-doc.org/en/master/
+    "sphinx>=7.2.6,<8.0.0",  # https://www.sphinx-doc.org/en/master/
     "sphinx_rtd_theme",  # https://sphinx-rtd-theme.readthedocs.io/en/stable/
     "sphinxcontrib-napoleon",  # https://sphinxcontrib-napoleon.readthedocs.io/en/latest/
     "sphinx-tabs",  # https://sphinx-tabs.readthedocs.io/en/latest/

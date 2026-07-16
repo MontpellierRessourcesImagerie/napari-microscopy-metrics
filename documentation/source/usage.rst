@@ -46,6 +46,9 @@ You can choose between **venv** (built-in Python module) or **conda** (Anaconda/
 
       .. code-block:: bash
 
+         #If napari is not installed yet, you can install it with pip
+         pip install "napari[all]==0.6.6"
+
          pip install --upgrade pip
          pip install napari-microscopy-metrics
 
@@ -67,6 +70,10 @@ You can choose between **venv** (built-in Python module) or **conda** (Anaconda/
 
       .. code-block:: bash
 
+         #If napari is not installed yet, you can install it with pip
+         pip install "napari[all]==0.6.6"
+         
+         pip install --upgrade pip
          pip install napari-microscopy-metrics
 
 ---
