@@ -37,7 +37,7 @@ dependencies = [
     "scikit-image",
     "auto-options-python==0.1.7",
     "napari-stl-exporter==0.1.5",
-    "microscopy-metrics>=1.0.0",
+    "microscopy-metrics @ git+https://github.com/MontpellierRessourcesImagerie/microscopy-metrics.git",
 ]
 
 [project.optional-dependencies]

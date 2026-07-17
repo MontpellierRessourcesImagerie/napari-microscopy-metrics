@@ -13,7 +13,7 @@ This guide will help you install and use **Napari Microscopy Metrics**, a Napari
 Installation
 ------------
 
-To use `napari microscopy metrics`, Python 3.12 is required
+To use `napari microscopy metrics`, Python 3.11 is required
 
 It is **strongly recommended** to create a Python **virtual environment** to avoid conflicts with other packages.
 You can choose between **venv** (built-in Python module) or **conda** (Anaconda/Miniconda).
@@ -46,19 +46,18 @@ You can choose between **venv** (built-in Python module) or **conda** (Anaconda/
 
       .. code-block:: bash
 
-         #If napari is not installed yet, you can install it with pip
          pip install "napari[all]==0.6.6"
 
          pip install --upgrade pip
          pip install napari-microscopy-metrics
 
-   .. tab:: Using conda
+   .. tab:: Using conda (Recommended)
 
       **1. Create a conda environment:**
 
       .. code-block:: bash
 
-         conda create --name napari_microscopy_metrics_env python=3.12
+         conda create --name napari_microscopy_metrics_env python=3.11
 
       **2. Activate the conda environment:**
 
@@ -70,7 +69,6 @@ You can choose between **venv** (built-in Python module) or **conda** (Anaconda/
 
       .. code-block:: bash
 
-         #If napari is not installed yet, you can install it with pip
          pip install "napari[all]==0.6.6"
          
          pip install --upgrade pip
@@ -168,6 +166,33 @@ Running the Plugin
 .. code-block:: bash
 
     napari
+
+If you are not in your virtual environment (see the :ref:`installation` section), you must activate it first.
+
+.. tabs::
+
+   .. tab:: Using venv
+
+      **Activate the virtual environment:**
+
+      Go to the directory where you created the virtual environment and run in your terminal:
+
+      .. code-block:: bash
+
+         source venv/bin/activate  # On Linux/macOS
+         # or
+         venv\Scripts\activate     # On Windows
+
+   .. tab:: Using conda (Recommended)
+
+      **Activate the conda environment:**
+
+
+      Run the following command in your terminal:
+
+      .. code-block:: bash
+
+         conda activate napari_microscopy_metrics_env
 
 You now have access to the napari interface. To open the **Napari microscopy metrics** plugin, you just have to enable the option at **Plugins > Microscopy Metrics (Microscopy Metrics)**
 

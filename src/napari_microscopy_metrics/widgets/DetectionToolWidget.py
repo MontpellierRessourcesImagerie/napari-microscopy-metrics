@@ -100,7 +100,7 @@ class DetectionToolWidget(BaseWidget):
         )
         options.addChoice(
             name="Detection tool",
-            value="Centroids",
+            value="Difference of Gaussian",
             choices=[x for x in DetectionTool._detectionClasses],
             callback=self.selectedAction,
         )

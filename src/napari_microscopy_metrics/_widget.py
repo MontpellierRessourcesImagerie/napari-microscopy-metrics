@@ -28,6 +28,9 @@ from napari_microscopy_metrics._metrics_widget import Metricstoolpage
 from napari_microscopy_metrics._detection_tool_widget import DetectionToolTab
 from napari_microscopy_metrics._acquisition_widget import AcquisitionToolPage
 from napari_microscopy_metrics._report_widget import ReportToolPage
+from napari_microscopy_metrics._batch_widget import BatchWidget
+from microscopy_metrics.BatchAnalyzer import BatchAnalyzer
+
 
 class Microscopy_Metrics_QWidget(QWidget):
     """A QWidget gathering all the tools for PSF analysis and allowing user to run the whole analysis and generate reports.
@@ -97,21 +100,76 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Y"),
             self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size X"),
         ]
-        self.tab.addTab(self.metricsToolPage, "Metrics parameters")
+        self.tab.addTab(self.metricsToolPage, "Fitting parameters")
 
         self.reportToolPage = ReportToolPage(self.viewer)
         self.reportToolPage.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Minimum
         )
         self.tab.addTab(self.reportToolPage, "Report parameters")
+        self.batchWidget = BatchWidget(self.viewer, parent=self)
+        self.tab.addTab(self.batchWidget, "Batch processing")
         self.runButton = QPushButton("Run analysis")
-        self.runButton.setStyleSheet("background-color : green")
+        self.runButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: green;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #3d8b40;
+            }
+            """
+        )
         self.runButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.docButton = QPushButton("Documentation")
         self.docButton.setStyleSheet("background-color : blue")
+        self.docButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: blue;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #0000CD;
+            }
+            QPushButton:pressed {
+                background-color: #00008B;
+            }
+            """
+        )
         self.docButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.genButton = QPushButton("Generate random PSF")
         self.genButton.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.genButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: gray;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #A9A9A9;
+            }
+            QPushButton:pressed {
+                background-color: #696969;
+            }
+            """
+        )
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(5)
@@ -668,4 +726,40 @@ class Microscopy_Metrics_QWidget(QWidget):
             self.viewer.layers[i].units = "um"
             self.viewer.layers[i].scale = self.DetectionTool.pixelSize
         self.viewer.reset_view()
+
+
+    def generateBatchAnalyzer(self, folder):
+        batchAnalyzer = BatchAnalyzer(folder)
+        batchAnalyzer._detectionMethod = self.detectionToolPage.detectionParameters.detectionToolWidget.options.value("Detection tool")
+        batchAnalyzer._Sigma = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Sigma")
+        batchAnalyzer._minDistance = self.detectionToolPage.detectionParameters.detectionToolWidget.optionsSliders.value("Min dist")
+        batchAnalyzer._thresholdMethod = self.detectionToolPage.detectionParameters.widgetThreshold.options.value("Threshold")
+        batchAnalyzer._relThreshold = self.detectionToolPage.detectionParameters.widgetThreshold.optionsSliders.value("threshold") / 100
+        batchAnalyzer._TheoreticalBeadSize = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Theoretical bead size (µm)")
+        batchAnalyzer._ZRejectionMargin = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Z axis rejection margin (µm)")
+        batchAnalyzer._cropFactor = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("crop factor")
+        batchAnalyzer._prominenceDoublePass = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("ProminenceRel Double Pass") / 100
+        batchAnalyzer._thresholdIntensity = self.detectionToolPage.detectionParameters.widgetRejection.optionsSliders.value("threshold intensity") / 100
+        batchAnalyzer._pixelSize = [
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Z"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size Y"),
+            self.acquisitionToolPage.pixelSizeWidget.options.value("Pixel size X"),
+        ]
+        batchAnalyzer._annulusInnerDistance = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Inner annulus distance to bead (µm)")
+        batchAnalyzer._annulusThickness = self.detectionToolPage.detectionParameters.widgetRejection.options.value("Annulus thickness (µm)")
+        batchAnalyzer._MicroscopeType = self.acquisitionToolPage.microscopeWidget.options.value("Microscope type")
+        batchAnalyzer._numericalAperture = self.acquisitionToolPage.microscopeWidget.options.value("Numerical aperture")
+        batchAnalyzer._emissionWavelength = self.acquisitionToolPage.microscopeWidget.options.value("Emission wavelength")
+        batchAnalyzer._excitationWavelength = self.acquisitionToolPage.microscopeWidget.options.value("Excitation wavelength")
+        batchAnalyzer._refractionIndex = self.acquisitionToolPage.microscopeWidget.options.value("Refraction index")
+        batchAnalyzer._FitType = self.metricsToolPage.widgetFittingChoice.options.value("Fit type")
+        batchAnalyzer._thresholdRSquared = self.metricsToolPage.widgetFittingChoice.options.value("Threshold R2")
+        batchAnalyzer._listReports = self.reportToolPage.getListReports()
+        batchAnalyzer._detectionDatas = self.detectionToolPage.detectionParameters.detectionToolWidget.toDict()
+        batchAnalyzer._thresholdDatas = self.detectionToolPage.detectionParameters.widgetThreshold.toDict()
+        batchAnalyzer._roiDatas = self.detectionToolPage.detectionParameters.widgetRejection.toDict()
+        batchAnalyzer._fittingDatas = self.metricsToolPage.widgetFittingChoice.toDict()
+        batchAnalyzer._microscopeDatas = self.acquisitionToolPage.microscopeWidget.toDict()
+        return batchAnalyzer
+
                 

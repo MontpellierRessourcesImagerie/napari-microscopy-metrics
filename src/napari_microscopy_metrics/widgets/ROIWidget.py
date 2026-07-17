@@ -27,7 +27,7 @@ class RoiWidget(BaseWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.widget)
         self.cropFactor = QSlider(Qt.Horizontal)
-        self.cropFactor.setRange(1, 10)
+        self.cropFactor.setRange(1, 20)
         self.cropFactor.setValue(self.optionsSliders.value("crop factor"))
         self.cropFactorLabel = QLabel(
             "Crop factor: " + str(self.cropFactor.value())
@@ -81,7 +81,7 @@ class RoiWidget(BaseWidget):
         options = Options(
             "Extraction parameters", "Set parameters for extraction"
         )
-        options.addFloat(name="Theoretical bead size (µm)", value=0.6)
+        options.addFloat(name="Theoretical bead size (µm)", value=0.2)
         options.addFloat(name="Z axis rejection margin (µm)", value=0.5)
         options.addFloat(name="Inner annulus distance to bead (µm)", value=1.0)
         options.addFloat(name="Annulus thickness (µm)", value=2.0)
@@ -97,8 +97,8 @@ class RoiWidget(BaseWidget):
         optionsSliders = Options(
             "Crop factor value", "Store value of crop factor"
         )
-        optionsSliders.addInt(name="crop factor", value=5)
-        optionsSliders.addInt(name="threshold intensity", value=95)
+        optionsSliders.addInt(name="crop factor", value=10)
+        optionsSliders.addInt(name="threshold intensity", value=50)
         optionsSliders.addInt(name="ProminenceRel Double Pass", value=50)
         optionsSliders.load()
         return optionsSliders
