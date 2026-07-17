@@ -201,7 +201,24 @@ class Microscopy_Metrics_QWidget(QWidget):
             return
         self.detectionToolPage.erase_Layers()
         self.runButton.setText("Stop")
-        self.runButton.setStyleSheet("background-color : red")
+        self.runButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: red;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #FF6347;
+            }
+            QPushButton:pressed {
+                background-color: #CD5C5C;
+            }
+            """
+        )
         self.runButton.pressed.disconnect(self.startProcessing)
         self.runButton.pressed.connect(self.stopProcessing)
         self.isRunning = True
@@ -211,7 +228,24 @@ class Microscopy_Metrics_QWidget(QWidget):
         """Function to stop the whole analysis process and reset the plugin interface"""
         print("Process stopped by user.")
         self.runButton.setText("Run analysis")
-        self.runButton.setStyleSheet("background-color : green")
+        self.runButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: green;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #3d8b40;
+            }
+            """
+        )
         self.runButton.pressed.disconnect(self.stopProcessing)
         self.runButton.pressed.connect(self.startProcessing)
         self.isRunning = False
@@ -466,7 +500,24 @@ class Microscopy_Metrics_QWidget(QWidget):
             "Report generation finished! You can find the report in the same folder as your image with the name <image_name>_analysis_result.pdf"
         )
         self.runButton.setText("Run analysis")
-        self.runButton.setStyleSheet("background-color : green")
+        self.runButton.setStyleSheet(
+            """
+            QPushButton {
+                background-color: green;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #3d8b40;
+            }
+            """
+        )
         try:
             self.runButton.pressed.disconnect(self.stopProcessing)
         except TypeError:
