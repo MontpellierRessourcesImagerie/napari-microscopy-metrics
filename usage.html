@@ -97,11 +97,11 @@
 <p>—</p>
 <section id="installation">
 <span id="id2"></span><h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
-<p>To use <cite>napari microscopy metrics</cite>, Python 3.12 is required</p>
+<p>To use <cite>napari microscopy metrics</cite>, Python 3.11 is required</p>
 <p>It is <strong>strongly recommended</strong> to create a Python <strong>virtual environment</strong> to avoid conflicts with other packages.
 You can choose between <strong>venv</strong> (built-in Python module) or <strong>conda</strong> (Anaconda/Miniconda).</p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Using venv</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Using conda</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p><strong>1. Create a virtual environment:</strong></p>
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">Using venv</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">Using conda (Recommended)</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p><strong>1. Create a virtual environment:</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>napari_microscopy_metrics_env
 </pre></div>
 </div>
@@ -119,15 +119,14 @@ You can choose between <strong>venv</strong> (built-in Python module) or <strong
 </li>
 </ul>
 <p><strong>3. Install the package and its dependencies:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#If napari is not installed yet, you can install it with pip</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;napari[all]==0.6.6&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;napari[all]==0.6.6&quot;</span>
 
 pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
 pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metrics
 </pre></div>
 </div>
 </div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><p><strong>1. Create a conda environment:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>napari_microscopy_metrics_env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>napari_microscopy_metrics_env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
 </pre></div>
 </div>
 <p><strong>2. Activate the conda environment:</strong></p>
@@ -135,8 +134,7 @@ pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metr
 </pre></div>
 </div>
 <p><strong>3. Install the package:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#If napari is not installed yet, you can install it with pip</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;napari[all]==0.6.6&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;napari[all]==0.6.6&quot;</span>
 
 pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
 pip<span class="w"> </span>install<span class="w"> </span>napari-microscopy-metrics
@@ -243,6 +241,21 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>napari
 </pre></div>
 </div>
+<p>If you are not in your virtual environment (see the <a class="reference internal" href="#installation"><span class="std std-ref">Installation</span></a> section), you must activate it first.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-1-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-1-1-0" name="1-0" role="tab" tabindex="0">Using venv</button><button aria-controls="panel-1-1-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-1-1-1" name="1-1" role="tab" tabindex="-1">Using conda (Recommended)</button></div><div aria-labelledby="tab-1-1-0" class="sphinx-tabs-panel" id="panel-1-1-0" name="1-0" role="tabpanel" tabindex="0"><p><strong>Activate the virtual environment:</strong></p>
+<p>Go to the directory where you created the virtual environment and run in your terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># On Linux/macOS</span>
+<span class="c1"># or</span>
+venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate<span class="w">     </span><span class="c1"># On Windows</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-1-1-1" class="sphinx-tabs-panel" hidden="true" id="panel-1-1-1" name="1-1" role="tabpanel" tabindex="0"><p><strong>Activate the conda environment:</strong></p>
+<p>Run the following command in your terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>napari_microscopy_metrics_env
+</pre></div>
+</div>
+</div></div>
 <p>You now have access to the napari interface. To open the <strong>Napari microscopy metrics</strong> plugin, you just have to enable the option at <strong>Plugins &gt; Microscopy Metrics (Microscopy Metrics)</strong></p>
 <a class="reference internal image-reference" href="_images/open_plugin.png"><img alt="Open plugin example" class="align-center" src="_images/open_plugin.png" style="width: 700px;" />
 </a>

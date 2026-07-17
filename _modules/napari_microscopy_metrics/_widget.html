@@ -107,6 +107,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._detection_tool_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectionToolTab</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._acquisition_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">AcquisitionToolPage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._report_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReportToolPage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">napari_microscopy_metrics._batch_widget</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchWidget</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">microscopy_metrics.BatchAnalyzer</span><span class="w"> </span><span class="kn">import</span> <span class="n">BatchAnalyzer</span>
+
 
 <div class="viewcode-block" id="Microscopy_Metrics_QWidget">
 <a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget">[docs]</a>
@@ -180,21 +183,76 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Y&quot;</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">),</span>
         <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="p">,</span> <span class="s2">&quot;Metrics parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="p">,</span> <span class="s2">&quot;Fitting parameters&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span> <span class="o">=</span> <span class="n">ReportToolPage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span>
             <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="p">,</span> <span class="s2">&quot;Report parameters&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batchWidget</span> <span class="o">=</span> <span class="n">BatchWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batchWidget</span><span class="p">,</span> <span class="s2">&quot;Batch processing&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Run analysis&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : green&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            QPushButton {</span>
+<span class="sd">                background-color: green;</span>
+<span class="sd">                color: white;</span>
+<span class="sd">                border: none;</span>
+<span class="sd">                padding: 8px 16px;</span>
+<span class="sd">                font-size: 14px;</span>
+<span class="sd">                border-radius: 4px;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:hover {</span>
+<span class="sd">                background-color: #45a049;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:pressed {</span>
+<span class="sd">                background-color: #3d8b40;</span>
+<span class="sd">            }</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Documentation&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;background-color : blue&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            QPushButton {</span>
+<span class="sd">                background-color: blue;</span>
+<span class="sd">                color: white;</span>
+<span class="sd">                border: none;</span>
+<span class="sd">                padding: 8px 16px;</span>
+<span class="sd">                font-size: 14px;</span>
+<span class="sd">                border-radius: 4px;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:hover {</span>
+<span class="sd">                background-color: #0000CD;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:pressed {</span>
+<span class="sd">                background-color: #00008B;</span>
+<span class="sd">            }</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">docButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Generate random PSF&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Minimum</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Fixed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">genButton</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            QPushButton {</span>
+<span class="sd">                background-color: gray;</span>
+<span class="sd">                color: white;</span>
+<span class="sd">                border: none;</span>
+<span class="sd">                padding: 8px 16px;</span>
+<span class="sd">                font-size: 14px;</span>
+<span class="sd">                border-radius: 4px;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:hover {</span>
+<span class="sd">                background-color: #A9A9A9;</span>
+<span class="sd">            }</span>
+<span class="sd">            QPushButton:pressed {</span>
+<span class="sd">                background-color: #696969;</span>
+<span class="sd">            }</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">QVBoxLayout</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
@@ -829,7 +887,46 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;um&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DetectionTool</span><span class="o">.</span><span class="n">pixelSize</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">viewer</span><span class="o">.</span><span class="n">reset_view</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="Microscopy_Metrics_QWidget.generateBatchAnalyzer">
+<a class="viewcode-back" href="../../napari_microscopy_metrics._widget.html#napari_microscopy_metrics._widget.Microscopy_Metrics_QWidget.generateBatchAnalyzer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generateBatchAnalyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">):</span>
+        <span class="n">batchAnalyzer</span> <span class="o">=</span> <span class="n">BatchAnalyzer</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_detectionMethod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Detection tool&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Sigma&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_minDistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Min dist&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_thresholdMethod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_relThreshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_TheoreticalBeadSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Theoretical bead size (µm)&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_ZRejectionMargin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Z axis rejection margin (µm)&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_cropFactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;crop factor&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_prominenceDoublePass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;ProminenceRel Double Pass&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_thresholdIntensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">optionsSliders</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;threshold intensity&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_pixelSize</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Z&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size Y&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">pixelSizeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Pixel size X&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_annulusInnerDistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Inner annulus distance to bead (µm)&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_annulusThickness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Annulus thickness (µm)&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_MicroscopeType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Microscope type&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_numericalAperture</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Numerical aperture&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_emissionWavelength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Emission wavelength&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_excitationWavelength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Excitation wavelength&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_refractionIndex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Refraction index&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_FitType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">widgetFittingChoice</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Fit type&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_thresholdRSquared</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">widgetFittingChoice</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">&quot;Threshold R2&quot;</span><span class="p">)</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_listReports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reportToolPage</span><span class="o">.</span><span class="n">getListReports</span><span class="p">()</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_detectionDatas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">detectionToolWidget</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_thresholdDatas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetThreshold</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_roiDatas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detectionToolPage</span><span class="o">.</span><span class="n">detectionParameters</span><span class="o">.</span><span class="n">widgetRejection</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_fittingDatas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metricsToolPage</span><span class="o">.</span><span class="n">widgetFittingChoice</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="n">batchAnalyzer</span><span class="o">.</span><span class="n">_microscopeDatas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisitionToolPage</span><span class="o">.</span><span class="n">microscopeWidget</span><span class="o">.</span><span class="n">toDict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">batchAnalyzer</span></div>
 </div>
+
 
                 
 </pre></div>
